@@ -40,7 +40,9 @@ void ofApp::draw(){
     timeline.unlock();
     
     for(auto& m : messageFIFOLocal) {
-      if(m.type == "functionCall") {     
+      if(m.type == "functionCall") {   
+        ofSetColor(ofRandom(255), ofRandom(255), ofRandom(255), 255);
+        ofDrawCircle(ofRandom(ofGetWidth()), ofRandom(ofGetHeight()), 30);  
       } else if (m.type == "timelineReset") {
         // time cursor has reached the last event and has been reset
       }
@@ -51,6 +53,7 @@ void ofApp::draw(){
   
   // if(!rendering) timeline.draw();
   timeline.draw();
+  // ofLogNotice("timeCursor: ") << timeline.getTimeCursor();
 }
 
 //--------------------------------------------------------------

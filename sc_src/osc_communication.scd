@@ -111,18 +111,22 @@ Synth(\verb);
 ~speed = 1;
 ~filteredNoiseSynths = [];
 ~scriptChords = [];
+~scriptInfo = ();
 300.do{|i|
 	var chord = [1.0, 3/2, 5/4, 2, 4/3, 16/15]*rrand(2000, 4000);
 	~scriptChords = ~scriptChords.add(chord);
 };
-OSCdef(\test, {
+OSCdef(\timeline_message, {
 	|msg, time, addr, recvPort|
+	msg.postln;
 	if(msg[1] == \functionCall) {
 		var id = msg[2],
 		parent = msg[3],
 		scriptId = msg[4],
+		parentScriptId = msg[5],
+		withinScript = msg[6],
 		notes = ~scriptChords[scriptId], // choose chord based on scriptId
-		distance = parent - id, // if positive its further down the call tree, if negative its just gone back up the call tree
+		distance = parent - id, // todo: change to distance between scripts if it's a call outside
 		idDigits = Set[], tempid = id;
 
 		while({ tempid > 0 }, {
@@ -137,31 +141,7 @@ OSCdef(\test, {
 		Synth(\tick,[\freq, rrand(5000, 6000)*~speed.linlin(0.0, 2.0, 0.1, 2.0), \rq, ~functionCallDensity.linexp(0, 1, 0.001, 1.0), \amp, min(~speed.pow(2), 1.0), \pan, [-1, 1].choose]);
 		// one note per scriptId as of right now
 		Synth(\sineperc, [\freq, min(notes[0]*~speed.linlin(0.0, 1.0, 0.1, 2.0), 19000), \amp, 0.05 * max((1-~speed), 0).pow(2), \rel, 10/~functionCallDensity, \pan, rrand(-1, 1.0)]);
-		}, {
-			// play a noise that is specific to the function
-			var modifiedChord = notes, sparserChord;
-			modifiedChord = modifiedChord.collect{|freq, i| var newFreq;
-				if(id%(i+2) == 0, {
-					newFreq = freq * 2;
-				}, {
-					if(id%(i+3) < ((i+1)/2.0), {
-						newFreq = freq * 0.5;
-					}, {
-						newFreq = freq
-					});
-				});
-				freq
-			};
-			sparserChord = idDigits.collect{|digit| modifiedChord[digit%modifiedChord.size]};
-			//sparserChord = [sparserChord.choose];
-			("filteredNoiseSynths.size: " + ~filteredNoiseSynths.size).postln;
-			~filteredNoiseSynths.do{|syn| syn.release; }; // release all old synths
-			~filteredNoiseSynths = sparserChord.collect { | freq | var release = (10 * (1-(~speed*10)).pow(4));
-				//("filtered noise with a release of " + release).postln;
-				Synth(\filtered_noise, [\freq, freq*0.25, \amp, 1.0, \atk, 0.1, \rel, release, \pan, rrand(-1, 1)]);
-			};
 		});
-		msg.postln;
 	};
 	if(msg[1] == \changeSpeed) {
 		~speedSynth.set(\freq, msg[2].linlin(0.0, 2.0, 40, 400));
@@ -171,6 +151,26 @@ OSCdef(\test, {
 
 },
 '/timeline-message', n); // def style
+
+OSCdef(\script_info, {
+	|msg, time, addr, recvPort|
+	var script, index;
+	msg.postln;
+
+	script = (
+		scriptId: msg[1],
+		numFunctions: msg[2],
+		interconnectedness: (),
+	);
+	index = 3;
+	while( {index+1 < msg.size}, {
+		script.interconnectedness[msg[index]] = msg[index+1];
+		index = index + 2;
+	});
+	~scriptInfo[script.scriptId] = script;
+	script.postln;
+},
+'/script', n); // def style
 
 {
 	loop {

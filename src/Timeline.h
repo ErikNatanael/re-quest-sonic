@@ -9,6 +9,8 @@
 #include "Function.h"
 #include "Script.h"
 
+const double timeStepsPerSecond = 1000000;
+
 /* 
 This timeline is using the ofThread wrapper around a Poco::Thread.
 Create an instance and run timeline.startThread(true); on it to start, and timeline.stopThread(); on exit.
@@ -19,19 +21,42 @@ timeline.lock();
 timeline.unlock();
 
 */
-
 class TimelineMessage {
 public:
   string type;
   map<string, float> parameters;
+  double ts = 0;
+  bool parsed = false;
+  
+  TimelineMessage() {}
+  
+  // an initializer_list makes it east to initialise with e.g. { {"id", 4.2 }, {"rad", 0.01 } }
+  TimelineMessage(float ts_, string t, std::initializer_list<std::pair<const string, float>> p) : 
+    ts(ts_), type(t), parameters(p) {
+    }
+    
+  bool operator<(const TimelineMessage& t) {
+    return this->ts < t.ts;
+  }
+  
+  void print() {
+    cout << ts << ": " << type << " {";
+    for(auto& pair : parameters) {
+      cout << "{" << pair.first << ", " << pair.second << "}";
+    }
+    cout << "}" << endl;
+  }
 };
+
+typedef TimelineMessage TM;
 
 class Timeline : public ofThread  {
 private:
   ofMutex oscMutex;
   
-  uint64_t timeCursor = 0;
-  float timeScale = 1;
+  double timeCursor = 0;
+  float timeScale = 0.5;
+  uint32_t nextEvent = 0;
   bool playing = false;
   bool rendering = false;
   float frameRate = 60;
@@ -45,10 +70,19 @@ private:
   double numTimeStepsToProgress = 0;
   
   uint64_t firstts = 1000000000000;
+  double firstts_d = 0; // in seconds as a decimal number
   uint64_t lastts = 0;
+  double lastts_d = 0;
   uint64_t timeWidth = 0;
+  double timeWidth_d = 0;
+  // stats for this trace
   uint32_t numScripts = 0;
   uint32_t maxScriptId = 0;
+  float ratioCallOutIn = 0;
+  uint32_t callsWithin = 0;
+  uint32_t callsOut = 0;
+
+  vector<TimelineMessage> score;
   
   ofxJSONElement json;
   ofFbo timelineFbo;
@@ -62,8 +96,8 @@ private:
   // all data
   
   vector<FunctionCall> functionCalls;
-  unordered_map<uint64_t, FunctionCall> callMap;
-  unordered_map<string, Function> functionMap;
+  // unordered_map<uint64_t, FunctionCall> callMap;
+  map<string, Function> functionMap;
   vector<Script> scripts;
   
 
@@ -72,57 +106,48 @@ private:
 
     // start
     while(isThreadRunning()) {
+      
       static float lastTime = 0;
       static float nonScaledLastTime = 0;
-      if(!rendering) {
+      
+      if(!rendering && playing) {
         currentTime = ofGetElapsedTimef();
+        if(lastTime == 0) lastTime = currentTime;
       
         double dt = (currentTime-lastTime) * timeScale;
+        timeCursor += dt;
         
         nonScaledCurrentTime += (currentTime-lastTime);
         lastTime = currentTime;
         
-        if(playing) {
-          progressQueue(dt);
-        }
+        progressQueue(timeCursor);
       }
     }
       // done
   }
   
-  void progressQueue(float dt) {
-    // calculate how many time steps whould be gone through this frame
-    const double timeStepsPerSecond = 1000000;
-    numTimeStepsToProgress += dt * timeStepsPerSecond;
-    while(numTimeStepsToProgress > 0) {
-      timeCursor += 1;
-      auto search = callMap.find(timeCursor);
-      if (search != callMap.end()) {
-        // create message
-        TimelineMessage mess;
-        mess.type = "functionCall";
-        mess.parameters.insert({"id", search->second.id});
-        mess.parameters.insert({"parent", search->second.parent});
-        mess.parameters.insert({"scriptId", search->second.scriptId});
+  void progressQueue(double timeCursor) {    
+    if(nextEvent < score.size()) {
+      while(score[nextEvent].ts - timeCursor < 0) {
+        // handle timeline events
+        if(score[nextEvent].type == "time_scale") {
+          timeScale = score[nextEvent].parameters["scale"];
+        }
         // send it as OSC
-        sendViaOsc(mess);
+        sendViaOsc(score[nextEvent]);
         // lock access to the resource
         lock();
         // put the message in the queue
-        messageFIFO.push_back(mess);
+        messageFIFO.push_back(score[nextEvent]);
         // done with the resource
         unlock();
+        
+        score[nextEvent].parsed = true;
+        //score.erase(score.begin());
+        // if(score.size() == 0) break; // otherwise it segfaults
+        nextEvent++;
+        if(nextEvent >= score.size()) break;
       }
-      numTimeStepsToProgress -= 1;
-    }
-    
-    if(timeCursor >= lastts) {
-      TimelineMessage mess;
-      mess.type = "timelineReset";
-      lock();
-      messageFIFO.push_back(mess);
-      unlock();
-      timeCursor = firstts;
     }
   }
     
@@ -135,6 +160,8 @@ private:
       oscMess.addInt32Arg(mess.parameters["id"]);
       oscMess.addInt32Arg(mess.parameters["parent"]);
       oscMess.addInt32Arg(mess.parameters["scriptId"]);
+      oscMess.addInt32Arg(mess.parameters["parentScriptId"]);
+      oscMess.addInt32Arg(mess.parameters["withinScript"]);
     } else if(mess.type == "changeSpeed") {
       oscMess.addStringArg(mess.type);
       oscMess.addFloatArg(mess.parameters["speed"]);
@@ -151,10 +178,6 @@ public:
   
   // functions
   void init(int w, int h) {
-    timelineFbo.allocate(w, h, GL_RGBA32F);
-    timelineFbo.begin();
-    ofBackground(0, 0);
-    timelineFbo.end();
     WIDTH = w;
     HEIGHT = h;
     timelineHeight = h*0.01;
@@ -205,7 +228,7 @@ public:
             tempCall.parent = nodes[j]["parent"].asInt();
             tempCall.function_id = to_string(tempCall.scriptId) + tempCall.name;
             functionCalls.push_back(tempCall);
-            callMap.insert({tempCall.ts, tempCall});
+            // callMap.insert({tempCall.ts, tempCall});
             scriptIds.insert(tempCall.scriptId);
             
             // create the associated script and store its url
@@ -243,6 +266,7 @@ public:
     for(auto& f : functionCalls) {
       auto parent = find(functionCalls.begin(), functionCalls.end(), f.parent);
       if(parent != functionCalls.end()) {
+        f.parentScriptId = parent->scriptId; // store the scriptId of the parent for later
         auto parentFunc = functionMap.find(parent->function_id);
         parentFunc->second.callingTimes += 1;
         // set the FunctionCall variable and Function stats
@@ -258,10 +282,12 @@ public:
       }
     }
 
+    vector<Function> functionVector;
     // create scripts
     // count how many functions are in each script
     for(auto& functionMapPair : functionMap) {
       auto& func = functionMapPair.second;
+      functionVector.push_back(func);
       // add the script to the scriptMap if it does not yet exist
       auto script = find(scripts.begin(), scripts.end(), func.scriptId);
 
@@ -274,32 +300,127 @@ public:
         script = scripts.end();
       } 
 
-      // increase the number of scripts
+      // add stats to script
       script->numFunctions++;
       script->numCallsWithinScript += func.numCallsWithinScript;
       script->numCallsToOtherScript += func.numCallsToOtherScript;
       script->numCalledFromOutsideScript += func.numCalledFromOutsideScript;
+    }
 
+    // add which script a certain script is called from or calls the most
+    for(auto& f : functionCalls) {
+      auto thisScript = find(scripts.begin(), scripts.end(), f.scriptId);
+      if(!f.withinScript) {
+        auto parent = find(functionCalls.begin(), functionCalls.end(), f.parent);
+        auto parentScript = find(scripts.begin(), scripts.end(), parent->scriptId);
+        auto searchParent = parentScript->toScriptCounter.find(f.scriptId);
+        if(searchParent != parentScript->toScriptCounter.end()) {
+          searchParent->second++;
+        } else {
+          parentScript->toScriptCounter.insert({f.scriptId, 1});
+        }
+        auto searchThis = thisScript->fromScriptCounter.find(parent->scriptId);
+        if(searchThis != thisScript->fromScriptCounter.end()) {
+          searchThis->second++;
+        } else {
+          thisScript->fromScriptCounter.insert({parent->scriptId, 1});
+        }
+      }
+    }
+
+    cout << "** Functions sorted by how many times they are called: **" << endl << endl;
+    functionVector[0].printHeaders();
+    std::sort (functionVector.begin(), functionVector.end());
+    for(auto& func : functionVector) {
       func.print();
-      
     }
     
+    // sort scripts after number of functions to find a position for the biggest one first
+    std::sort (scripts.begin(), scripts.end());
+    cout << endl << endl << "** Scripts sorted by how many functions they have: **" << endl << endl;
+    scripts[0].printHeaders();
+    for(auto& script : scripts) {
+      script.calculateInterconnectedness();
+      script.print();
+      script.printToAndFrom();
+    }
+
+    callsWithin = 0;
+    callsOut = 0;
+    for(auto& f : functionCalls) {
+      if(f.withinScript) callsWithin++;
+      else callsOut++;
+    }
+    ratioCallOutIn = (float)callsOut/(float)callsWithin;
+
     timeWidth = lastts - firstts;
+    timeWidth_d = double(timeWidth)/timeStepsPerSecond;
+    firstts_d = double(firstts)/timeStepsPerSecond;
+    lastts_d = double(lastts)/timeStepsPerSecond;
     numScripts = scriptIds.size();
+    cout << "calls within script: " << callsWithin << endl;
+    cout << "calls out from script: " << callsOut << endl;
+    cout << "ratio out/within: " << ratioCallOutIn << endl;
     cout << functionCalls.size() << " function calls registered" << endl;
     cout << functionMap.size() << " functions registered" << endl;
     cout << scriptIds.size() << " script ids registered" << endl;
     cout << "first ts: " << firstts << endl;
     cout << "last ts: " << lastts << endl;
     cout << "time width: " << timeWidth << endl;
-    timeCursor = firstts;
+    cout << "first ts: " << firstts_d << endl;
+    cout << "last ts: " << lastts_d << endl;
+    cout << "time width: " << timeWidth_d << endl;
+
+    // TODO: Create a score of TimelineMessages
+    //
+    sendBackgroundInfoOSC();
+    generateScore();
+  }
+
+  void generateScore() {
+    score.clear();
+
+    for(auto& f : functionCalls) {
+      score.push_back(TM(
+        double(f.ts-firstts)/timeStepsPerSecond,
+        "functionCall",
+        {
+          {"id", f.id},
+          {"parent", f.parent},
+          {"scriptId", f.scriptId},
+          {"parentScriptId", f.parentScriptId},
+          {"withinScript", int(f.withinScript)},
+        }
+      ));
+    }
+    std::sort (score.begin(), score.end());
+
+    // ofLogNotice("Finished score");
+    // for(auto& s : score) {
+    //   s.print();
+    // }
+  }
+
+  void sendBackgroundInfoOSC() {
+    oscMutex.lock();
+
+    // send all script data
+    for(auto& script : scripts) {
+      oscMess.clear();
+      oscMess.setAddress("/script");
+      oscMess.addInt32Arg(script.scriptId);
+      oscMess.addInt32Arg(script.numFunctions);
+      for(auto& inter : script.scriptInterconnectedness) {
+        oscMess.addInt32Arg(inter.first);
+        oscMess.addFloatArg(inter.second);
+      }
+      oscSender.sendMessage(oscMess); 
+    }
     
-    
-    // sort scripts after number of functions to find a position for the biggest one first
-    std::sort (scripts.begin(), scripts.end());
+    oscMutex.unlock();
   }
   
-  unordered_map<string, Function>& getFunctionMap() {
+  map<string, Function>& getFunctionMap() {
     return functionMap;
   }
   
@@ -309,13 +430,14 @@ public:
   
   void draw() {
     // draw time cursor
-    int cursorX = ( double(timeCursor-firstts)/double(timeWidth) ) * ofGetWidth();
-    timelineFbo.begin();
-    ofBackground(0, 0);
-    ofSetColor(255, 255);
-    ofDrawRectangle(0, HEIGHT - timelineHeight, cursorX, HEIGHT);
-    timelineFbo.end();
-    timelineFbo.draw(0, 0);
+    int cursorX = ( timeCursor/timeWidth_d ) * ofGetWidth();
+    // timelineFbo.begin();
+    // ofBackground(0, 0);
+    // ofSetColor(255, 255);
+    timelineHeight = ofGetHeight()*0.01;
+    ofDrawRectangle(0, (ofGetHeight()/2.0) - timelineHeight/2.0, cursorX, timelineHeight);
+    // timelineFbo.end();
+    // timelineFbo.draw(0, 0);
   }
   
   void setCursor(uint64_t cur) {
@@ -351,14 +473,18 @@ public:
   }
   
   void click(int x, int y) {
-    if(y > HEIGHT - timelineHeight) {
+    // if(y > HEIGHT - timelineHeight) {
       // move the time cursor to where you clicked on the timeline
-      timeCursor = (double(timeWidth)/double(ofGetWidth())) * x + firstts;
+      timeCursor = (double(timeWidth_d)/double(ofGetWidth())) * x;
       // clear the timeline fbo
-      timelineFbo.begin();
-      ofBackground(0, 0);
-      timelineFbo.end();
-    }
+      // timelineFbo.begin();
+      // ofBackground(0, 0);
+      // timelineFbo.end();
+    // }
+  }
+
+  double getTimeCursor() {
+    return timeCursor;
   }
   
   float getFramedt() {
