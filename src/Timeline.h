@@ -63,7 +63,7 @@ private:
   
   vector<FunctionCall> functionCalls;
   unordered_map<uint64_t, FunctionCall> callMap;
-  unordered_map<uint32_t, Function> functionMap;
+  unordered_map<string, Function> functionMap;
   vector<Script> scripts;
   
 
@@ -174,8 +174,8 @@ public:
     {
         ofLogNotice("ofApp::setup")  << "Failed to parse JSON" << endl;
     }
-    ofLog() << json["events"];
-    ofLog() << json["events"][3]["ts"];
+    // ofLog() << json["events"];
+    // ofLog() << json["events"][3]["ts"];
     
     set<int> scriptIds; // set to see how many script ids there is
 
@@ -203,6 +203,7 @@ public:
             tempCall.name = nodes[j]["callFrame"]["functionName"].asString();
             tempCall.id = nodes[j]["id"].asInt();
             tempCall.parent = nodes[j]["parent"].asInt();
+            tempCall.function_id = to_string(tempCall.scriptId) + tempCall.name;
             functionCalls.push_back(tempCall);
             callMap.insert({tempCall.ts, tempCall});
             scriptIds.insert(tempCall.scriptId);
@@ -217,7 +218,7 @@ public:
             }
             
             // create the associated function
-            auto search = functionMap.find(tempCall.id);
+            auto search = functionMap.find(tempCall.function_id);
             if (search != functionMap.end()) {
                 search->second.calledTimes += 1;
             } else {
@@ -227,7 +228,8 @@ public:
                tempFunc.scriptId = tempCall.scriptId;
                tempFunc.lineNumber = nodes[j]["callFrame"]["lineNumber"].asInt();
                tempFunc.columnNumber = nodes[j]["callFrame"]["columnNumber"].asInt();
-               functionMap.insert({tempFunc.id, tempFunc});
+               tempFunc.calledTimes = 1;
+               functionMap.insert({tempCall.function_id, tempFunc});
             }
 
             if(tempCall.scriptId > maxScriptId) maxScriptId = tempCall.scriptId;
@@ -235,36 +237,69 @@ public:
           }
         }
       }
+    } // json parsing finished
+
+    // find if a function call is within or across scripts
+    for(auto& f : functionCalls) {
+      auto parent = find(functionCalls.begin(), functionCalls.end(), f.parent);
+      if(parent != functionCalls.end()) {
+        auto parentFunc = functionMap.find(parent->function_id);
+        parentFunc->second.callingTimes += 1;
+        // set the FunctionCall variable and Function stats
+        if(parent->scriptId == f.scriptId) {
+          f.withinScript = true;
+          parentFunc->second.numCallsWithinScript += 1;
+        } else {
+          f.withinScript = false;
+          parentFunc->second.numCallsToOtherScript += 1;
+          auto thisFunc = functionMap.find(f.function_id);
+          thisFunc->second.numCalledFromOutsideScript += 1;
+        }
+      }
+    }
+
+    // create scripts
+    // count how many functions are in each script
+    for(auto& functionMapPair : functionMap) {
+      auto& func = functionMapPair.second;
+      // add the script to the scriptMap if it does not yet exist
+      auto script = find(scripts.begin(), scripts.end(), func.scriptId);
+
+      // create script if it doesn't exist
+      if(script == scripts.end()) {
+        Script tempScript;
+        tempScript.scriptId = functionMapPair.second.scriptId;
+        tempScript.numFunctions = 0;
+        scripts.push_back(tempScript);
+        script = scripts.end();
+      } 
+
+      // increase the number of scripts
+      script->numFunctions++;
+      script->numCallsWithinScript += func.numCallsWithinScript;
+      script->numCallsToOtherScript += func.numCallsToOtherScript;
+      script->numCalledFromOutsideScript += func.numCalledFromOutsideScript;
+
+      func.print();
+      
     }
     
     timeWidth = lastts - firstts;
     numScripts = scriptIds.size();
     cout << functionCalls.size() << " function calls registered" << endl;
+    cout << functionMap.size() << " functions registered" << endl;
     cout << scriptIds.size() << " script ids registered" << endl;
     cout << "first ts: " << firstts << endl;
     cout << "last ts: " << lastts << endl;
     cout << "time width: " << timeWidth << endl;
     timeCursor = firstts;
     
-    // count how many functions are in each script
-    for(auto& functionMapPair : functionMap) {
-      // add the script to the scriptMap if it does not yet exist
-      auto searchScript = find(scripts.begin(), scripts.end(), functionMapPair.second.scriptId);
-      if(searchScript == scripts.end()) {
-        Script tempScript;
-        tempScript.scriptId = functionMapPair.second.scriptId;
-        tempScript.numFunctions = 1;
-        scripts.push_back(tempScript);
-      } else {
-        // else increase the number of scripts
-        searchScript->numFunctions++;
-      }
-    }
+    
     // sort scripts after number of functions to find a position for the biggest one first
     std::sort (scripts.begin(), scripts.end());
   }
   
-  unordered_map<uint32_t, Function>& getFunctionMap() {
+  unordered_map<string, Function>& getFunctionMap() {
     return functionMap;
   }
   

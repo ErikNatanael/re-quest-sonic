@@ -7,6 +7,12 @@ public:
   int scriptId;
   string url;
   int numFunctions = 0;
+
+  // stats of calls from this function (this function is parent)
+  int numCallsWithinScript = 0;
+  int numCallsToOtherScript = 0;
+  // stats of calls to this function
+  int numCalledFromOutsideScript = 0;
   
   Script() {
   }
