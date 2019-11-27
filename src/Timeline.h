@@ -54,8 +54,8 @@ class Timeline : public ofThread  {
 private:
   ofMutex oscMutex;
   
-  double timeCursor = 0;
-  float timeScale = 0.5;
+  double timeCursor = 8.0;
+  float timeScale = 0.005;
   uint32_t nextEvent = 0;
   bool playing = false;
   bool rendering = false;
@@ -399,6 +399,7 @@ public:
     // for(auto& s : score) {
     //   s.print();
     // }
+    progressScoreIndexToCursor();
   }
 
   void sendBackgroundInfoOSC() {
@@ -476,11 +477,21 @@ public:
     // if(y > HEIGHT - timelineHeight) {
       // move the time cursor to where you clicked on the timeline
       timeCursor = (double(timeWidth_d)/double(ofGetWidth())) * x;
+      progressScoreIndexToCursor();
       // clear the timeline fbo
       // timelineFbo.begin();
       // ofBackground(0, 0);
       // timelineFbo.end();
     // }
+  }
+
+  void progressScoreIndexToCursor() {
+      // set next event
+      int newNextEvent = 0;
+      while(score[newNextEvent].ts - timeCursor < 0) {
+        newNextEvent++;
+      }
+      nextEvent = newNextEvent;
   }
 
   double getTimeCursor() {

@@ -103,12 +103,32 @@ SynthDef(\verb, {
 
     ReplaceOut.ar(\out.kr(0), snd);
 }).add;
+SynthDef(\tick2, {
+	var sig, env, rq = \rq.kr(0.1);
+	env = Env.perc(0, 0.05).ar(2);
+	sig = Impulse.ar(0);
+	sig = sig * 0.5;
+	sig = RHPF.ar(sig, \freq.kr(1000), rq) * env;
+	sig = Pan2.ar(sig, \pan.kr(0)) * \amp.kr(1.0);
+	Out.ar(\out.kr(0), sig);
+}).add;
 )
 (
-Synth(\verb);
-~speedSynth = Synth(\noisepad, [\freq, 400]);
+~ratio53 = pow(2, 1/53);
+~rootFreq = 0.midicps;
+// Function to convert a degree in 53-EDO to a frequency
+~degree53_to_freq =  { |degree|
+    var freq = ~rootFreq*pow(~ratio53, degree);
+    freq
+};
+
+
+Synth(\verb, [\wetness, 0.3]);
+
+
 ~functionCallDensity = 0;
 ~speed = 1;
+~currentRoot = 31;
 ~filteredNoiseSynths = [];
 ~scriptChords = [];
 ~scriptInfo = ();
@@ -116,6 +136,11 @@ Synth(\verb);
 	var chord = [1.0, 3/2, 5/4, 2, 4/3, 16/15]*rrand(2000, 4000);
 	~scriptChords = ~scriptChords.add(chord);
 };
+
+~speedSynths = 4.collect{|i| var offset = [0, 17, 31, 47][i];
+	Synth(\noisepad, [\freq, ~degree53_to_freq.(~currentRoot + offset + (53*5))]);
+};
+
 OSCdef(\timeline_message, {
 	|msg, time, addr, recvPort|
 	msg.postln;
@@ -129,6 +154,34 @@ OSCdef(\timeline_message, {
 		distance = parent - id, // todo: change to distance between scripts if it's a call outside
 		idDigits = Set[], tempid = id;
 
+		if(withinScript == 0) {
+			Synth(\tick2,[\freq, rrand(5000, 10000), \rq, 0.1, \amp, 1.0, \pan, [-1, 1].choose]);
+			// switch to new root note
+			distance = ~scriptInfo[parentScriptId].interconnectedness[scriptId];
+			if(distance > 0.8, {
+				~currentRoot = ~currentRoot - 31; // dominantisk riktning
+			}, {
+				if(distance > 0.5, {
+					~currentRoot = ~currentRoot - 31; // subdominantisk riktning
+				}, {
+					if(distance > 0.2, {
+						~currentRoot = ~currentRoot + 17; // mediantisk, dur
+					}, {
+						var iterations = ((1.0 - (distance*5))*10).floor + 1;
+						iterations = 1;
+						~currentRoot = ~currentRoot + (14*iterations); // mediantisk, moll
+					});
+				});
+			});
+			~currentRoot = ~currentRoot%53;
+			// change background chord
+			~speedSynths.do{|syn, i|
+				var offset = [0, 17, 31, 47][i];
+				syn.set(\freq, ~degree53_to_freq.(~currentRoot + offset + (53*5)));
+			};
+		};
+
+
 		while({ tempid > 0 }, {
 			idDigits = idDigits.add(tempid.asInt%10);
 			tempid = (tempid.asInt/10).asInt;
@@ -136,18 +189,16 @@ OSCdef(\timeline_message, {
 
 		~functionCallDensity = ~functionCallDensity + 1;
 
-		if(~speed > 0.025, {
 			// kind of just gives you an impression of density
-		Synth(\tick,[\freq, rrand(5000, 6000)*~speed.linlin(0.0, 2.0, 0.1, 2.0), \rq, ~functionCallDensity.linexp(0, 1, 0.001, 1.0), \amp, min(~speed.pow(2), 1.0), \pan, [-1, 1].choose]);
+		// Synth(\tick,[\freq, rrand(5000, 6000)*~speed.linlin(0.0, 2.0, 0.1, 2.0), \rq, ~functionCallDensity.linexp(0, 1, 0.001, 1.0), \amp, min(~speed.pow(2), 1.0), \pan, [-1, 1].choose]);
 		// one note per scriptId as of right now
-		Synth(\sineperc, [\freq, min(notes[0]*~speed.linlin(0.0, 1.0, 0.1, 2.0), 19000), \amp, 0.05 * max((1-~speed), 0).pow(2), \rel, 10/~functionCallDensity, \pan, rrand(-1, 1.0)]);
-		});
+		Synth(\sineperc, [\freq, ~degree53_to_freq.(~currentRoot + [0, 17, 31, 9].choose + (53*6)), \amp, 0.05, \atk, 0.1, \rel, rrand(0.2, 1.5) + (1/~functionCallDensity)*2, \pan, rrand(-1, 1.0)]);
 	};
-	if(msg[1] == \changeSpeed) {
+	/*if(msg[1] == \changeSpeed) {
 		~speedSynth.set(\freq, msg[2].linlin(0.0, 2.0, 40, 400));
 		~speed = msg[2];
 		msg.postln;
-	};
+	};*/
 
 },
 '/timeline-message', n); // def style
