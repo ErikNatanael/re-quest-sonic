@@ -1,3 +1,3 @@
-ofxOsc
 ofxJSON
+ofxOsc
 ofxPostProcessing
