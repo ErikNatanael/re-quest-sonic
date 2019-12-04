@@ -48,6 +48,29 @@ SynthDef(\noisepad, { |out = 0, amp = 0.5, freq = 440, gate = 1, attack = 0.01, 
 
 	Out.ar(out, Pan2.ar(sig, pan)*env*amp);
 }).add;
+SynthDef(\swoosh, {
+	var sig, env, freq, clap, popEnv, centerFreq = Rand(100, 1000), length = Rand(0.5, 2);
+	env = EnvGen.ar(
+		Env(
+			levels: [0, 1, 0],
+			times: [length, 1],
+			curve: [4, -6]
+		),
+		doneAction:2
+	);
+	popEnv = EnvGen.ar(Env([3261, 410, Rand(30, 80)], [0.002, 0.01], curve: \exp));
+
+
+	freq = [
+		EnvGen.ar(Env([centerFreq*Rand(0.1, 0.3), centerFreq], [length], [Rand(4, 7)])),
+		EnvGen.ar(Env([centerFreq*Rand(0.2, 0.4), centerFreq], [length], [Rand(2, 8)]))];
+	sig = Resonz.ar(WhiteNoise.ar(), freq, 0.3)*3;
+	sig = Mix(sig);
+	sig = Pan2.ar(sig, Line.kr(Rand(-1, 1), Rand(-1, 1), length+1));
+	sig = sig * env * 0.5 * \amp.kr(0.5);
+	//sig = FreeVerb.ar(sig, 0.05);
+	Out.ar(\out.kr(0), sig);
+}).add;
 SynthDef(\tick, {
 	var sig, env;
 	env = Env.perc(0, 0.2).kr(2);
@@ -114,6 +137,7 @@ SynthDef(\tick2, {
 	sig = Pan2.ar(sig, \pan.kr(0)) * \amp.kr(1.0);
 	Out.ar(\out.kr(0), sig);
 }).add;
+~clickSample = Buffer.readChannel(s, "samples/442649__asetkeyzet__keyboard-click.wav".resolveRelative, channels: [0]);
 )
 (
 ~ratio53 = pow(2, 1/53);
@@ -240,6 +264,7 @@ OSCdef(\timeline_message, {
 
 			});*/
 			// change root according to script type
+			("scriptType: " + newScript.scriptType).postln;
 			if(newScript.scriptType == "built-in", {
 				~currentRoot = ~currentRoot + 31; // subdominantisk riktning
 				~currentDegrees = [0, 17, 31];
@@ -297,6 +322,37 @@ OSCdef(\timeline_message, {
 		// one note per scriptId as of right now
 		// Synth(\sineperc, [\freq, ~degree53_to_freq.(~currentRoot + [0, 17, 31, 9].choose + (53*6)), \amp, 0.05, \atk, 0.1, \rel, rrand(0.2, 1.5) + (1/~functionCallDensity)*2, \pan, rrand(-1, 1.0)]);
 	};
+
+	if(msg[1] == \userEvent) {
+		var type = msg[2].asString;
+		msg.postln;
+
+		if(type == "mousemove") {
+			Synth(\swoosh);
+		};
+
+		if(type == "keydown") { var buf = ~clickSample;
+			x = { PlayBuf.ar(1, ~clickSample, BufRateScale.kr(~clickSample) * 0.2, loop: 0)!2 * 0.5 }.play;
+		};
+
+		if(type == "keyup") { var buf = ~clickSample;
+			x = { arg rate=0.1; var playhead = Phasor.ar(0, BufRateScale.kr(buf) * rate, 0, BufFrames.kr(buf));
+				GrainBuf.ar(2, Impulse.kr(10), 0.1, buf, rate, playhead, 2, 0, -1);
+			}.play;
+		};
+
+		if(type == "load") {
+
+		};
+
+		if(type == "pageshow") {
+
+		};
+
+		if(type == "error") {
+
+		};
+	};
 	/*if(msg[1] == \changeSpeed) {
 		~speedSynth.set(\freq, msg[2].linlin(0.0, 2.0, 40, 400));
 		~speed = msg[2];
@@ -314,8 +370,8 @@ OSCdef(\script_info, {
 	script = (
 		scriptId: msg[1],
 		numFunctions: msg[2],
-		scriptType: msg[3],
-		name: msg[4],
+		scriptType: msg[3].asString,
+		name: msg[4].asString,
 		interconnectedness: (),
 	);
 	index = 5;
@@ -352,4 +408,21 @@ a.set(\gate, 0);
 		Synth(\filtered_noise, [\freq, freq*0.25, \amp, 1.0, \atk, 0.1, \rel, release, \pan, rrand(-1, 1)]);
 	};
 }
+)
+~scriptInfo[0].scriptType == \built-in;
+
+Synth(\tick2,[\freq, rrand(200, 300), \rq, 0.01, \amp, 0.1, \pan, [-1, 1].choose]);
+
+(
+var buf = ~clickSample, winenv;
+winenv = Env([0, 1, 0], [0.5, 0.5], [12, -12]);
+z = Buffer.sendCollection(s, winenv.discretize, 1);
+x = { arg rate=0.1; var playhead, env, trig;
+	playhead = Line.ar(0, 1, BufDur.ir(buf)/rate, doneAction:2);
+	env = EnvGen.kr(
+		Env([0, 1, 1, 0], [0.001, BufDur.ir(buf)/rate, 1]),
+        doneAction: Done.freeSelf);
+	trig = Impulse.kr(10 + LFNoise1.kr(10).range(0, 2));
+	Out.ar(0, GrainBuf.ar(2, trig, 0.3, buf, 1.0, playhead, 2, 0, z)*env);
+}.play;
 )

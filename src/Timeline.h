@@ -8,6 +8,7 @@
 #include "FunctionCall.h"
 #include "Function.h"
 #include "Script.h"
+#include "UserEvent.h"
 
 const double timeStepsPerSecond = 1000000;
 
@@ -26,6 +27,7 @@ class TimelineMessage {
 public:
   string type;
   map<string, float> parameters;
+  map<string, string> stringParameters;
   double ts = 0;
   bool parsed = false;
   
@@ -34,7 +36,11 @@ public:
   // an initializer_list makes it east to initialise with e.g. { {"id", 4.2 }, {"rad", 0.01 } }
   TimelineMessage(float ts_, string t, std::initializer_list<std::pair<const string, float>> p) : 
     ts(ts_), type(t), parameters(p) {
-    }
+  }
+    
+  TimelineMessage(float ts_, string t, std::initializer_list<std::pair<const string, string>> sp) : 
+    ts(ts_), type(t), stringParameters(sp) {
+  }
     
   bool operator<(const TimelineMessage& t) {
     return this->ts < t.ts;
@@ -100,6 +106,7 @@ private:
   // unordered_map<uint64_t, FunctionCall> callMap;
   map<string, Function> functionMap;
   vector<Script> scripts;
+  vector<UserEvent> userEvents;
   
 
   // the thread function
@@ -166,6 +173,9 @@ private:
     } else if(mess.type == "changeSpeed") {
       oscMess.addStringArg(mess.type);
       oscMess.addFloatArg(mess.parameters["speed"]);
+    } else if(mess.type == "userEvent") {
+      oscMess.addStringArg(mess.type);
+      oscMess.addStringArg(mess.stringParameters["type"]);
     }
     
     oscSender.sendMessage(oscMess);
@@ -185,7 +195,8 @@ public:
     
     oscSender.setup("127.0.0.1", 57120); // send to SuperCollider on the local machine
   }
-  void parseProfile(string filepath) {
+  
+  void parseScriptingProfile(string filepath) {
     // load and parse the json data in the path provided
 
     bool parsingSuccessful = json.open(filepath);
@@ -372,11 +383,27 @@ public:
     cout << "first ts: " << firstts_d << endl;
     cout << "last ts: " << lastts_d << endl;
     cout << "time width: " << timeWidth_d << endl;
+  }
+  void parseUserEventProfile(string filepath) {
+    // load and parse the json data in the path provided
+    bool parsingSuccessful = json.open(filepath);
+    if (parsingSuccessful) {
+        ofLogNotice("ofApp::setup JSON parsing successful");
+    }
+    else {
+        ofLogNotice("ofApp::setup")  << "Failed to parse JSON" << endl;
+    }
 
-    // TODO: Create a score of TimelineMessages
-    //
-    sendBackgroundInfoOSC();
-    generateScore();
+    if (json["events"].isArray()) {
+      const Json::Value& events = json["events"];
+      for (Json::ArrayIndex i = 0; i < events.size(); ++i) {
+        UserEvent tempEvent;
+        tempEvent.type = events[i]["name"].asString();
+        tempEvent.ts = events[i]["ts"].asLargestUInt();
+        userEvents.push_back(tempEvent);
+      }
+    } // json parsing finished
+    
   }
 
   void generateScore() {
@@ -392,6 +419,15 @@ public:
           {"scriptId", f.scriptId},
           {"parentScriptId", f.parentScriptId},
           {"withinScript", int(f.withinScript)},
+        }
+      ));
+    }
+    for(auto& u : userEvents) {
+      score.push_back(TM(
+        double(u.ts-firstts)/timeStepsPerSecond,
+        "userEvent",
+        {
+          {"type", u.type},
         }
       ));
     }

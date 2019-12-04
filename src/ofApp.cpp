@@ -10,7 +10,10 @@ void ofApp::setup() {
   font.load("SourceCodePro-Regular.otf", 16, false, false, true);
   
   timeline.init(WIDTH, HEIGHT);
-  timeline.parseProfile("profiles/software_art/scores/scripting_events.json");
+  timeline.parseScriptingProfile("profiles/software_art/scores/scripting_events.json");
+  timeline.parseUserEventProfile("profiles/software_art/scores/user_events.json");
+  timeline.sendBackgroundInfoOSC();
+  timeline.generateScore();
   
   
   // ***************************** INIT openFrameworks STUFF
