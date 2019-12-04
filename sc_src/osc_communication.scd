@@ -1,7 +1,7 @@
 
 
 (
-SynthDef(\noisepad, { |out = 0, amp = 0.5, freq = 440, gate = 1, attack = 0.01, decay = 0.1, roughness = 0.01, pressure = 0.3, pan = 0, freqLag = 0.2, fragAmount = 0.5, fragDensity = 10, focus = 0.01, maxRoughness = 1, minRoughness = 0, lpf = 10000 |
+SynthDef(\noisepad, { |out = 0, amp = 0.5, freq = 440, gate = 1, attack = 0.01, decay = 0.1, roughness = 0.01, pressure = 0.3, pan = 0, freqLag = 0.2, fragAmount = 0.7, fragDensity = 10, focus = 0.01, maxRoughness = 1, minRoughness = 0, lpf = 10000 |
 
 	var sig, env, unison, detune, freqs, noise, osc2, dist, fragmentTrigger;
 	unison = 7;
@@ -40,7 +40,8 @@ SynthDef(\noisepad, { |out = 0, amp = 0.5, freq = 440, gate = 1, attack = 0.01, 
 	sig = (sig * (1-dist)) + (DFM1.ar(sig, freq, dist, 1, 0.0, 0.005*dist)*0.5 * dist);
 	//sig = sig + (DFM1.ar(sig, 100, 1.0, 20*rough).tanh);
 
-	fragmentTrigger = Changed.kr(\fragmentTrigger.kr(1), 0.4);
+	fragmentTrigger = Changed.kr(\fragmentTrigger.kr(1), 0.1);
+	// fragmentTrigger = Changed.kr(LFNoise0.kr(fragDensity), 0.4);
 	sig = (sig*(1-fragAmount)) + (sig * Lag.kr(Demand.kr(fragmentTrigger + Impulse.kr(0), 0, Dseq([1, 0], inf)), 0.02) * fragAmount);
 	sig = LPF.ar(sig, lpf.min(19000)) * AmpCompA.kr(freq, 20);
 
@@ -208,12 +209,12 @@ OSCdef(\timeline_message, {
 		distance = parent - id, // todo: change to distance between scripts if it's a call outside
 		idDigits = Set[], tempid = id;
 
-		if(withinScript == 0) { var newChord;
+		if(withinScript == 0) { var newChord, newScript = ~scriptInfo[scriptId];
 
 			// Synth(\tick2,[\freq, rrand(5000, 10000), \rq, 0.1, \amp, 1.0, \pan, [-1, 1].choose]);
 			// switch to new root note
 			distance = ~scriptInfo[parentScriptId].interconnectedness[scriptId];
-			if(distance > 0.9, {
+			/*if(distance > 0.9, {
 				~currentRoot = ~currentRoot + 31; // subdominantisk riktning
 				~currentDegrees = [0, 17, 31];
 				("subdominantisk riktning dur").postln;
@@ -237,7 +238,34 @@ OSCdef(\timeline_message, {
 					});
 				});
 
+			});*/
+			// change root according to script type
+			if(newScript.scriptType == "built-in", {
+				~currentRoot = ~currentRoot + 31; // subdominantisk riktning
+				~currentDegrees = [0, 17, 31];
+				("subdominantisk riktning dur").postln;
+			}, {
+				if(newScript.scriptType == "remote", {
+					~currentRoot = ~currentRoot - 31; // dominantisk riktning
+				~currentDegrees = [0, 17, 31, 44];
+				("dominantisk riktning").postln;
+				}, {
+					if(distance > 0.1, {
+						~currentRoot = ~currentRoot + 31; // subdominantisk riktning
+						~currentDegrees = [0, 14, 31];
+						("subdominantisk riktning moll").postln;
+					}, {
+						if(distance > 0.3, {
+							~currentDegrees = ~currentDegrees.add(9);
+						});
+						if(distance > 0.6, {
+							~currentDegrees = ~currentDegrees.add(49);
+						});
+					});
+				});
+
 			});
+
 			~currentRoot = ~currentRoot%53;
 			newChord = ~findClosestVoicing.(~currentChord, ~currentDegrees + ~currentRoot);
 			("newChord: " + newChord).postln;
@@ -260,7 +288,9 @@ OSCdef(\timeline_message, {
 		~functionCallDensity = ~functionCallDensity + 1;
 
 		// trigger a fragment change
-		~speedSynths.do{|syn| syn.set(\fragmentTrigger, rrand(0.0, 1.0)); };
+		~speedSynths.do{|syn| syn.set(\fragmentTrigger, rrand(0.0, 10.0)); };
+
+		Synth(\tick2,[\freq, rrand(5000, 10000), \rq, 0.01, \amp, 0.1, \pan, [-1, 1].choose]);
 
 			// kind of just gives you an impression of density
 		// Synth(\tick,[\freq, rrand(5000, 6000)*~speed.linlin(0.0, 2.0, 0.1, 2.0), \rq, ~functionCallDensity.linexp(0, 1, 0.001, 1.0), \amp, min(~speed.pow(2), 1.0), \pan, [-1, 1].choose]);
@@ -284,9 +314,11 @@ OSCdef(\script_info, {
 	script = (
 		scriptId: msg[1],
 		numFunctions: msg[2],
+		scriptType: msg[3],
+		name: msg[4],
 		interconnectedness: (),
 	);
-	index = 3;
+	index = 5;
 	while( {index+1 < msg.size}, {
 		script.interconnectedness[msg[index]] = msg[index+1];
 		index = index + 2;

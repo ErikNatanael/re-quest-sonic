@@ -21,6 +21,7 @@ timeline.lock();
 timeline.unlock();
 
 */
+
 class TimelineMessage {
 public:
   string type;
@@ -412,6 +413,8 @@ public:
       oscMess.setAddress("/script");
       oscMess.addInt32Arg(script.scriptId);
       oscMess.addInt32Arg(script.numFunctions);
+      oscMess.addStringArg(script.scriptType);
+      oscMess.addStringArg(script.name);
       for(auto& inter : script.scriptInterconnectedness) {
         oscMess.addInt32Arg(inter.first);
         oscMess.addFloatArg(inter.second);
