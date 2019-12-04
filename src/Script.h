@@ -7,6 +7,9 @@ public:
   int scriptId;
   string url;
   int numFunctions = 0;
+  vector<string> urlParts;
+  string scriptType; // extension, built-in, remote
+  string name; // e.g. "google" "gstatic" "kth"
 
   // stats of calls from this function (this function is parent)
   int numCallsWithinScript = 0;
@@ -19,6 +22,74 @@ public:
   map<uint32_t, float> scriptInterconnectedness;
   
   Script() {
+  }
+  
+  void extractInfo() {
+    extractUrlParts();
+    string delimiter;
+    size_t pos;
+    if(urlParts[0] == "http://" || urlParts[0] == "https://") {
+      scriptType = "remote";
+      // remove subdomain and top-level domain
+      vector<string> domainParts;
+      string domain = urlParts[1];
+      delimiter = ".";
+      while((pos = domain.find(delimiter)) != string::npos) {
+        string part = domain.substr(0, pos);
+        domain.erase(0, pos + delimiter.length());
+        domainParts.push_back(part);
+      }
+      // last part will be the correct one (top-level domain is not added)
+      name = domainParts[domainParts.size()-1];
+    }
+    else if(urlParts[0] == "chrome-extension://") {
+      scriptType = "extension";
+      // use filename as name
+      if(urlParts.size() >=3) {
+        name = urlParts[2];
+      }
+    }
+    else  scriptType = "built-in";
+    
+    cout << "urlParts[0]: " << urlParts[0] << endl;
+  }
+  
+  void extractUrlParts() {
+    string urlCopy = url;
+    // protocol
+    // everything up until after the first two '/'
+    string delimiter = "://";
+    size_t pos = 0;
+    if((pos = urlCopy.find(delimiter)) == string::npos) {
+      // there is no protocol
+      urlParts.push_back(urlCopy);
+      return;
+    } else {
+      string protocol = urlCopy.substr(0, pos + delimiter.length());
+      urlCopy.erase(0, pos + delimiter.length());
+      urlParts.push_back(protocol);
+    }
+    
+    // domain
+    delimiter = "/";
+    if((pos = urlCopy.find(delimiter)) != string::npos) {
+      string domain = urlCopy.substr(0, pos + delimiter.length());
+      urlCopy.erase(0, pos + delimiter.length());
+      urlParts.push_back(domain);
+    }
+    
+    // filename if applicable
+    // if url ends in .js, extract this part, otherwise add all the rest
+    size_t jsPos = 0;
+    if((jsPos = urlCopy.find(".js")) != string::npos) {
+      delimiter = "/";
+      pos = url.rfind(delimiter);
+      urlCopy.erase(0, pos + delimiter.length());
+      urlParts.push_back(urlCopy);
+    } else {
+      urlParts.push_back(urlCopy);
+      return;
+    }
   }
 
   bool operator<(const Script& s) {
@@ -62,6 +133,8 @@ public:
 
   void print() {
     cout << std::left << std::setw(9) << setfill(' ') << scriptId;
+    cout << std::left << std::setw(12) << setfill(' ') << scriptType;
+    cout << std::left << std::setw(10) << setfill(' ') << name;
     cout << std::left << std::setw(13) << setfill(' ') << numFunctions;
     cout << std::left << std::setw(15) << setfill(' ') << numCallsWithinScript;
     cout << std::left << std::setw(12) << setfill(' ') << numCallsToOtherScript;
@@ -70,6 +143,18 @@ public:
     cout << endl;
   }
 
+  void printHeaders() {
+    cout << std::left << std::setw(9) << setfill(' ') << "scriptId";
+    cout << std::left << std::setw(12) << setfill(' ') << "scriptType";
+    cout << std::left << std::setw(10) << setfill(' ') << "name";
+    cout << std::left << std::setw(13) << setfill(' ') << "numFunctions";
+    cout << std::left << std::setw(15) << setfill(' ') << "numCallsWithin";
+    cout << std::left << std::setw(12) << setfill(' ') << "numCallsOut";
+    cout << std::left << std::setw(12) << setfill(' ') << "numCalledIn";
+    cout << std::left << std::setw(3) << setfill(' ') << "url";
+    cout << endl;
+  }
+  
   void printToAndFrom() {
     // std::sort (fromScriptCounter.begin(), fromScriptCounter.end());
     // std::sort (toScriptCounter.begin(), toScriptCounter.end());
@@ -85,16 +170,6 @@ public:
     for(auto& n : scriptInterconnectedness) {
       cout << n.first << ": " << n.second << endl;
     }
-    cout << endl;
-  }
-
-  void printHeaders() {
-    cout << std::left << std::setw(9) << setfill(' ') << "scriptId";
-    cout << std::left << std::setw(13) << setfill(' ') << "numFunctions";
-    cout << std::left << std::setw(15) << setfill(' ') << "numCallsWithin";
-    cout << std::left << std::setw(12) << setfill(' ') << "numCallsOut";
-    cout << std::left << std::setw(12) << setfill(' ') << "numCalledIn";
-    cout << std::left << std::setw(3) << setfill(' ') << "url";
     cout << endl;
   }
 };

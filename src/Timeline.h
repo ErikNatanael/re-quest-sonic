@@ -237,6 +237,7 @@ public:
               Script tempScript;
               tempScript.scriptId = tempCall.scriptId;
               tempScript.url = nodes[j]["callFrame"]["url"].asString();
+              tempScript.extractInfo();
               scripts.push_back(tempScript);
             }
             
