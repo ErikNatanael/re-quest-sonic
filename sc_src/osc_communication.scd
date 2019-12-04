@@ -3,7 +3,7 @@
 (
 SynthDef(\noisepad, { |out = 0, amp = 0.5, freq = 440, gate = 1, attack = 0.01, decay = 0.1, roughness = 0.01, pressure = 0.3, pan = 0, freqLag = 0.2, fragAmount = 0.7, fragDensity = 10, focus = 0.01, maxRoughness = 1, minRoughness = 0, lpf = 10000 |
 
-	var sig, env, unison, detune, freqs, noise, osc2, dist, fragmentTrigger;
+	var sig, env, unison, detune, freqs, noise, osc2, dist, fragmentTrigger, distSig;
 	unison = 7;
 	detune = 0.03;
 	detune = \detune.kr(0.001);//LFNoise2.kr(1/2).range(0.001, 0.05);
@@ -37,7 +37,8 @@ SynthDef(\noisepad, { |out = 0, amp = 0.5, freq = 440, gate = 1, attack = 0.01, 
 
 	sig = (sig * roughness) +  (osc2 * (1 - roughness));
 
-	sig = (sig * (1-dist)) + (DFM1.ar(sig, freq, dist, 1, 0.0, 0.005*dist)*0.5 * dist);
+	distSig = (DFM1.ar(sig, freq, dist, 1, 0.0, 0.005*dist)*20).tanh*0.3;
+	sig = (sig * (1-dist)) + (distSig * dist);
 	//sig = sig + (DFM1.ar(sig, 100, 1.0, 20*rough).tanh);
 
 	fragmentTrigger = Changed.kr(\fragmentTrigger.kr(1), 0.1);
@@ -233,6 +234,8 @@ OSCdef(\timeline_message, {
 		distance = parent - id, // todo: change to distance between scripts if it's a call outside
 		idDigits = Set[], tempid = id;
 
+
+
 		if(withinScript == 0) { var newChord, newScript = ~scriptInfo[scriptId];
 
 			// Synth(\tick2,[\freq, rrand(5000, 10000), \rq, 0.1, \amp, 1.0, \pan, [-1, 1].choose]);
@@ -328,16 +331,27 @@ OSCdef(\timeline_message, {
 		msg.postln;
 
 		if(type == "mousemove") {
-			Synth(\swoosh);
+			Synth(\swoosh, [\amp, 0.5]);
 		};
 
 		if(type == "keydown") { var buf = ~clickSample;
 			x = { PlayBuf.ar(1, ~clickSample, BufRateScale.kr(~clickSample) * 0.2, loop: 0)!2 * 0.5 }.play;
 		};
 
-		if(type == "keyup") { var buf = ~clickSample;
-			x = { arg rate=0.1; var playhead = Phasor.ar(0, BufRateScale.kr(buf) * rate, 0, BufFrames.kr(buf));
-				GrainBuf.ar(2, Impulse.kr(10), 0.1, buf, rate, playhead, 2, 0, -1);
+		if(type == "keyup") {
+			var buf = ~clickSample, winenv;
+			winenv = Env([0, 1, 0], [0.5, 0.5], [12, -12]);
+			z = Buffer.sendCollection(s, winenv.discretize, 1);
+			x = { var rate=Rand(0.05, 0.15), playhead, env, trig, sig;
+				playhead = Line.ar(0.5, 1, (BufDur.ir(buf)/rate)*0.5, doneAction:2);
+				env = EnvGen.kr(
+					Env([0, 1, 1, 0], [0.001, BufDur.ir(buf)/rate, 1]),
+					doneAction: Done.freeSelf);
+				trig = Dust.kr(SinOsc.kr(1/5, 0.2).range(20, 40)) + Impulse.kr(0);
+				sig = DelayN.ar(PlayBuf.ar(1, ~clickSample, BufRateScale.kr(~clickSample) * rate, startPos: BufFrames.ir(buf)*0.5, loop: 0)!2 * 0.5, 0.5, 0.5);
+				sig = sig + GrainBuf.ar(2, trig, 0.8, buf, LFNoise1.kr(5).range(0.7, 1.0) , playhead, 2, 0, z);
+				sig = sig + CombN.ar(sig, 0.2, 0.15, 0.5, 0.2);
+				Out.ar(0, sig*env);
 			}.play;
 		};
 
@@ -387,8 +401,9 @@ OSCdef(\script_info, {
 {
 	loop {
 		~functionCallDensity = min(~functionCallDensity, 100);
-		~functionCallDensity = ~functionCallDensity * 0.95;
+		~functionCallDensity = ~functionCallDensity * 0.995;
 		~functionCallDensity = max(~functionCallDensity, 0);
+		~speedSynths.do{|syn| syn.set(\maxDist, ~functionCallDensity/100.0, \maxRoughness, ~functionCallDensity/100.0); };
 		0.01.wait;
 	}
 }.fork;
@@ -417,12 +432,15 @@ Synth(\tick2,[\freq, rrand(200, 300), \rq, 0.01, \amp, 0.1, \pan, [-1, 1].choose
 var buf = ~clickSample, winenv;
 winenv = Env([0, 1, 0], [0.5, 0.5], [12, -12]);
 z = Buffer.sendCollection(s, winenv.discretize, 1);
-x = { arg rate=0.1; var playhead, env, trig;
-	playhead = Line.ar(0, 1, BufDur.ir(buf)/rate, doneAction:2);
+x = { arg rate=0.1; var playhead, env, trig, sig;
+	playhead = Line.ar(0.5, 1, (BufDur.ir(buf)/rate)*0.5, doneAction:2);
 	env = EnvGen.kr(
 		Env([0, 1, 1, 0], [0.001, BufDur.ir(buf)/rate, 1]),
         doneAction: Done.freeSelf);
-	trig = Impulse.kr(10 + LFNoise1.kr(10).range(0, 2));
-	Out.ar(0, GrainBuf.ar(2, trig, 0.3, buf, 1.0, playhead, 2, 0, z)*env);
+	trig = Dust.kr(SinOsc.kr(1/5, 0.2).range(20, 40)) + Impulse.kr(0);
+	sig = DelayN.ar(PlayBuf.ar(1, ~clickSample, BufRateScale.kr(~clickSample) * rate, startPos: BufFrames.ir(buf)*0.5, loop: 0)!2 * 0.5, 0.5, 0.5);
+	sig = sig + GrainBuf.ar(2, trig, 0.8, buf, 1.0, playhead, 2, 0, z);
+	sig = sig + CombN.ar(sig, 0.2, 0.15, 0.5, 0.2);
+	Out.ar(0, sig*env);
 }.play;
 )
