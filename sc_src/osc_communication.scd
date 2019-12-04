@@ -121,6 +121,56 @@ SynthDef(\tick2, {
     var freq = ~rootFreq*pow(~ratio53, degree);
     freq
 };
+~findClosestVoicing = { | currentChord, newDegrees, edo = 53, minNote = -22, maxNote = 106 |
+	var newChord;
+	newChord = newDegrees.collect { | degree, i |
+		var minDistance = 1000, minDistIndex = 0, minDistOctave, newNote;
+		// find the note in the current chord that is closest to the new note from above or below
+		currentChord.do { | note, i | var distance = 10000, old, new, oldOctave;
+			// In SuperCollider -22%53 == 31 so % works for negative numbers (wrapping them to positive)
+			// check octave of the chord note. The octave is stored as the offset in degrees, not number of octaves
+			oldOctave = note - (note%edo);
+			// bring both notes into the lowest octave
+			old = note%edo;
+			new = degree%edo;
+			// check distance
+			distance = abs(new-old);
+			if(distance < minDistance) {
+				minDistance = distance;
+				minDistOctave = oldOctave;
+				minDistIndex = i;
+			};
+
+			// reverse the order of the notes
+			if(old < new, {
+				// bring new note down an octave
+				new = new - edo;
+				oldOctave = oldOctave - edo;
+			}, {
+				// bring new note up an octave
+				new = new + edo;
+				oldOctave = oldOctave + edo;
+			});
+
+			// check distance again in the reversed interval
+			distance = abs(new-old);
+			if(distance < minDistance) {
+				minDistance = distance;
+				minDistOctave = oldOctave;
+				minDistIndex = i;
+			};
+		};
+		// return the new adjusted note
+		newNote = (degree%edo) + minDistOctave;
+		if(newNote > maxNote, {
+			newNote = newNote - edo;
+		});
+		if(newNote < minNote, {
+			newNote = newNote + edo;
+		});
+	};
+	newChord
+};
 
 
 Synth(\verb, [\wetness, 0.3]);
@@ -129,6 +179,7 @@ Synth(\verb, [\wetness, 0.3]);
 ~functionCallDensity = 0;
 ~speed = 1;
 ~currentRoot = 31;
+~currentChord = [0, 17, 31, 47] + ~currentRoot;
 ~filteredNoiseSynths = [];
 ~scriptChords = [];
 ~scriptInfo = ();
@@ -143,7 +194,7 @@ Synth(\verb, [\wetness, 0.3]);
 
 OSCdef(\timeline_message, {
 	|msg, time, addr, recvPort|
-	msg.postln;
+	// msg.postln;
 	if(msg[1] == \functionCall) {
 		var id = msg[2],
 		parent = msg[3],
@@ -154,7 +205,8 @@ OSCdef(\timeline_message, {
 		distance = parent - id, // todo: change to distance between scripts if it's a call outside
 		idDigits = Set[], tempid = id;
 
-		if(withinScript == 0) {
+		if(withinScript == 0) { var newChord;
+
 			Synth(\tick2,[\freq, rrand(5000, 10000), \rq, 0.1, \amp, 1.0, \pan, [-1, 1].choose]);
 			// switch to new root note
 			distance = ~scriptInfo[parentScriptId].interconnectedness[scriptId];
@@ -174,11 +226,14 @@ OSCdef(\timeline_message, {
 				});
 			});
 			~currentRoot = ~currentRoot%53;
+			newChord = ~findClosestVoicing.(~currentChord, [0, 17, 31, 47] + ~currentRoot);
+			("newChord: " + newChord).postln;
 			// change background chord
 			~speedSynths.do{|syn, i|
-				var offset = [0, 17, 31, 47][i];
+				var offset = newChord[i];
 				syn.set(\freq, ~degree53_to_freq.(~currentRoot + offset + (53*5)));
 			};
+			~currentChord = newChord;
 		};
 
 
@@ -192,7 +247,7 @@ OSCdef(\timeline_message, {
 			// kind of just gives you an impression of density
 		// Synth(\tick,[\freq, rrand(5000, 6000)*~speed.linlin(0.0, 2.0, 0.1, 2.0), \rq, ~functionCallDensity.linexp(0, 1, 0.001, 1.0), \amp, min(~speed.pow(2), 1.0), \pan, [-1, 1].choose]);
 		// one note per scriptId as of right now
-		Synth(\sineperc, [\freq, ~degree53_to_freq.(~currentRoot + [0, 17, 31, 9].choose + (53*6)), \amp, 0.05, \atk, 0.1, \rel, rrand(0.2, 1.5) + (1/~functionCallDensity)*2, \pan, rrand(-1, 1.0)]);
+		// Synth(\sineperc, [\freq, ~degree53_to_freq.(~currentRoot + [0, 17, 31, 9].choose + (53*6)), \amp, 0.05, \atk, 0.1, \rel, rrand(0.2, 1.5) + (1/~functionCallDensity)*2, \pan, rrand(-1, 1.0)]);
 	};
 	/*if(msg[1] == \changeSpeed) {
 		~speedSynth.set(\freq, msg[2].linlin(0.0, 2.0, 40, 400));
@@ -241,10 +296,10 @@ a.set(\gate, 0);
 (
 20.do {
 	("size: " + ~filteredNoiseSynths.size).postln;
-~filteredNoiseSynths.do{|syn| syn.release; }; // release all old chords
-~filteredNoiseSynths = 4.collect {var release = 10, freq = rrand(3000, 4000);
-	//("filtered noise with a release of " + release).postln;
-	Synth(\filtered_noise, [\freq, freq*0.25, \amp, 1.0, \atk, 0.1, \rel, release, \pan, rrand(-1, 1)]);
-};
+	~filteredNoiseSynths.do{|syn| syn.release; }; // release all old chords
+	~filteredNoiseSynths = 4.collect {var release = 10, freq = rrand(3000, 4000);
+		//("filtered noise with a release of " + release).postln;
+		Synth(\filtered_noise, [\freq, freq*0.25, \amp, 1.0, \atk, 0.1, \rel, release, \pan, rrand(-1, 1)]);
+	};
 }
 )
