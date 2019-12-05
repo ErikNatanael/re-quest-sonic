@@ -3,12 +3,20 @@
 (
 SynthDef(\noisepad, { |out = 0, amp = 0.5, freq = 440, gate = 1, attack = 0.01, decay = 0.1, roughness = 0.01, pressure = 0.3, pan = 0, freqLag = 0.2, fragAmount = 0.7, fragDensity = 10, focus = 0.01, maxRoughness = 1, minRoughness = 0, lpf = 10000 |
 
-	var sig, env, unison, detune, freqs, noise, osc2, dist, fragmentTrigger, distSig;
+	var sig, env, unison, detune, freqs, noise, osc2, dist, fragmentTrigger, distSig, envtrig;
 	unison = 7;
 	detune = 0.03;
 	detune = \detune.kr(0.001);//LFNoise2.kr(1/2).range(0.001, 0.05);
 	dist = LFNoise1.kr(1).range(\minDist.kr(0), \maxDist.kr(1));
 	roughness = LFNoise1.kr(0.2).range(minRoughness, maxRoughness);
+
+	// add an attack every time the frequency changes
+	envtrig = Changed.kr(freq);
+	env = EnvGen.kr(Env(
+		levels: [0, 1, 0.2],
+		times: [0.001, 1]),
+	gate: envtrig + Impulse.kr(0)
+	);
 
 	freq = freq.lag(freqLag);
 	pan = pan.lag(1);
@@ -17,13 +25,13 @@ SynthDef(\noisepad, { |out = 0, amp = 0.5, freq = 440, gate = 1, attack = 0.01, 
 	//freqs = freqs.addAll(freq*[2, 4, 5, 6]);
 	//freqs.poll;
 
-	env = EnvGen.kr(Env(
+	/*env = EnvGen.kr(Env(
 		levels: [0, 1, 0.5, 0],
 		times: [attack, 0.8, decay],
 		curve: [0, 0, -7],
 		releaseNode: 2),
 		gate: gate,
-		doneAction: 2);
+		doneAction: 2);*/
 
 	sig = Resonz.ar(BrownNoise.ar(), freqs, 0.001) * 2;
 
@@ -37,7 +45,7 @@ SynthDef(\noisepad, { |out = 0, amp = 0.5, freq = 440, gate = 1, attack = 0.01, 
 
 	sig = (sig * roughness) +  (osc2 * (1 - roughness));
 
-	distSig = (DFM1.ar(sig, freq, dist, 1, 0.0, 0.005*dist)*20).tanh*0.3;
+	distSig = (DFM1.ar(sig, freq, dist, 1, 0.0, 0.005*dist) * (20 + (dist*20))).tanh*0.3;
 	sig = (sig * (1-dist)) + (distSig * dist);
 	//sig = sig + (DFM1.ar(sig, 100, 1.0, 20*rough).tanh);
 
@@ -301,7 +309,7 @@ OSCdef(\timeline_message, {
 			~speedSynths.do{|syn| syn.set(\amp, 0.0); };
 			newChord.do{|note, i|
 				var syn = ~speedSynths[i];
-				syn.set(\freq, ~degree53_to_freq.(note + (53*5)));
+				syn.set(\freq, ~degree53_to_freq.(note + (53*4)));
 				syn.set(\amp, 1.0);
 			};
 			~currentChord = newChord;
@@ -313,7 +321,7 @@ OSCdef(\timeline_message, {
 			tempid = (tempid.asInt/10).asInt;
 		});
 
-		~functionCallDensity = ~functionCallDensity + 1;
+		~functionCallDensity = ~functionCallDensity + 0.5;
 
 		// trigger a fragment change
 		~speedSynths.do{|syn| syn.set(\fragmentTrigger, rrand(0.0, 10.0)); };
@@ -399,11 +407,13 @@ OSCdef(\script_info, {
 '/script', n); // def style
 
 {
-	loop {
+	loop { var normalized;
 		~functionCallDensity = min(~functionCallDensity, 100);
 		~functionCallDensity = ~functionCallDensity * 0.995;
 		~functionCallDensity = max(~functionCallDensity, 0);
-		~speedSynths.do{|syn| syn.set(\maxDist, ~functionCallDensity/100.0, \maxRoughness, ~functionCallDensity/100.0); };
+		normalized = (~functionCallDensity/100.0);
+		~speedSynths.do{|syn| syn.set(\maxDist, normalized, \maxRoughness, normalized); };
+		normalized.postln;
 		0.01.wait;
 	}
 }.fork;
