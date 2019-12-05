@@ -13,7 +13,7 @@ Calls between scripts are too common to have the script changes be a fundamental
 ## What is lacking from the data analysis
 
 - Time spent in different functions from the profiling. E.g. the time spent idle is not reflected at all.
-- The type of script (built in, fetched, extension)
+- [x] The type of script (built in, fetched, extension)
 - The shape/contour of the data
-- The origin of the data (whispering "Google", "Grammarly", "KTH" ??)
+- [x] The origin of the data (whispering "Google", "Grammarly", "KTH" ??)
 - How the low level function call events interact with the higher level user events and the network events
