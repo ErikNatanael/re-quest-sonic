@@ -1,6 +1,56 @@
 
 
 (
+~wt_buf.do(_.free);
+//10 wavetables with increasing complexitymovementRecord
+~wt_sig = 10.collect({
+	arg i;
+
+	//random number of envelope segments
+	var numSegs = i.linexp(0,9,4,40).round;
+
+	Env(
+		//env always begins and ends with zero
+		//inner points are random from -1.0 to 1.0
+		[0]++({1.0.rand}.dup(numSegs-1) * [1,-1]).scramble++[0],
+
+		//greater segment duration variety in higher-index wavetables
+		{exprand(1,i.linexp(0,9,1,50))}.dup(numSegs),
+
+		//low-index wavetables tend to be sinusoidal
+		//high index wavetables tend to have sharp angles and corners
+		{[\sine,0,exprand(1,20) * [1,-1].choose].wchoose([9-i,3,i].normalizeSum)}.dup(numSegs)
+	).asSignal(1024);
+});
+
+//load into 10 buffers in wavetable format
+~wt_buf = Buffer.allocConsecutive(10, s, 2048, 1, {
+	arg buf, index;
+	buf.setnMsg(0, ~wt_sig[index].asWavetable);
+});
+
+SynthDef(\osc, {
+	arg buf=0, freq=200, detune=0.2,
+	amp=0.2, pan=0, out=0, rout=0, rsend=(-20),
+	atk=0.01, sus=1, rel=0.01, c0=1, c1=(-1);
+	var sig, env, detuneCtrl;
+	env = EnvGen.ar(
+		Env([0,1,1,0],[atk,sus,rel],[c0,0,c1]),
+		doneAction:2
+	);
+
+	//array of eight Oscs with uniquely detune frequencies
+	//and unique initial phase offsets
+	detuneCtrl = LFNoise1.kr(0.1!8).bipolar(detune).midiratio;
+	sig = Osc.ar(buf, freq * detuneCtrl, {Rand(0,2pi)}!8);
+
+	sig = Splay.ar(sig); //spread 8 signals over stereo field
+	sig = LeakDC.ar(sig); //remove DC bias
+	sig = Balance2.ar(sig[0], sig[1], pan, amp); //L/R balance (pan)
+	sig = sig * env;
+	Out.ar(out, sig);
+	Out.ar(rout, sig * rsend.dbamp); //"post-fader" send to reverb
+}).add;
 SynthDef(\noisepad, { |out = 0, amp = 0.5, freq = 440, gate = 1, attack = 0.01, decay = 0.1, roughness = 0.01, pressure = 0.3, pan = 0, freqLag = 0.2, fragAmount = 0.7, fragDensity = 10, focus = 0.01, maxRoughness = 1, minRoughness = 0, lpf = 10000 |
 
 	var sig, env, unison, detune, freqs, noise, osc2, dist, fragmentTrigger, distSig, envtrig;
@@ -26,12 +76,12 @@ SynthDef(\noisepad, { |out = 0, amp = 0.5, freq = 440, gate = 1, attack = 0.01, 
 	//freqs.poll;
 
 	/*env = EnvGen.kr(Env(
-		levels: [0, 1, 0.5, 0],
-		times: [attack, 0.8, decay],
-		curve: [0, 0, -7],
-		releaseNode: 2),
-		gate: gate,
-		doneAction: 2);*/
+	levels: [0, 1, 0.5, 0],
+	times: [attack, 0.8, decay],
+	curve: [0, 0, -7],
+	releaseNode: 2),
+	gate: gate,
+	doneAction: 2);*/
 
 	sig = Resonz.ar(BrownNoise.ar(), freqs, 0.001) * 2;
 
@@ -105,7 +155,7 @@ SynthDef(\filtered_noise, {
 			times: [\atk.kr(0.5), \rel.kr(4)],
 			curve: [\c0.kr(2), \c1.kr(-2)]),
 		doneAction: 2
-		);
+	);
 	abortEnv = EnvGen.kr(
 		Env(
 			levels: [1, 0],
@@ -115,27 +165,27 @@ SynthDef(\filtered_noise, {
 		),
 		gate: \gate.kr(1) + Impulse.kr(0), // the impulse is needed in case the gate is set within the same control period
 		doneAction: 2
-		);
+	);
 	sig = PinkNoise.ar();
 	sig = Resonz.ar(sig*16, \freq.kr(400), 0.001)*env*abortEnv;
 	sig = Pan2.ar(sig, \pan.kr(0.0));
 	Out.ar(\out.kr(0), sig);
 }).add;
 SynthDef(\verb, {
-    var snd, wet;
-    snd = In.ar(\out.kr(0), 2);
-    wet = snd.sum + PitchShift.ar(snd, 0.2, 2);
-    wet = DelayN.ar(wet, 0.02, 0.02);
+	var snd, wet;
+	snd = In.ar(\out.kr(0), 2);
+	wet = snd.sum + PitchShift.ar(snd, 0.2, 2);
+	wet = DelayN.ar(wet, 0.02, 0.02);
 	wet = JPverb.ar(wet, 4.0, 0.0, 1.8);
-    wet = HPF.ar(wet, 100) * -3.dbamp;
-    wet = LPF.ar(wet, 7000);
-    snd = snd + (wet * \wetness.kr(0.1));
-    // Add a little bit of tape flutter
-    snd = DelayC.ar(snd, 0.2, LFNoise2.kr(1).range(0, 0.005));
+	wet = HPF.ar(wet, 100) * -3.dbamp;
+	wet = LPF.ar(wet, 7000);
+	snd = snd + (wet * \wetness.kr(0.1));
+	// Add a little bit of tape flutter
+	snd = DelayC.ar(snd, 0.2, LFNoise2.kr(1).range(0, 0.005));
 
-    //snd = (snd * Demand.kr(Dust.kr(5), 1, Dseq([1, 0], inf))) + (snd*0.5);
+	//snd = (snd * Demand.kr(Dust.kr(5), 1, Dseq([1, 0], inf))) + (snd*0.5);
 
-    ReplaceOut.ar(\out.kr(0), snd);
+	ReplaceOut.ar(\out.kr(0), snd);
 }).add;
 SynthDef(\tick2, {
 	var sig, env, rq = \rq.kr(0.1);
@@ -149,12 +199,15 @@ SynthDef(\tick2, {
 ~clickSample = Buffer.readChannel(s, "samples/442649__asetkeyzet__keyboard-click.wav".resolveRelative, channels: [0]);
 )
 (
+//cleanup
+Pdef.all.do(_.clear);
+Pbindef.all.do(_.clear);
 ~ratio53 = pow(2, 1/53);
 ~rootFreq = 0.midicps;
 // Function to convert a degree in 53-EDO to a frequency
 ~degree53_to_freq =  { |degree|
-    var freq = ~rootFreq*pow(~ratio53, degree);
-    freq
+	var freq = ~rootFreq*pow(~ratio53, degree);
+	freq
 };
 ~findClosestVoicing = { | currentChord, newDegrees, edo = 53, minNote = -22, maxNote = 106 |
 	var newChord;
@@ -215,7 +268,7 @@ Synth(\verb, [\wetness, 0.3]);
 ~functionCallDensity = 0;
 ~speed = 1;
 ~currentRoot = 31;
-~currentDegrees = [0, 17, 31, 47];
+~currentDegrees = [0, 17 + 53, 31, 47 + 53];
 ~currentChord = ~currentDegrees + ~currentRoot;
 ~filteredNoiseSynths = [];
 ~scriptChords = [];
@@ -228,6 +281,39 @@ Synth(\verb, [\wetness, 0.3]);
 ~speedSynths = 4.collect{|i| var offset = [0, 17, 31, 47][i];
 	Synth(\noisepad, [\freq, ~degree53_to_freq.(~currentRoot + offset + (53*5))]);
 };
+
+{
+	loop {
+		Pbind(\instrument, \osc,
+			\freq, ~degree53_to_freq.value(~currentChord[0] + (53*2))*Pwrand([1, 2, 4], [0.8, 0.4, 0.2].normalizeSum, inf),
+			\dur, Prand([
+				Pseq([0.125], 8),
+				// Pseq([0.25, 0.25, 0.25, 0.25]),
+				// Pseq([0.25, 0.25, 0.25]),
+				/*Pseq([Rest(0.125), 0.25, 0.25]),
+				Pseq([0.125, 0.25, 0.125, 0.125]),
+				Pseq([0.125, 0.125, 0.125, 0.125]*0.5),
+				Pseq([0.5, 0.125, 0.25]),
+				Pseq([Rest(0.5), 0.125, 0.25]),
+				Pseq([1]),*/
+			]),
+			\timingOffset, Pexprand(0.001, 0.01),
+			\atk, exprand(0.001, 0.02),
+			\sus, 0,
+			\rel, exprand(0.8, 2),
+			\c0, Pexprand(1, 5).neg,
+			\c1, Pexprand(3, 10).neg,
+			\detune, Pwhite(0.01, 0.05),
+			\buf, ~wt_buf[3..5].choose,
+			\amp, 0.2,
+			\pan, 0,
+			\out, 0,
+			\rout, ~rbus,
+			\rsend, -16,
+		).play;
+		1.wait;
+	}
+}.fork;
 
 OSCdef(\timeline_message, {
 	|msg, time, addr, recvPort|
@@ -250,28 +336,28 @@ OSCdef(\timeline_message, {
 			// switch to new root note
 			distance = ~scriptInfo[parentScriptId].interconnectedness[scriptId];
 			/*if(distance > 0.9, {
-				~currentRoot = ~currentRoot + 31; // subdominantisk riktning
-				~currentDegrees = [0, 17, 31];
-				("subdominantisk riktning dur").postln;
+			~currentRoot = ~currentRoot + 31; // subdominantisk riktning
+			~currentDegrees = [0, 17, 31];
+			("subdominantisk riktning dur").postln;
 			}, {
-				if(distance > 0.5, {
-					~currentRoot = ~currentRoot - 31; // dominantisk riktning
-				~currentDegrees = [0, 17, 31, 44];
-				("dominantisk riktning").postln;
-				}, {
-					if(distance > 0.1, {
-						~currentRoot = ~currentRoot + 31; // subdominantisk riktning
-						~currentDegrees = [0, 14, 31];
-						("subdominantisk riktning moll").postln;
-					}, {
-						if(distance > 0.2, {
-							~currentDegrees = ~currentDegrees.add(9);
-						});
-						if(distance > 0.3, {
-							~currentDegrees = ~currentDegrees.add(49);
-						});
-					});
-				});
+			if(distance > 0.5, {
+			~currentRoot = ~currentRoot - 31; // dominantisk riktning
+			~currentDegrees = [0, 17, 31, 44];
+			("dominantisk riktning").postln;
+			}, {
+			if(distance > 0.1, {
+			~currentRoot = ~currentRoot + 31; // subdominantisk riktning
+			~currentDegrees = [0, 14, 31];
+			("subdominantisk riktning moll").postln;
+			}, {
+			if(distance > 0.2, {
+			~currentDegrees = ~currentDegrees.add(9);
+			});
+			if(distance > 0.3, {
+			~currentDegrees = ~currentDegrees.add(49);
+			});
+			});
+			});
 
 			});*/
 			// change root according to script type
@@ -283,8 +369,8 @@ OSCdef(\timeline_message, {
 			}, {
 				if(newScript.scriptType == "remote", {
 					~currentRoot = ~currentRoot - 31; // dominantisk riktning
-				~currentDegrees = [0, 17, 31, 44];
-				("dominantisk riktning").postln;
+					~currentDegrees = [0, 17, 31, 44];
+					("dominantisk riktning").postln;
 				}, {
 					if(distance > 0.1, {
 						~currentRoot = ~currentRoot + 31; // subdominantisk riktning
@@ -309,7 +395,7 @@ OSCdef(\timeline_message, {
 			~speedSynths.do{|syn| syn.set(\amp, 0.0); };
 			newChord.do{|note, i|
 				var syn = ~speedSynths[i];
-				syn.set(\freq, ~degree53_to_freq.(note + (53*4)));
+				syn.set(\freq, ~degree53_to_freq.(note + (53*(4+(i%3)))));
 				syn.set(\amp, 1.0);
 			};
 			~currentChord = newChord;
@@ -328,7 +414,7 @@ OSCdef(\timeline_message, {
 
 		Synth(\tick2,[\freq, rrand(5000, 10000), \rq, 0.01, \amp, 0.1, \pan, [-1, 1].choose]);
 
-			// kind of just gives you an impression of density
+		// kind of just gives you an impression of density
 		// Synth(\tick,[\freq, rrand(5000, 6000)*~speed.linlin(0.0, 2.0, 0.1, 2.0), \rq, ~functionCallDensity.linexp(0, 1, 0.001, 1.0), \amp, min(~speed.pow(2), 1.0), \pan, [-1, 1].choose]);
 		// one note per scriptId as of right now
 		// Synth(\sineperc, [\freq, ~degree53_to_freq.(~currentRoot + [0, 17, 31, 9].choose + (53*6)), \amp, 0.05, \atk, 0.1, \rel, rrand(0.2, 1.5) + (1/~functionCallDensity)*2, \pan, rrand(-1, 1.0)]);
@@ -376,9 +462,9 @@ OSCdef(\timeline_message, {
 		};
 	};
 	/*if(msg[1] == \changeSpeed) {
-		~speedSynth.set(\freq, msg[2].linlin(0.0, 2.0, 40, 400));
-		~speed = msg[2];
-		msg.postln;
+	~speedSynth.set(\freq, msg[2].linlin(0.0, 2.0, 40, 400));
+	~speed = msg[2];
+	msg.postln;
 	};*/
 
 },
@@ -413,7 +499,6 @@ OSCdef(\script_info, {
 		~functionCallDensity = max(~functionCallDensity, 0);
 		normalized = (~functionCallDensity/100.0);
 		~speedSynths.do{|syn| syn.set(\maxDist, normalized, \maxRoughness, normalized); };
-		normalized.postln;
 		0.01.wait;
 	}
 }.fork;
@@ -446,7 +531,7 @@ x = { arg rate=0.1; var playhead, env, trig, sig;
 	playhead = Line.ar(0.5, 1, (BufDur.ir(buf)/rate)*0.5, doneAction:2);
 	env = EnvGen.kr(
 		Env([0, 1, 1, 0], [0.001, BufDur.ir(buf)/rate, 1]),
-        doneAction: Done.freeSelf);
+		doneAction: Done.freeSelf);
 	trig = Dust.kr(SinOsc.kr(1/5, 0.2).range(20, 40)) + Impulse.kr(0);
 	sig = DelayN.ar(PlayBuf.ar(1, ~clickSample, BufRateScale.kr(~clickSample) * rate, startPos: BufFrames.ir(buf)*0.5, loop: 0)!2 * 0.5, 0.5, 0.5);
 	sig = sig + GrainBuf.ar(2, trig, 0.8, buf, 1.0, playhead, 2, 0, z);
