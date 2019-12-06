@@ -199,6 +199,7 @@ public:
     font.load("SourceCodePro-Regular.otf", fontSize, false, false, true);
     
     oscSender.setup("127.0.0.1", 57120); // send to SuperCollider on the local machine
+    sendTimeScale(); // send the timeScale start value
   }
   
   void parseScriptingProfile(string filepath) {
@@ -501,6 +502,12 @@ public:
   }
   
   void togglePlay() {
+    if(!playing) {
+      // send all background info to SuperCollider again
+      // This allows you to restart the SC code without having to restart the OF program
+      sendTimeScale();
+      sendBackgroundInfoOSC();
+    }
     playing = !playing;
   }
   
@@ -514,14 +521,15 @@ public:
   
   void reduceSpeed() {
     timeScale *= 0.9;
-    TimelineMessage mess;
-    mess.type = "changeSpeed";
-    mess.parameters.insert({"speed", timeScale});
-    sendViaOsc(mess);
+    sendTimeScale();
   }
   
   void increaseSpeed() {
     timeScale *= 1.11;
+    sendTimeScale();
+  }
+  
+  void sendTimeScale() {
     TimelineMessage mess;
     mess.type = "changeSpeed";
     mess.parameters.insert({"speed", timeScale});
