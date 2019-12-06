@@ -61,7 +61,7 @@ class Timeline : public ofThread  {
 private:
   ofMutex oscMutex;
   
-  double timeCursor = 8.0;
+  double timeCursor = 0.0; // 8.0 is where a lot of stuff happens
   float timeScale = 0.005;
   uint32_t nextEvent = 0;
   bool playing = false;
@@ -94,6 +94,8 @@ private:
   ofxJSONElement json;
   ofFbo timelineFbo;
   int timelineHeight = 0;
+  ofTrueTypeFont font;
+  int fontSize;
   
   int WIDTH = 0, HEIGHT = 0;
   
@@ -192,6 +194,9 @@ public:
     WIDTH = w;
     HEIGHT = h;
     timelineHeight = h*0.01;
+    
+    fontSize = WIDTH/120;
+    font.load("SourceCodePro-Regular.otf", fontSize, false, false, true);
     
     oscSender.setup("127.0.0.1", 57120); // send to SuperCollider on the local machine
   }
@@ -476,9 +481,19 @@ public:
     // ofBackground(0, 0);
     // ofSetColor(255, 255);
     timelineHeight = ofGetHeight()*0.01;
-    ofDrawRectangle(0, (ofGetHeight()/2.0) - timelineHeight/2.0, cursorX, timelineHeight);
+    int y = (ofGetHeight()/2.0) - timelineHeight/2.0;
+    ofDrawRectangle(0, y, cursorX, timelineHeight);
     // timelineFbo.end();
     // timelineFbo.draw(0, 0);
+    
+    int textX = ofClamp(cursorX-(fontSize*5), 0, WIDTH-(fontSize*10));
+    font.drawString(to_string(timeCursor), textX, y - timelineHeight*4.);
+    std::ostringstream out;
+    out.precision(4);
+    out << timeScale;
+    int numDigits = out.str().size();
+    int scaleX = ofClamp(cursorX-(fontSize*(float(numDigits)/2.)), 0, WIDTH-(fontSize*numDigits)); // TODO: center on end of timeline
+    font.drawString(out.str(), scaleX, y - timelineHeight*2.0);
   }
   
   void setCursor(uint64_t cur) {
