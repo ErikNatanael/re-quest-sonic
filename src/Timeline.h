@@ -62,12 +62,13 @@ private:
   ofMutex oscMutex;
   
   double timeCursor = 0.0; // 8.0 is where a lot of stuff happens
-  float timeScale = 0.005;
+  float timeScale = 0.15;
   uint32_t nextEvent = 0;
   bool playing = false;
   bool rendering = false;
   float frameRate = 60;
   double currentTime = 0;
+  bool resetLastTime = true;
   ofMutex nonScaledCurrentTimeMutex;
   double nonScaledCurrentTime = 0;
   double lastNonScaledFrameTime = 0;
@@ -122,7 +123,10 @@ private:
       
       if(!rendering && playing) {
         currentTime = ofGetElapsedTimef();
-        if(lastTime == 0) lastTime = currentTime;
+        if(lastTime == 0 || resetLastTime) {
+          lastTime = currentTime;
+          resetLastTime = false;
+        }
       
         double dt = (currentTime-lastTime) * timeScale;
         timeCursor += dt;
@@ -507,6 +511,7 @@ public:
       // This allows you to restart the SC code without having to restart the OF program
       sendTimeScale();
       sendBackgroundInfoOSC();
+      resetLastTime = true;
     }
     playing = !playing;
   }

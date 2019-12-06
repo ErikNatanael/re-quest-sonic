@@ -48,6 +48,7 @@ s.waitForBoot({
 
 		sig = Splay.ar(sig); //spread 8 signals over stereo field
 		sig = LeakDC.ar(sig); //remove DC bias
+		sig = sig * AmpCompA.kr(freq, 20);
 		sig = Balance2.ar(sig[0], sig[1], pan, amp); //L/R balance (pan)
 		sig = sig * env;
 		Out.ar(out, sig);
@@ -65,8 +66,8 @@ s.waitForBoot({
 		// add an attack every time the frequency changes
 		envtrig = Changed.kr(freq);
 		env = EnvGen.kr(Env(
-			levels: [0, 1, 0.2],
-			times: [0.001, 1]),
+			levels: [0, 1, 0.2, 0.0],
+			times: [0.001, 1, 0.5]),
 		gate: envtrig + Impulse.kr(0)
 		);
 
@@ -268,25 +269,58 @@ s.waitForBoot({
 
 
 	~functionCallDensity = 0;
-	~speed = 1;
+	~loadEventDensity = 0;
+	~loadEventLastTime = 0;
+	~loadEventOctave = 0;
+	~timeScale = 1;
 	~currentRoot = 31;
 	~currentDegrees = [0, 17 + 53, 31, 47 + 53];
 	~currentChord = ~currentDegrees + ~currentRoot;
 	~filteredNoiseSynths = [];
 	~scriptChords = [];
 	~scriptInfo = ();
-	300.do{|i|
-		var chord = [1.0, 3/2, 5/4, 2, 4/3, 16/15]*rrand(2000, 4000);
-		~scriptChords = ~scriptChords.add(chord);
-	};
+
+	{var lastNote;
+		~spectrumChord = 32.collect{|i| var newNote;
+			if(i == 0, {
+				newNote = 0;
+			}, {
+				newNote = lastNote + switch(i%5,
+					1, {9},
+					2, {5},
+					3, {17},
+					4, {9},
+					0, {13}
+				);
+			});
+			lastNote = newNote;
+			newNote
+		};
+	}.value();
 
 	~speedSynths = 4.collect{|i| var offset = [0, 17, 31, 47][i];
 		Synth(\noisepad, [\freq, ~degree53_to_freq.(~currentRoot + offset + (53*5))]);
 	};
 
-	{
+
+
+	{ var counter = 0;
 		loop {
-			Pbind(\instrument, \osc,
+			/*Pbind(\instrument, \osc,
+			\dur, Pseq([1], 1),
+			\freq, ~degree53_to_freq.value(~currentChord[0] + (53*2)),
+			\buf, ~wt_buf[0],
+			\atk, exprand(0.001, 0.02),
+			\sus, 0,
+			\rel, exprand(0.4, 0.6),
+				\detune, rrand(0.01, 0.05) + (counter%2),
+				\amp, 0.6 - (0.1 * (counter%2)),
+				\pan, 0,
+				\out, 0,
+				\rout, ~rbus,
+				\rsend, -16,
+			).play;*/
+			/*Pbind(\instrument, \osc,
 				\freq, ~degree53_to_freq.value(~currentChord[0] + (53*2))*Pwrand([1, 2, 4], [0.8, 0.4, 0.2].normalizeSum, inf),
 				\dur, Prand([
 					Pseq([0.125], 8),
@@ -297,22 +331,23 @@ s.waitForBoot({
 					Pseq([0.125, 0.125, 0.125, 0.125]*0.5),
 					Pseq([0.5, 0.125, 0.25]),
 					Pseq([Rest(0.5), 0.125, 0.25]),
-					Pseq([1]),*/
+					Ps eq([1]),*/
 				]),
 				\timingOffset, Pexprand(0.001, 0.01),
 				\atk, exprand(0.001, 0.02),
 				\sus, 0,
-				\rel, exprand(0.8, 2),
-				\c0, Pexprand(1, 5).neg,
-				\c1, Pexprand(3, 10).neg,
-				\detune, Pwhite(0.01, 0.05),
-				\buf, ~wt_buf[3..5].choose,
+				\rel, 0.1,
+				\c0, -3, // Pexprand(1, 5).neg,
+				\c1, -4, // Pexprand(3, 10).neg,
+				\detune, Pwhite(0.6, 0.65), // Pwhite(0.01, 0.05),
+				\buf, ~wt_buf[0..3].choose,
 				\amp, 0.2,
 				\pan, 0,
 				\out, 0,
 				\rout, ~rbus,
 				\rsend, -16,
-			).play;
+			).play;*/
+			counter = (counter + 1)%16;
 			1.wait;
 		}
 	}.fork;
@@ -330,7 +365,13 @@ s.waitForBoot({
 			distance = parent - id, // todo: change to distance between scripts if it's a call outside
 			idDigits = Set[], tempid = id;
 
-
+			{ var index = ((scriptId/300.0)*~spectrumChord.size).floor,
+				degree = ~spectrumChord[index];
+				("index: " + index + "degree: " + degree + "scriptId" + scriptId).postln;
+				{
+					SinOsc.ar(~degree53_to_freq.value(degree + (53*3)), 0, 0.05)!2 * Env.perc(0.001, 2).kr(2);
+				}.play;
+			}.value();
 
 			if(withinScript == 0) { var newChord, newScript = ~scriptInfo[scriptId];
 
@@ -395,11 +436,11 @@ s.waitForBoot({
 				("newChord: " + newChord).postln;
 				// change background chord
 				~speedSynths.do{|syn| syn.set(\amp, 0.0); };
-				newChord.do{|note, i|
+				/*newChord.do{|note, i|
 					var syn = ~speedSynths[i];
 					syn.set(\freq, ~degree53_to_freq.(note + (53*(4+(i%3)))));
 					syn.set(\amp, 1.0);
-				};
+				};*/
 				~currentChord = newChord;
 			}; // end within script if statement
 
@@ -434,7 +475,7 @@ s.waitForBoot({
 				x = { PlayBuf.ar(1, ~clickSample, BufRateScale.kr(~clickSample) * 0.2, loop: 0)!2 * 0.5 }.play;
 			};
 
-			if(type == "keyup") {
+			/*if(type == "keyup") {
 				var buf = ~clickSample, winenv;
 				winenv = Env([0, 1, 0], [0.5, 0.5], [12, -12]);
 				z = Buffer.sendCollection(s, winenv.discretize, 1);
@@ -449,9 +490,41 @@ s.waitForBoot({
 					sig = sig + CombN.ar(sig, 0.2, 0.15, 0.5, 0.2);
 					Out.ar(0, sig*env);
 				}.play;
-			};
+			};*/
 
-			if(type == "load") {
+			if(type == "load") { var octave = 0, currentTime, timeBetweenConsecutiveLoads = 1.0/~timeScale, freqs;
+				~loadEventDensity = ~loadEventDensity + 0.1;
+				~loadEventDensity.postln;
+				if(~loadEventLastTime == 0) { ~loadEventLastTime = SystemClock.seconds; };
+				currentTime = SystemClock.seconds;
+				if(currentTime - ~loadEventLastTime < timeBetweenConsecutiveLoads, {
+					~loadEventOctave = ~loadEventOctave + 1;
+				}, {
+					~loadEventOctave = 0;
+				});
+				~loadEventLastTime = currentTime;
+				octave =  8 - (~loadEventOctave%6);
+				freqs = ~currentChord.collect{|degree| ~degree53_to_freq.value(degree) };
+				freqs = freqs.sort.reverse;
+				if(~loadEventDensity < 0.8) {
+					Pbind(\instrument, \osc,
+						\freq, Pseq(freqs) * (2.pow(octave)),
+						\dur, 0.125*0.5,
+						\timingOffset, Pexprand(0.001, 0.01),
+						\atk, exprand(0.05, 0.1),
+						\sus, 0,
+						\rel, exprand(0.8, 3.0),
+						\c0, Pexprand(1, 2).neg,
+						\c1, Pexprand(3, 10).neg,
+						\detune, Pwhite(0.01, 0.05),
+						\buf, ~wt_buf[1..3].choose,
+						\amp, 0.2,
+						\pan, 0,
+						\out, 0,
+						\rout, ~rbus,
+						\rsend, -16,
+					).play;
+				};
 
 			};
 
@@ -463,11 +536,10 @@ s.waitForBoot({
 
 			};
 		};
-		/*if(msg[1] == \changeSpeed) {
-		~speedSynth.set(\freq, msg[2].linlin(0.0, 2.0, 40, 400));
-		~speed = msg[2];
-		msg.postln;
-		};*/
+		if(msg[1] == \changeSpeed) {
+			~timeScale = msg[2];
+			msg.postln;
+		};
 
 	},
 	'/timeline-message', n); // def style
@@ -494,6 +566,7 @@ s.waitForBoot({
 	},
 	'/script', n); // def style
 
+
 	{
 		loop { var normalized;
 			~functionCallDensity = min(~functionCallDensity, 100);
@@ -501,6 +574,14 @@ s.waitForBoot({
 			~functionCallDensity = max(~functionCallDensity, 0);
 			normalized = (~functionCallDensity/100.0);
 			~speedSynths.do{|syn| syn.set(\maxDist, normalized, \maxRoughness, normalized); };
+			0.01.wait;
+		}
+	}.fork;
+	{
+		loop { var normalized;
+			~loadEventDensity = min(~loadEventDensity, 1.0);
+			~loadEventDensity = ~loadEventDensity * 0.99;
+			~loadEventDensity = max(~loadEventDensity, 0);
 			0.01.wait;
 		}
 	}.fork;
@@ -542,3 +623,6 @@ x = { arg rate=0.1; var playhead, env, trig, sig;
 	Out.ar(0, sig*env);
 }.play;
 )
+
+
+[1,3,2].sort.reverse

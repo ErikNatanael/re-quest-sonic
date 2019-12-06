@@ -17,3 +17,13 @@ Calls between scripts are too common to have the script changes be a fundamental
 - The shape/contour of the data
 - [x] The origin of the data (whispering "Google", "Grammarly", "KTH" ??)
 - How the low level function call events interact with the higher level user events and the network events
+
+## Challenges identified:
+
+- There is a much larger range of activity/inactivity than our brains have the capacity to fathom. The high activity events are very very close together separated by (relatively) long durations of inactivity.
+
+## Ideas for improvement or experimentation
+
+- Multiple layers: 
+  - one "real-time" layer that consists of the data points being triggered when they happen
+  - one layer whose parameters depend on the entirety of the data trace, or alternatively is expanded by the data in the trace as it is being triggered, but where the data modifies its parameters instead of making any direct impact
