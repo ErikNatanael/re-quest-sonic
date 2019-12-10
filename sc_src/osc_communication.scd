@@ -110,8 +110,28 @@ s.waitForBoot({
 
 		Out.ar(out, Pan2.ar(sig, pan)*env*amp);
 	}).add;
+	SynthDef(\windy, { |outBus = 0, knob = 0.5, decay = 10, gate = 1, amp = 1|
+		var osc = BrownNoise.ar(0.5), env, focus, outs, freqs;
+		env = EnvGen.kr(Env(
+			levels: [0, 1, 0],
+			times: [1, decay],
+			releaseNode: 1),
+		gate: gate,
+		doneAction: 2);
+		knob = knob*LFNoise1.kr(0.6).range(0.95, 1.1);
+		freqs = [Lag.kr(knob, 0.4) * [2000, 2020] + 100, Lag.kr(knob, 0.05)*[100, 102]+60, Lag.kr(knob, 1.0)*500+40, Lag.kr(knob, 5)*300+30];
+		focus = [LFNoise1.kr(4).range(0.001, 0.001), LFNoise2.kr(1.1).range(0.0001, 0.01), LFNoise2.kr(0.2).range(0.001, 0.05)];
+		outs = Resonz.ar(osc, freqs, focus);
+		outs = Mix.ar(outs);
+
+		outs = (outs*100).tanh * 0.1;
+		outs = HPF.ar(outs, \cutoff.kr(500));
+		outs = outs * env*amp;
+
+		Out.ar(outBus, [outs, DelayN.ar(outs, 0.01, 0.01)]);
+	}).add;
 	SynthDef(\swoosh, {
-		var sig, env, freq, clap, popEnv, centerFreq = Rand(100, 200), length = Rand(0.2, 0.4);
+		var sig, env, freq, clap, popEnv, centerFreq = Rand(100, 200), length = Rand(0.2, 0.7);
 		env = EnvGen.ar(
 			Env(
 				levels: [0, 1, 0],
@@ -124,9 +144,9 @@ s.waitForBoot({
 
 
 		freq = [
-			EnvGen.ar(Env([centerFreq*Rand(0.1, 0.3), centerFreq], [length], [Rand(4, 7)])),
+			EnvGen.ar(Env([centerFreq*Rand(0.5, 1.2), centerFreq], [length], [Rand(4, 7)])),
 			EnvGen.ar(Env([centerFreq*Rand(0.2, 0.4), centerFreq], [length], [Rand(2, 8)]))];
-		sig = Resonz.ar(WhiteNoise.ar(), freq, 0.05)*3;
+		sig = Resonz.ar(WhiteNoise.ar(), freq, Rand(0.05, 0.2))*4;
 		sig = Mix(sig);
 		sig = Pan2.ar(sig, Line.kr(Rand(-1, 1), Rand(-1, 1), length+1));
 		sig = sig * env * 0.5 * \amp.kr(0.5);
@@ -144,6 +164,18 @@ s.waitForBoot({
 	}).add;
 	SynthDef(\sineperc, { var freq = \freq.kr(100), sig, env;
 		env = EnvGen.kr(Env.perc(\atk.kr(0.01), \rel.kr(1), 1.0, [\c0.kr(4), \c1.kr(-4)]), doneAction: 2);
+		freq = XLine.ar(Rand(4000, 6000), freq, 0.006);
+		sig = SinOsc.ar(freq) * 0.5 * \amp.kr(1);
+		sig = sig * env;
+		sig = Pan2.ar(sig, \pan.kr(0));
+		Out.ar(0, sig);
+	}).add;
+	SynthDef(\sineperc_retrig, { var freq = \freq.kr(100), sig, env;
+		env = EnvGen.kr(
+			Env.perc(\atk.kr(0.01), \rel.kr(1), 1.0, [\c0.kr(4), \c1.kr(-4)]),
+			gate: InTrig.kr(\trigBus.kr(10))
+			// gate: \gate.kr(0)
+		);
 		freq = XLine.ar(Rand(4000, 6000), freq, 0.006);
 		sig = SinOsc.ar(freq) * 0.5 * \amp.kr(1);
 		sig = sig * env;
@@ -192,7 +224,7 @@ s.waitForBoot({
 	}).add;
 	SynthDef(\tick2, {
 		var sig, env, rq = \rq.kr(0.1);
-		env = Env.perc(0, 0.05).ar(2);
+		env = Env.perc(0, 0.02).ar(2);
 		sig = Impulse.ar(0);
 		sig = sig * 0.5;
 		sig = RHPF.ar(sig, \freq.kr(1000), rq) * env;
@@ -302,6 +334,13 @@ s.waitForBoot({
 		Synth(\noisepad, [\freq, ~degree53_to_freq.(~currentRoot + offset + (53*5))]);
 	};
 
+	~spectrumTriggers = ~spectrumChord.collect{|degree, i| Bus.control(s, 1);};
+	~spectrumSynths = ~spectrumChord.collect{|degree, i|
+		Synth(\sineperc_retrig, [\freq, ~degree53_to_freq.value(degree + (53*3)), \amp, 0.1, \trigBus, ~spectrumTriggers[i]]);
+	};
+
+	~drone = Synth(\windy, [\knob, 0.01, \amp, 0.0]);
+
 
 
 	{ var counter = 0;
@@ -365,22 +404,23 @@ s.waitForBoot({
 			distance = parent - id, // todo: change to distance between scripts if it's a call outside
 			idDigits = Set[], tempid = id;
 
-			if(~functionCallDensity < 99) {
+			// if(~functionCallDensity < 99) {
 				{ var index = ((scriptId/300.0)*~spectrumChord.size).floor,
 					degree = ~spectrumChord[index];
 					("index: " + index + "degree: " + degree + "scriptId" + scriptId).postln;
-					Synth(\sineperc, [\freq, ~degree53_to_freq.value(degree + (53*3)), \amp, 0.1]);
+				~spectrumTriggers[index].set(1.0); // trigger the sineperc_retrig envelope
 					/*{
 					SinOsc.ar(~degree53_to_freq.value(degree + (53*3)), 0, 0.05)!2 * Env.perc(0.001, 2).kr(2);
 					}.play;*/
 				}.value();
-			};
+		// };
 
 			if(withinScript == 0) { var newChord, newScript = ~scriptInfo[scriptId];
 
 				// Synth(\tick2,[\freq, rrand(5000, 10000), \rq, 0.1, \amp, 1.0, \pan, [-1, 1].choose]);
 				// switch to new root note
 				distance = ~scriptInfo[parentScriptId].interconnectedness[scriptId];
+				/*~drone.set(\knob, distance);*/
 				/*if(distance > 0.9, {
 				~currentRoot = ~currentRoot + 31; // subdominantisk riktning
 				~currentDegrees = [0, 17, 31];
@@ -407,21 +447,21 @@ s.waitForBoot({
 
 				});*/
 				// change root according to script type
-				("scriptType: " + newScript.scriptType).postln;
+				// ("scriptType: " + newScript.scriptType).postln;
 				if(newScript.scriptType == "built-in", {
 					~currentRoot = ~currentRoot + 31; // subdominantisk riktning
 					~currentDegrees = [0, 17, 31];
-					("subdominantisk riktning dur").postln;
+					// ("subdominantisk riktning dur").postln;
 				}, {
 					if(newScript.scriptType == "remote", {
 						~currentRoot = ~currentRoot - 31; // dominantisk riktning
 						~currentDegrees = [0, 17, 31, 44];
-						("dominantisk riktning").postln;
+						// ("dominantisk riktning").postln;
 					}, {
 						if(distance > 0.1, {
 							~currentRoot = ~currentRoot + 31; // subdominantisk riktning
 							~currentDegrees = [0, 14, 31];
-							("subdominantisk riktning moll").postln;
+							// ("subdominantisk riktning moll").postln;
 						}, {
 							if(distance > 0.3, {
 								~currentDegrees = ~currentDegrees.add(9);
@@ -436,7 +476,7 @@ s.waitForBoot({
 
 				~currentRoot = ~currentRoot%53;
 				newChord = ~findClosestVoicing.(~currentChord, ~currentDegrees + ~currentRoot);
-				("newChord: " + newChord).postln;
+				// ("newChord: " + newChord).postln;
 				// change background chord
 				~speedSynths.do{|syn| syn.set(\amp, 0.0); };
 				/*newChord.do{|note, i|
@@ -458,7 +498,7 @@ s.waitForBoot({
 			// trigger a fragment change
 			~speedSynths.do{|syn| syn.set(\fragmentTrigger, rrand(0.0, 10.0)); };
 
-			Synth(\tick2,[\freq, rrand(5000, 10000), \rq, 0.01, \amp, 0.1, \pan, [-1, 1].choose]);
+			Synth(\tick2,[\freq, rrand(9000, 10000), \rq, 0.001, \amp, 0.1, \pan, [-1, 1].choose]);
 
 			// kind of just gives you an impression of density
 			// Synth(\tick,[\freq, rrand(5000, 6000)*~speed.linlin(0.0, 2.0, 0.1, 2.0), \rq, ~functionCallDensity.linexp(0, 1, 0.001, 1.0), \amp, min(~speed.pow(2), 1.0), \pan, [-1, 1].choose]);
@@ -475,7 +515,7 @@ s.waitForBoot({
 			};
 
 			if(type == "keydown") { var buf = ~clickSample;
-				x = { PlayBuf.ar(1, ~clickSample, BufRateScale.kr(~clickSample) * 0.2, loop: 0)!2 * 0.5 }.play;
+				x = { PlayBuf.ar(1, ~clickSample, BufRateScale.kr(~clickSample) * LFNoise1.kr(5).range(0.2, 0.3), loop: 0)!2 * 0.5 }.play;
 			};
 
 			/*if(type == "keyup") {
@@ -572,11 +612,13 @@ s.waitForBoot({
 
 	{
 		loop { var normalized;
-			~functionCallDensity = min(~functionCallDensity, 100);
+			// ~functionCallDensity = min(~functionCallDensity, 100);
 			~functionCallDensity = ~functionCallDensity * 0.995;
-			~functionCallDensity = max(~functionCallDensity, 0);
-			normalized = (~functionCallDensity/100.0);
+			// ~functionCallDensity = max(~functionCallDensity, 0);
+			normalized = min((~functionCallDensity/200.0), 1.0);
 			~speedSynths.do{|syn| syn.set(\maxDist, normalized, \maxRoughness, normalized); };
+			~drone.set(\amp, normalized);
+			~drone.set(\cutoff, normalized.pow(3).linexp(0, 1.0, 1000, 100));
 			0.01.wait;
 		}
 	}.fork;
@@ -629,3 +671,4 @@ x = { arg rate=0.1; var playhead, env, trig, sig;
 
 
 [1,3,2].sort.reverse
+~spectrumTriggers[15].set(0.2)
