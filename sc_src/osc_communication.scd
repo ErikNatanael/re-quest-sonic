@@ -111,12 +111,12 @@ s.waitForBoot({
 		Out.ar(out, Pan2.ar(sig, pan)*env*amp);
 	}).add;
 	SynthDef(\swoosh, {
-		var sig, env, freq, clap, popEnv, centerFreq = Rand(100, 1000), length = Rand(0.5, 2);
+		var sig, env, freq, clap, popEnv, centerFreq = Rand(100, 200), length = Rand(0.2, 0.4);
 		env = EnvGen.ar(
 			Env(
 				levels: [0, 1, 0],
-				times: [length, 1],
-				curve: [4, -6]
+				times: [length, 0.3],
+				curve: [0, -2]
 			),
 			doneAction:2
 		);
@@ -126,7 +126,7 @@ s.waitForBoot({
 		freq = [
 			EnvGen.ar(Env([centerFreq*Rand(0.1, 0.3), centerFreq], [length], [Rand(4, 7)])),
 			EnvGen.ar(Env([centerFreq*Rand(0.2, 0.4), centerFreq], [length], [Rand(2, 8)]))];
-		sig = Resonz.ar(WhiteNoise.ar(), freq, 0.3)*3;
+		sig = Resonz.ar(WhiteNoise.ar(), freq, 0.05)*3;
 		sig = Mix(sig);
 		sig = Pan2.ar(sig, Line.kr(Rand(-1, 1), Rand(-1, 1), length+1));
 		sig = sig * env * 0.5 * \amp.kr(0.5);
@@ -365,13 +365,16 @@ s.waitForBoot({
 			distance = parent - id, // todo: change to distance between scripts if it's a call outside
 			idDigits = Set[], tempid = id;
 
-			{ var index = ((scriptId/300.0)*~spectrumChord.size).floor,
-				degree = ~spectrumChord[index];
-				("index: " + index + "degree: " + degree + "scriptId" + scriptId).postln;
-				{
+			if(~functionCallDensity < 99) {
+				{ var index = ((scriptId/300.0)*~spectrumChord.size).floor,
+					degree = ~spectrumChord[index];
+					("index: " + index + "degree: " + degree + "scriptId" + scriptId).postln;
+					Synth(\sineperc, [\freq, ~degree53_to_freq.value(degree + (53*3)), \amp, 0.1]);
+					/*{
 					SinOsc.ar(~degree53_to_freq.value(degree + (53*3)), 0, 0.05)!2 * Env.perc(0.001, 2).kr(2);
-				}.play;
-			}.value();
+					}.play;*/
+				}.value();
+			};
 
 			if(withinScript == 0) { var newChord, newScript = ~scriptInfo[scriptId];
 
@@ -492,7 +495,7 @@ s.waitForBoot({
 				}.play;
 			};*/
 
-			if(type == "load") { var octave = 0, currentTime, timeBetweenConsecutiveLoads = 1.0/~timeScale, freqs;
+			/*if(type == "load") { var octave = 0, currentTime, timeBetweenConsecutiveLoads = 1.0/~timeScale, freqs;
 				~loadEventDensity = ~loadEventDensity + 0.1;
 				~loadEventDensity.postln;
 				if(~loadEventLastTime == 0) { ~loadEventLastTime = SystemClock.seconds; };
@@ -527,7 +530,7 @@ s.waitForBoot({
 				};
 
 			};
-
+*/
 			if(type == "pageshow") {
 
 			};

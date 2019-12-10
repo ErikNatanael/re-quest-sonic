@@ -7,9 +7,7 @@
 ~ratio53 = pow(2, 1/53);
 ~rootFreq = 0.midicps;
 // Function to convert a degree in 53-EDO to a frequency
-~degree53_to_freq =  { |degree, rootFreq = 8.		~spectrumSynths = ~spectrumChord.collect{|i| var offset = [0, 17, 31, 47][i];
-		Synth(\noisepad, [\freq, ~degree53_to_freq.(~currentRoot + offset + (53*5))]);
-	};1757989156437|
+~degree53_to_freq =  { |degree, rootFreq = 8|
     var freq = rootFreq*pow(~ratio53, degree);
     freq
 };
@@ -20,7 +18,7 @@
 			{
 				SinOsc.ar(~degree53_to_freq.value(degree + (53*octave), ~rootFreq), 0, 0.05)!2 * Env.perc(0.1, length).kr(2);
 			}.play;
-			0.1.wait;
+			0.2.wait;
 		};
 	}.fork;
 };
@@ -247,6 +245,35 @@ chordFreqs.do { |fr|
 	fr.postln;
 };
 ~launchChord.(3, 4);
+)
+~launchChordRandomOrder.(2, 4)
+
+// minor scale
+( var lastNote = 0, chordFreqs;
+~chord = 8.collect{|i| var newNote;
+	if(i == 0, {
+		newNote = lastNote;
+	}, {
+		newNote = lastNote + switch(i%7,
+			1, {9},
+			2, {5},
+			3, {8},
+			4, {9},
+			5, {5},
+			6, {9},
+			0, {8}
+		);
+	});
+	lastNote = newNote;
+	newNote
+};
+("chord: " + ~chord).postln;
+chordFreqs = ~chord.collect{|degree| ~degree53_to_freq.value(degree + (53*6), ~rootFreq) };
+("chord freqs:" + chordFreqs).postln;
+chordFreqs.do { |fr|
+	fr.postln;
+};
+~launchChord.(3, 6);
 )
 ~launchChordRandomOrder.(2, 4)
 
