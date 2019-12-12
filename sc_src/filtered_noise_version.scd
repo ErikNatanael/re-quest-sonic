@@ -185,8 +185,9 @@ s.waitForBoot({
 	SynthDef(\noise_filter_retrig, { var freq = \freq.kr(100), sig, env, in = \in.kr(10), noise;
 		noise = In.ar(in, 1);
 		// noise = WhiteNoise.ar();
-		env = EnvGen.kr(
-			Env.perc(\atk.kr(0.05), \rel.kr(1), 1.0, [\c0.kr(4), \c1.kr(-4)]),
+		env = EnvGen.ar(
+			Env(levels: [0, 1, 0.1], times: [0.001, 0.1]),
+			// Env.perc(\atk.kr(0.001), \rel.kr(1), 1.0, [\c0.kr(4), \c1.kr(-4)]),
 			gate: InTrig.kr(\trigBus.kr(10))
 			// gate: \gate.kr(0)
 		);
@@ -224,7 +225,7 @@ s.waitForBoot({
 		snd = In.ar(\out.kr(0), 2);
 		wet = snd.sum + PitchShift.ar(snd, 0.2, 2);
 		wet = DelayN.ar(wet, 0.02, 0.02);
-		wet = JPverb.ar(wet, 4.0, 0.0, 1.8);
+		wet = JPverb.ar(wet, 1.0, 0.0, 1.8);
 		wet = HPF.ar(wet, 100) * -3.dbamp;
 		wet = LPF.ar(wet, 7000);
 		snd = snd + (wet * \wetness.kr(0.1));
@@ -396,6 +397,7 @@ s.waitForBoot({
 				\rsend, -16,
 			).play;*/
 			counter = (counter + 1)%16;
+
 			1.wait;
 		}
 	}.fork;
@@ -628,6 +630,20 @@ x = { arg rate=0.1; var playhead, env, trig, sig;
 (
 { var sig, env;
 	sig = WhiteNoise.ar();
+	Out.ar(~noiseBus, sig);
+}.play;
+)
+
+(
+{ var sig, env;
+	sig = SoundIn.ar(0);
+	Out.ar(~noiseBus, sig);
+}.play;
+)
+
+(
+{ var sig, env;
+	sig = SoundIn.ar(0);
 	Out.ar(~noiseBus, sig);
 }.play;
 )

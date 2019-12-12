@@ -135,6 +135,11 @@ private:
         lastTime = currentTime;
         
         progressQueue(timeCursor);
+        if(timeCursor > timeWidth_d) {
+          // reset and go back to the beginning
+          timeCursor = 0;
+          nextEvent = 0;
+        }
       }
     }
       // done
