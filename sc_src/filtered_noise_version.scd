@@ -186,7 +186,7 @@ s.waitForBoot({
 		noise = In.ar(in, 1);
 		// noise = WhiteNoise.ar();
 		env = EnvGen.ar(
-			Env(levels: [0, 1, 0.1], times: [0.001, 0.1]),
+			Env(levels: [0, 1, 0.01], times: [0.001, 0.7]),
 			// Env.perc(\atk.kr(0.001), \rel.kr(1), 1.0, [\c0.kr(4), \c1.kr(-4)]),
 			gate: InTrig.kr(\trigBus.kr(10))
 			// gate: \gate.kr(0)
@@ -644,6 +644,15 @@ x = { arg rate=0.1; var playhead, env, trig, sig;
 (
 { var sig, env;
 	sig = SoundIn.ar(0);
+	sig = PitchShift.ar(sig, 0.2, 0.99); // reduced risk for feedback
+	sig = Compander.ar(sig, sig,
+        thresh: 0.01,
+        slopeBelow: 1,
+        slopeAbove: 0.3,
+        clampTime:  0.01,
+        relaxTime:  0.01
+    ) * 15;
 	Out.ar(~noiseBus, sig);
 }.play;
 )
+FreqScope.new(400, 200, 0, server: s);
