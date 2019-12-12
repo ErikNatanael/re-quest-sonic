@@ -27,3 +27,7 @@ Calls between scripts are too common to have the script changes be a fundamental
 - Multiple layers: 
   - one "real-time" layer that consists of the data points being triggered when they happen
   - one layer whose parameters depend on the entirety of the data trace, or alternatively is expanded by the data in the trace as it is being triggered, but where the data modifies its parameters instead of making any direct impact
+
+## v0.5
+
+Taking a microphone input and filtering it as the basis for all sound synthesis means that you can play on the data and superimpose a structure on the data sonification. As an installation it also means that active action is needed to reveal what is hidden. Blowing noise is one of the simplest ways, analogous to blowing smoke into lasers to make them visible.
