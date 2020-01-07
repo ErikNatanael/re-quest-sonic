@@ -615,4 +615,8 @@ public:
     rendering = true;
   }
   
+  uint64_t getFirstts() {
+    return firstts;
+  }
+  
 };

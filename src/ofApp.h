@@ -7,6 +7,16 @@
 #include "Function.h"
 #include "Script.h"
 
+class Screenshot {
+public:
+	ofImage img;
+	double ts;
+	
+	bool operator<(const Screenshot& s) {
+    return this->ts < s.ts;
+  }
+};
+
 class ofApp : public ofBaseApp{
 
 	public:
@@ -35,5 +45,8 @@ class ofApp : public ofBaseApp{
 		ofTrueTypeFont font;
 		
 		list<TimelineMessage> messageFIFOLocal;
+		
+		vector<Screenshot> screenshots;
+		size_t currentScreen = 0;
 		
 };

@@ -131,7 +131,7 @@ s.waitForBoot({
 		Out.ar(outBus, [outs, DelayN.ar(outs, 0.01, 0.01)]);
 	}).add;
 	SynthDef(\swoosh, {
-		var sig, env, freq, clap, popEnv, centerFreq = Rand(100, 200), length = Rand(0.2, 0.7);
+		var sig, env, freq, clap, popEnv, centerFreq = Rand(100, 200), length = Rand(0.2, 0.7), inputAmp;
 		env = EnvGen.ar(
 			Env(
 				levels: [0, 1, 0],
@@ -140,6 +140,7 @@ s.waitForBoot({
 			),
 			doneAction:2
 		);
+		inputAmp = In.kr(\inAmpBus.kr(14)).pow(2);
 		popEnv = EnvGen.ar(Env([3261, 410, Rand(30, 80)], [0.002, 0.01], curve: \exp));
 
 
@@ -149,7 +150,7 @@ s.waitForBoot({
 		sig = Resonz.ar(WhiteNoise.ar(), freq, Rand(0.05, 0.2))*4;
 		sig = Mix(sig);
 		sig = Pan2.ar(sig, Line.kr(Rand(-1, 1), Rand(-1, 1), length+1));
-		sig = sig * env * 0.5 * \amp.kr(0.5);
+		sig = sig * env * 0.5 * \amp.kr(0.5) * inputAmp;
 		//sig = FreeVerb.ar(sig, 0.05);
 		Out.ar(\out.kr(0), sig);
 	}).add;
@@ -245,6 +246,15 @@ s.waitForBoot({
 		sig = Pan2.ar(sig, \pan.kr(0)) * \amp.kr(1.0);
 		Out.ar(\out.kr(0), sig);
 	}).add;
+	SynthDef(\env_follower_out, {
+		var in, value;
+		in = In.ar(\in.kr(0));
+		// in = SoundIn.ar(0);
+		value = Amplitude.kr(in, 0.01, 0.01);
+		value = PeakFollower.kr(value, 0.99);
+		value = Lag.kr(value, 0.1);
+		Out.kr(\out.kr(14), value);
+	}).add;
 	~clickSample = Buffer.readChannel(s, "samples/442649__asetkeyzet__keyboard-click.wav".resolveRelative, channels: [0]);
 	s.sync();
 	//cleanup
@@ -312,7 +322,9 @@ s.waitForBoot({
 
 	~rbus = Bus.audio(s,2);
 	~noiseBus = Bus.audio(s, 1);
+	~inAmpBus = Bus.control(s, 1);
 	s.sync();
+	Synth(\env_follower_out, [\in, ~noiseBus, \out, ~inAmpBus]);
 	Synth(\verb, [\wetness, 0.3]);
 
 
@@ -487,11 +499,14 @@ s.waitForBoot({
 			msg.postln;
 
 			if(type == "mousemove") {
-				// Synth(\swoosh, [\amp, 0.5]);
+				Synth(\swoosh, [\amp, 0.5, \inAmpBus, ~inAmpBus]);
 			};
 
 			if(type == "keydown") { var buf = ~clickSample;
-				// x = { PlayBuf.ar(1, ~clickSample, BufRateScale.kr(~clickSample) * LFNoise1.kr(5).range(0.2, 0.3), loop: 0)!2 * 0.5 }.play;
+				x = {
+					PlayBuf.ar(1, ~clickSample, BufRateScale.kr(~clickSample) * LFNoise1.kr(5).range(0.2, 0.3), loop: 0)!2 * 0.5 * In.kr(~inAmpBus).pow(2);
+
+				}.play;
 			};
 
 			/*if(type == "keyup") {
@@ -656,3 +671,5 @@ x = { arg rate=0.1; var playhead, env, trig, sig;
 }.play;
 )
 FreqScope.new(400, 200, 0, server: s);
+
+~inAmpBus.get()
