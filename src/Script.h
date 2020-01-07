@@ -172,5 +172,18 @@ public:
     }
     cout << endl;
   }
+  
+  glm::vec2 getSpiralCoordinate(uint32_t maxScriptId) {
+    // float distance = float(this->scriptId + 1)/float(maxScriptId + 1); // the distance along the spiral based on the scriptId
+    // float angle = pow((1-distance) * TWO_PI, 3.0);
+    // float radius = distance * ofGetHeight() * 0.4;
+    float distance = float(this->scriptId)/float(maxScriptId * 2); // the distance along the spiral based on the scriptId
+    float angle = (pow((1-distance), 2) + pow((1-distance)*1, 6.) * PI) * TWO_PI * 2;
+    float radius = 0;
+    if(distance!=0) radius = (1-pow((1-distance), 2.0) + 0.05 ) * ofGetHeight() * 0.4;
+    float x = cos(angle) * radius;
+    float y = sin(angle) * radius;
+    return glm::vec2(x, y);
+  }
 };
 

@@ -6,6 +6,7 @@
 #include "FunctionCall.h"
 #include "Function.h"
 #include "Script.h"
+#include "UserEvent.h"
 
 class Screenshot {
 public:
@@ -36,6 +37,15 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
 		void exit();
+		
+		void drawStaticRepresentation(); // draws a static representation of the call graph data
+		// data structures containing a copy of the data used in Timeline in order to draw a static representation
+		vector<FunctionCall> functionCalls;
+	  map<string, Function> functionMap;
+	  vector<Script> scripts;
+	  vector<UserEvent> userEvents;
+		uint32_t maxScriptId = 0;
+		void drawSpiral(); // function to test spiral shape
 		
 		Timeline timeline;
 

@@ -308,6 +308,10 @@ public:
           thisFunc->second.numCalledFromOutsideScript += 1;
         }
       }
+      else {
+        ofLogNotice("Timeline::parseScriptingProfile") << "parent function call to functionCall not found, parent id: " << f.parent;
+        f.parentScriptId = 0;
+      }
     }
 
     vector<Function> functionVector;
@@ -360,7 +364,7 @@ public:
     functionVector[0].printHeaders();
     std::sort (functionVector.begin(), functionVector.end());
     for(auto& func : functionVector) {
-      func.print();
+      // func.print();
     }
     
     // sort scripts after number of functions to find a position for the biggest one first
@@ -369,8 +373,8 @@ public:
     scripts[0].printHeaders();
     for(auto& script : scripts) {
       script.calculateInterconnectedness();
-      script.print();
-      script.printToAndFrom();
+      // script.print();
+      // script.printToAndFrom();
     }
 
     callsWithin = 0;
@@ -482,6 +486,14 @@ public:
   
   vector<Script>& getScripts() {
     return scripts;
+  }
+  
+  vector<FunctionCall>& getFunctionCalls() {
+    return functionCalls;
+  }
+  
+  vector<UserEvent>& getUserEvents() {
+    return userEvents;
   }
   
   void draw() {
