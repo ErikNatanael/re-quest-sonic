@@ -59,8 +59,9 @@ void ofApp::setup() {
     auto& f = fp.second;
     auto script = std::find(scripts.begin(), scripts.end(), f.scriptId);
     glm::vec2 scriptPos = script->getSpiralCoordinate(maxScriptId);
+    float scriptSize = script->getSize() * ofGetHeight() * 0.06;
     glm::vec2 funcPos = f.getRelativeSpiralPos();
-    f.pos = scriptPos + (funcPos * ofGetHeight() * 0.06);
+    f.pos = scriptPos + (funcPos * scriptSize);
   }
   
   // ***************************** INIT openFrameworks STUFF
@@ -84,9 +85,12 @@ void ofApp::setupGui() {
 void ofApp::saveSVGButtonPressed() {
   // the save SVG button was pressed
   ofLogNotice() << "SVG button pressed";
-  ofBeginSaveScreenAsSVG("svgtest.svg", false, false, ofRectangle(0, 0, ofGetWidth(), ofGetHeight()));
+  ofBeginSaveScreenAsSVG("svg_" + ofGetTimestampString() + ".svg", false, false, ofRectangle(0, 0, ofGetWidth(), ofGetHeight()));
   ofClear(255, 255);
-  drawStaticRepresentation();
+  drawStaticPointsOfScripts();
+  drawStaticPointsOfFunctions();
+  drawStaticFunctionCallLines();
+  // drawStaticRepresentation();
   ofEndSaveScreenAsSVG();
 }
 
@@ -143,7 +147,10 @@ void ofApp::draw(){
   // if(!rendering) timeline.draw();
   ofSetColor(0, 255);
   timeline.draw();
-  drawStaticRepresentation();
+  // drawStaticRepresentation();
+  drawStaticPointsOfScripts();
+  drawStaticPointsOfFunctions();
+  drawStaticFunctionCallLines();
   // drawSpiral();
   // ofLogNotice("timeCursor: ") << timeline.getTimeCursor();
   if(showGui){
@@ -158,7 +165,7 @@ void ofApp::drawStaticRepresentation() {
   ofSetColor(230, 100, 100, 100);
   for(auto& s : scripts) {
     glm::vec2 pos = s.getSpiralCoordinate(maxScriptId);
-    float size = ofClamp(pow(s.numFunctions, 2)*0.02, 5, 100);
+    float size = s.getSize() * ofGetHeight() * 0.06;
     // float size = 3;
     ofSetColor(ofColor::fromHsb(s.scriptId*300 % 360, 210, 200, 60));
     ofDrawCircle(pos.x, pos.y, size);
@@ -203,6 +210,71 @@ void ofApp::drawStaticRepresentation() {
         }
       }
     }
+  }
+  ofPopMatrix();
+}
+
+void ofApp::drawStaticFunctionCallLines() {
+  // draw scripts in a spiral using polar coordinates
+  ofPushMatrix();
+  ofTranslate(ofGetWidth()/2, ofGetHeight()/2);
+  // ofSetLineWidth(5);
+  for(auto& fc : functionCalls) {
+    auto function = functionMap.find(fc.function_id);
+    if(function == functionMap.end()) ofLogNotice("drawStaticRepresentation") << "ERROR: function not found, id: " << fc.function_id;
+    auto parentCall = std::find(functionCalls.begin(), functionCalls.end(), fc.parent);
+    if(parentCall == functionCalls.end()) ofLogNotice("drawStaticRepresentation") << "ERROR: parentCall not found, id: " << fc.parent;
+    else {
+      auto parentFunction = functionMap.find(parentCall->function_id);
+      if(parentFunction == functionMap.end()) ofLogNotice("drawStaticRepresentation") << "ERROR: parentFunction not found, id: " << parentCall->function_id;
+      else {
+        glm::vec2 p1 = function->second.pos;
+        glm::vec2 p2 = parentFunction->second.pos;
+        ofSetColor(ofColor::fromHsb(fc.scriptId*300 % 360, 210, 200, 60));
+        float distance = glm::distance(p1, p2);
+        if(distance > ofGetHeight()*0.02) {
+          ofPolyline line;
+          line.addVertex(p1.x, p1.y, 0);
+          glm::vec2 c1 = p1 + 0.25*(p2-p1);
+          glm::vec2 c2 = p1 + 0.75*(p2-p1);
+          // rotate the point
+          float rotation = (distance/float(ofGetHeight()));
+          c1 = glm::rotate(c1, rotation);
+          c2 = glm::rotate(c2, -rotation);
+          line.bezierTo(c1.x, c1.y, c2.x, c2.y, p2.x, p2.y);
+          line.draw();
+        } else {
+          ofDrawLine(p1, p2);
+        }
+      }
+    }
+  }
+  ofPopMatrix();
+}
+
+void ofApp::drawStaticPointsOfScripts() {
+  ofPushMatrix();
+  ofTranslate(ofGetWidth()/2, ofGetHeight()/2);
+  ofSetColor(80, 255);
+  for(auto& s : scripts) {
+    glm::vec2 pos = s.getSpiralCoordinate(maxScriptId);
+    // float size = 3;
+    float size = s.getSize() * ofGetHeight() * 0.06;
+    // ofSetColor(ofColor::fromHsb(s.scriptId*300 % 360, 210, 200, 60));
+    ofDrawCircle(pos.x, pos.y, size);
+  }
+  ofPopMatrix();
+}
+
+void ofApp::drawStaticPointsOfFunctions() {
+  ofPushMatrix();
+  ofTranslate(ofGetWidth()/2, ofGetHeight()/2);
+  ofSetColor(190, 255);
+  for(auto& fp : functionMap) {
+    glm::vec2 pos = fp.second.pos;
+    float size = 1;
+    // ofSetColor(ofColor::fromHsb(s.scriptId*300 % 360, 210, 200, 60));
+    ofDrawCircle(pos.x, pos.y, size);
   }
   ofPopMatrix();
 }

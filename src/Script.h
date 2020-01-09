@@ -185,5 +185,9 @@ public:
     float y = sin(angle) * radius;
     return glm::vec2(x, y);
   }
+  
+  float getSize() {
+    return float(ofClamp(sqrt(numFunctions)*6, 1, 100))/100.0;
+  }
 };
 

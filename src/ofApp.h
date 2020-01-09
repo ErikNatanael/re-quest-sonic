@@ -43,6 +43,9 @@ class ofApp : public ofBaseApp{
 		void setupGui();
 		void saveSVGButtonPressed();
 		
+		void drawStaticPointsOfFunctions(); // draws a circle for each function
+		void drawStaticPointsOfScripts(); // draws a circle for each script
+		void drawStaticFunctionCallLines();
 		void drawStaticRepresentation(); // draws a static representation of the call graph data
 		// data structures containing a copy of the data used in Timeline in order to draw a static representation
 		vector<FunctionCall> functionCalls;
