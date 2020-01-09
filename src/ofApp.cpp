@@ -64,9 +64,30 @@ void ofApp::setup() {
   }
   
   // ***************************** INIT openFrameworks STUFF
+  setupGui();
   ofBackground(0);
 
   timeline.startThread(true);
+}
+
+void ofApp::setupGui() {
+  // all of the setup code for the ofxGui GUI
+  // add listener function for buttons
+  saveSVGButton.addListener(this, &ofApp::saveSVGButtonPressed);
+  
+  // create the GUI panel
+  gui.setup();
+  gui.add(saveSVGButton.setup("Save SVG"));
+  showGui = true;
+}
+
+void ofApp::saveSVGButtonPressed() {
+  // the save SVG button was pressed
+  ofLogNotice() << "SVG button pressed";
+  ofBeginSaveScreenAsSVG("svgtest.svg", false, false, ofRectangle(0, 0, ofGetWidth(), ofGetHeight()));
+  ofClear(255, 255);
+  drawStaticRepresentation();
+  ofEndSaveScreenAsSVG();
 }
 
 //--------------------------------------------------------------
@@ -125,6 +146,9 @@ void ofApp::draw(){
   drawStaticRepresentation();
   // drawSpiral();
   // ofLogNotice("timeCursor: ") << timeline.getTimeCursor();
+  if(showGui){
+		gui.draw();
+	}
 }
 
 void ofApp::drawStaticRepresentation() {
@@ -201,6 +225,8 @@ void ofApp::drawSpiral() {
 void ofApp::keyPressed(int key){
   if(key == ' ') {
     timeline.togglePlay();
+  } else if (key == 'g') {
+    showGui = !showGui;
   }
 }
 
@@ -218,7 +244,8 @@ void ofApp::mouseDragged(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
-  timeline.click(x, y);
+  // only move timeline if GUI is not shown as otherwise interacting with the GUI would move the timeline every time
+  if(!showGui) timeline.click(x, y);
 
 }
 

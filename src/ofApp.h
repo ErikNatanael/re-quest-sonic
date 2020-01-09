@@ -39,6 +39,10 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
 		void exit();
 		
+		// GUI related functions
+		void setupGui();
+		void saveSVGButtonPressed();
+		
 		void drawStaticRepresentation(); // draws a static representation of the call graph data
 		// data structures containing a copy of the data used in Timeline in order to draw a static representation
 		vector<FunctionCall> functionCalls;
@@ -60,4 +64,8 @@ class ofApp : public ofBaseApp{
 		vector<Screenshot> screenshots;
 		size_t currentScreen = 0;
 		
+		// GUI
+		bool showGui = true;
+		ofxPanel gui;
+		ofxButton saveSVGButton;
 };
