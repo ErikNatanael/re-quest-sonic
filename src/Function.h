@@ -17,6 +17,9 @@ public:
   int numCallsToOtherScript = 0;
   // stats of calls to this function
   int numCalledFromOutsideScript = 0;
+  
+  // members for drawing
+  glm::vec2 pos;
 
   bool operator<(const Function& f) {
     return this->calledTimes > f.calledTimes;
@@ -46,5 +49,13 @@ public:
     cout << std::left << std::setw(22) << setfill(' ') << "numCallsToOtherScript";
     cout << std::left << std::setw(26) << setfill(' ') << "numCalledFromOutsideScript";
     cout << endl;
+  }
+  
+  glm::vec2 getRelativeSpiralPos() {
+    float angle = float(lineNumber) * 0.1;
+    float radius = float(ofClamp(calledTimes, 0.0, 10.0))/10.0;
+    float x = cos(angle) * radius;
+    float y = sin(angle) * radius;
+    return glm::vec2(x, y);
   }
 };

@@ -10,7 +10,7 @@ void ofApp::setup() {
   // must set makeContours to true in order to generate paths
   font.load("SourceCodePro-Regular.otf", 16, false, false, true);
   
-  string profilePath = "profiles/software_art/";
+  string profilePath = "profiles/whyamisotired20200108/";
   
   timeline.init(WIDTH, HEIGHT);
   timeline.parseScriptingProfile(profilePath + "scores/scripting_events.json");
@@ -54,6 +54,14 @@ void ofApp::setup() {
     if(s.scriptId > maxScriptId) maxScriptId = s.scriptId;
   }
   
+  // calculate function position
+  for(auto& fp : functionMap) {
+    auto& f = fp.second;
+    auto script = std::find(scripts.begin(), scripts.end(), f.scriptId);
+    glm::vec2 scriptPos = script->getSpiralCoordinate(maxScriptId);
+    glm::vec2 funcPos = f.getRelativeSpiralPos();
+    f.pos = scriptPos + (funcPos * ofGetHeight() * 0.06);
+  }
   
   // ***************************** INIT openFrameworks STUFF
   ofBackground(0);
@@ -134,25 +142,36 @@ void ofApp::drawStaticRepresentation() {
   ofSetColor(230, 50, 50, 50);
   ofSetLineWidth(5);
   for(auto& fc : functionCalls) {
-    auto script = std::find(scripts.begin(), scripts.end(), fc.scriptId);
-    auto parentScript = std::find(scripts.begin(), scripts.end(), fc.parentScriptId);
-    if(script == scripts.end()) ofLogNotice("drawStaticRepresentation") << "ERROR: script not found, id: " << fc.scriptId;
-    if(parentScript == scripts.end()) ofLogNotice("drawStaticRepresentation") << "ERROR: parent script not found, id: " << fc.parentScriptId;
-    if(script != scripts.end() && parentScript != scripts.end()) {
-      glm::vec2 p1 = script->getSpiralCoordinate(maxScriptId);
-      glm::vec2 p2 = parentScript->getSpiralCoordinate(maxScriptId);
-      ofSetColor(ofColor::fromHsb(fc.scriptId*300 % 360, 210, 200, 60));
-      ofPolyline line;
-      line.addVertex(p1.x, p1.y, 0);
-      glm::vec2 c1 = p1 + 0.25*(p2-p1);
-      glm::vec2 c2 = p1 + 0.75*(p2-p1);
-      // c1 *= 1.4;
-      // rotate the point
-      c1 = glm::rotate(c1, 0.1f);
-      c2 *= 1.1;
-      line.bezierTo(c1.x, c1.y, c2.x, c2.y, p2.x, p2.y);
-      line.draw();
-      // ofDrawLine(p1, p2);
+    auto function = functionMap.find(fc.function_id);
+    if(function == functionMap.end()) ofLogNotice("drawStaticRepresentation") << "ERROR: function not found, id: " << fc.function_id;
+    auto parentCall = std::find(functionCalls.begin(), functionCalls.end(), fc.parent);
+    if(parentCall == functionCalls.end()) ofLogNotice("drawStaticRepresentation") << "ERROR: parentCall not found, id: " << fc.parent;
+    else {
+      auto parentFunction = functionMap.find(parentCall->function_id);
+      if(parentFunction == functionMap.end()) ofLogNotice("drawStaticRepresentation") << "ERROR: parentFunction not found, id: " << parentCall->function_id;
+      else {
+        // auto script = std::find(scripts.begin(), scripts.end(), fc.scriptId);
+        // auto parentScript = std::find(scripts.begin(), scripts.end(), fc.parentScriptId);
+        // if(script == scripts.end()) ofLogNotice("drawStaticRepresentation") << "ERROR: script not found, id: " << fc.scriptId;
+        // if(parentScript == scripts.end()) ofLogNotice("drawStaticRepresentation") << "ERROR: parent script not found, id: " << fc.parentScriptId;
+        
+        // glm::vec2 p1 = script->getSpiralCoordinate(maxScriptId);
+        // glm::vec2 p2 = parentScript->getSpiralCoordinate(maxScriptId);
+        glm::vec2 p1 = function->second.pos;
+        glm::vec2 p2 = parentFunction->second.pos;
+        ofSetColor(ofColor::fromHsb(fc.scriptId*300 % 360, 210, 200, 60));
+        ofPolyline line;
+        line.addVertex(p1.x, p1.y, 0);
+        glm::vec2 c1 = p1 + 0.25*(p2-p1);
+        glm::vec2 c2 = p1 + 0.75*(p2-p1);
+        // c1 *= 1.4;
+        // rotate the point
+        c1 = glm::rotate(c1, 0.1f);
+        c2 *= 1.1;
+        line.bezierTo(c1.x, c1.y, c2.x, c2.y, p2.x, p2.y);
+        line.draw();
+        // ofDrawLine(p1, p2);
+    }
     }
   }
   ofPopMatrix();
@@ -168,7 +187,7 @@ void ofApp::drawSpiral() {
     float distance = float(i)/float(max * 2); // the distance along the spiral based on the scriptId
     float angle = (pow((1-distance), 2) + pow((1-distance)*1, 6.) * PI) * TWO_PI * 2;
     float radius = 0;
-    if(i!=0) radius = (1-pow((1-distance), 2.0) + 0.05 ) * ofGetHeight() * 0.4;
+    if(i!=0) radius = ( (1-pow((1-distance), 2.0) + 0.05 ) + sin((1-pow((1-distance), 2.0))*max*2) * distance * 0.1 ) * ofGetHeight() * 0.4;
     float x = cos(angle) * radius;
     float y = sin(angle) * radius;
     float size = 3;

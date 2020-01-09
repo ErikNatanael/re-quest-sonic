@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
+#include "ofxGui.h"
 
 #include "Timeline.h"
 #include "FunctionCall.h"
