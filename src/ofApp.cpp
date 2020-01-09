@@ -164,7 +164,7 @@ void ofApp::drawStaticRepresentation() {
     ofDrawCircle(pos.x, pos.y, size);
   }
   ofSetColor(230, 50, 50, 50);
-  ofSetLineWidth(5);
+  // ofSetLineWidth(5);
   for(auto& fc : functionCalls) {
     auto function = functionMap.find(fc.function_id);
     if(function == functionMap.end()) ofLogNotice("drawStaticRepresentation") << "ERROR: function not found, id: " << fc.function_id;
@@ -184,18 +184,24 @@ void ofApp::drawStaticRepresentation() {
         glm::vec2 p1 = function->second.pos;
         glm::vec2 p2 = parentFunction->second.pos;
         ofSetColor(ofColor::fromHsb(fc.scriptId*300 % 360, 210, 200, 60));
-        ofPolyline line;
-        line.addVertex(p1.x, p1.y, 0);
-        glm::vec2 c1 = p1 + 0.25*(p2-p1);
-        glm::vec2 c2 = p1 + 0.75*(p2-p1);
-        // c1 *= 1.4;
-        // rotate the point
-        c1 = glm::rotate(c1, 0.1f);
-        c2 *= 1.1;
-        line.bezierTo(c1.x, c1.y, c2.x, c2.y, p2.x, p2.y);
-        line.draw();
-        // ofDrawLine(p1, p2);
-    }
+        float distance = glm::distance(p1, p2);
+        if(distance > ofGetHeight()*0.02) {
+          ofPolyline line;
+          line.addVertex(p1.x, p1.y, 0);
+          glm::vec2 c1 = p1 + 0.25*(p2-p1);
+          glm::vec2 c2 = p1 + 0.75*(p2-p1);
+          // c1 *= 1.4;
+          // rotate the point
+          float rotation = (distance/float(ofGetHeight()));
+          ofLogNotice("drawStaticRepresentation") << "rotation: " << rotation;
+          c1 = glm::rotate(c1, rotation);
+          c2 = glm::rotate(c2, -rotation);
+          line.bezierTo(c1.x, c1.y, c2.x, c2.y, p2.x, p2.y);
+          line.draw();
+        } else {
+          ofDrawLine(p1, p2);
+        }
+      }
     }
   }
   ofPopMatrix();
@@ -229,8 +235,6 @@ void ofApp::keyPressed(int key){
     showGui = !showGui;
   }
 }
-
-
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key){
