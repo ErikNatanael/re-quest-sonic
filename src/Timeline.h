@@ -33,6 +33,9 @@ public:
   
   TimelineMessage() {}
   
+  TimelineMessage(float ts_, string t) : 
+    ts(ts_), type(t){
+  }
   // an initializer_list makes it east to initialise with e.g. { {"id", 4.2 }, {"rad", 0.01 } }
   TimelineMessage(float ts_, string t, std::initializer_list<std::pair<const string, float>> p) : 
     ts(ts_), type(t), parameters(p) {
@@ -165,7 +168,13 @@ private:
         //score.erase(score.begin());
         // if(score.size() == 0) break; // otherwise it segfaults
         nextEvent++;
-        if(nextEvent >= score.size()) break;
+        if(nextEvent >= score.size()) {
+          // send a timelineReset message
+          TM timelineReset = TM(0, "timelineReset");
+          sendViaOsc(timelineReset);
+          messageFIFO.push_back(timelineReset);
+          break; // break out of the loop to avoid index out of bound segfault
+        }
       }
     }
   }
@@ -429,7 +438,7 @@ public:
     score.clear();
 
     for(auto& f : functionCalls) {
-      score.push_back(TM(
+      TM tempMessage = TM(
         double(f.ts-firstts)/timeStepsPerSecond,
         "functionCall",
         {
@@ -439,7 +448,9 @@ public:
           {"parentScriptId", f.parentScriptId},
           {"withinScript", int(f.withinScript)},
         }
-      ));
+      );
+    tempMessage.stringParameters.insert({"function_id", f.function_id});
+    score.push_back(tempMessage);
     }
     for(auto& u : userEvents) {
       score.push_back(TM(

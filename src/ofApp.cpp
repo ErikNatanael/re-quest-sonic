@@ -10,7 +10,7 @@ void ofApp::setup() {
   // must set makeContours to true in order to generate paths
   font.load("SourceCodePro-Regular.otf", 16, false, false, true);
   
-  string profilePath = "profiles/kth.se/";
+  string profilePath = "profiles/whyamisotired20200108/";
   
   timeline.init(WIDTH, HEIGHT);
   timeline.parseScriptingProfile(profilePath + "scores/scripting_events.json");
@@ -59,7 +59,7 @@ void ofApp::setup() {
     auto& f = fp.second;
     auto script = std::find(scripts.begin(), scripts.end(), f.scriptId);
     glm::vec2 scriptPos = script->getSpiralCoordinate(maxScriptId);
-    float scriptSize = script->getSize() * ofGetHeight() * 0.06;
+    float scriptSize = script->getSize() * ofGetHeight() * 0.075;
     glm::vec2 funcPos = f.getRelativeSpiralPos();
     f.pos = scriptPos + (funcPos * scriptSize);
   }
@@ -67,6 +67,12 @@ void ofApp::setup() {
   // ***************************** INIT openFrameworks STUFF
   setupGui();
   ofBackground(0);
+  ofEnableAlphaBlending();
+  
+  functionCallFbo.allocate(WIDTH, HEIGHT, GL_RGBA);
+  functionCallFbo.begin();
+    ofClear(0, 0);
+  functionCallFbo.end();
 
   timeline.startThread(true);
 }
@@ -121,11 +127,20 @@ void ofApp::draw(){
     timeline.unlock();
     
     for(auto& m : messageFIFOLocal) {
-      if(m.type == "functionCall") {   
-        ofSetColor(ofRandom(255), ofRandom(255), ofRandom(255), 255);
-        ofDrawCircle(ofRandom(ofGetWidth()), ofRandom(ofGetHeight()), 30);  
+      if(m.type == "functionCall") {
+        auto fc = std::find(functionCalls.begin(), functionCalls.end(), int(m.parameters["id"]));  
+        functionCallsToDraw.push_back(*fc);
+        functionCallFbo.begin();
+          // ofEnableBlendMode(OF_BLENDMODE_ADD);
+          drawSingleStaticFunctionCallLine(m.stringParameters["function_id"], m.parameters["parent"], m.parameters["scriptId"]);
+          // ofEnableBlendMode(OF_BLENDMODE_ALPHA);
+        functionCallFbo.end();
       } else if (m.type == "timelineReset") {
         // time cursor has reached the last event and has been reset
+        functionCallFbo.begin();
+          ofClear(0, 0);
+        functionCallFbo.end();
+        functionCallsToDraw.clear();
       }
     }
     messageFIFOLocal.clear(); // clear the local queue in preparation for the next swap
@@ -156,7 +171,12 @@ void ofApp::draw(){
   // drawStaticRepresentation();
   drawStaticPointsOfScripts();
   drawStaticPointsOfFunctions();
-  drawStaticFunctionCallLines();
+  ofSetColor(255, 255);
+  // functionCallFbo.draw(0, 0);
+  for(auto& fc : functionCallsToDraw) {
+    drawSingleStaticFunctionCallLine(fc.function_id, fc.parent, fc.scriptId);
+  }
+  // drawStaticFunctionCallLines();
   // drawSpiral();
   // ofLogNotice("timeCursor: ") << timeline.getTimeCursor();
   if(showGui){
@@ -164,108 +184,97 @@ void ofApp::draw(){
 	}
 }
 
-void ofApp::drawStaticRepresentation() {
-  // draw scripts in a spiral using polar coordinates
-  ofPushMatrix();
-  ofTranslate(ofGetWidth()/2, ofGetHeight()/2);
-  ofSetColor(230, 100, 100, 100);
-  for(auto& s : scripts) {
-    glm::vec2 pos = s.getSpiralCoordinate(maxScriptId);
-    float size = s.getSize() * ofGetHeight() * 0.06;
-    // float size = 3;
-    ofSetColor(ofColor::fromHsb(s.scriptId*300 % 360, 210, 200, 60));
-    ofDrawCircle(pos.x, pos.y, size);
-  }
-  ofSetColor(230, 50, 50, 50);
-  // ofSetLineWidth(5);
-  for(auto& fc : functionCalls) {
-    auto function = functionMap.find(fc.function_id);
-    if(function == functionMap.end()) ofLogNotice("drawStaticRepresentation") << "ERROR: function not found, id: " << fc.function_id;
-    auto parentCall = std::find(functionCalls.begin(), functionCalls.end(), fc.parent);
-    if(parentCall == functionCalls.end()) ofLogNotice("drawStaticRepresentation") << "ERROR: parentCall not found, id: " << fc.parent;
-    else {
-      auto parentFunction = functionMap.find(parentCall->function_id);
-      if(parentFunction == functionMap.end()) ofLogNotice("drawStaticRepresentation") << "ERROR: parentFunction not found, id: " << parentCall->function_id;
-      else {
-        // auto script = std::find(scripts.begin(), scripts.end(), fc.scriptId);
-        // auto parentScript = std::find(scripts.begin(), scripts.end(), fc.parentScriptId);
-        // if(script == scripts.end()) ofLogNotice("drawStaticRepresentation") << "ERROR: script not found, id: " << fc.scriptId;
-        // if(parentScript == scripts.end()) ofLogNotice("drawStaticRepresentation") << "ERROR: parent script not found, id: " << fc.parentScriptId;
-        
-        // glm::vec2 p1 = script->getSpiralCoordinate(maxScriptId);
-        // glm::vec2 p2 = parentScript->getSpiralCoordinate(maxScriptId);
-        glm::vec2 p1 = function->second.pos;
-        glm::vec2 p2 = parentFunction->second.pos;
-        ofSetColor(ofColor::fromHsb(fc.scriptId*300 % 360, 210, 200, 60));
-        float distance = glm::distance(p1, p2);
-        if(distance > ofGetHeight()*0.02) {
-          ofPolyline line;
-          line.addVertex(p1.x, p1.y, 0);
-          glm::vec2 c1 = p1 + 0.25*(p2-p1);
-          glm::vec2 c2 = p1 + 0.75*(p2-p1);
-          // c1 *= 1.4;
-          // rotate the point
-          float rotation = (distance/float(ofGetHeight()));
-          ofLogNotice("drawStaticRepresentation") << "rotation: " << rotation;
-          c1 = glm::rotate(c1, rotation);
-          c2 = glm::rotate(c2, -rotation);
-          line.bezierTo(c1.x, c1.y, c2.x, c2.y, p2.x, p2.y);
-          line.draw();
-        } else {
-          ofDrawLine(p1, p2);
-        }
-      }
-    }
-  }
-  ofPopMatrix();
-}
-
 void ofApp::drawStaticFunctionCallLines() {
   // draw scripts in a spiral using polar coordinates
-  ofPushMatrix();
-  ofTranslate(ofGetWidth()/2, ofGetHeight()/2);
   // ofSetLineWidth(5);
   for(auto& fc : functionCalls) {
-    auto function = functionMap.find(fc.function_id);
-    if(function == functionMap.end()) ofLogNotice("drawStaticRepresentation") << "ERROR: function not found, id: " << fc.function_id;
-    auto parentCall = std::find(functionCalls.begin(), functionCalls.end(), fc.parent);
-    if(parentCall == functionCalls.end()) ofLogNotice("drawStaticRepresentation") << "ERROR: parentCall not found, id: " << fc.parent;
+    drawSingleStaticFunctionCallLine(fc.function_id, fc.parent, fc.scriptId);
+  }
+}
+
+void ofApp::drawSingleStaticFunctionCallLine(string function_id, int parent, int scriptId) {
+  ofPushMatrix();
+  ofTranslate(ofGetWidth()/2, ofGetHeight()/2); // draw relative to the center of the window
+  
+  auto function = functionMap.find(function_id);
+  if(function == functionMap.end()) ofLogNotice("drawStaticRepresentation") << "ERROR: function not found, id: " << function_id;
+  auto parentCall = std::find(functionCalls.begin(), functionCalls.end(), parent);
+  if(parentCall == functionCalls.end()) ofLogNotice("drawStaticRepresentation") << "ERROR: parentCall not found, id: " << parent;
+  else {
+    auto parentFunction = functionMap.find(parentCall->function_id);
+    if(parentFunction == functionMap.end()) ofLogNotice("drawStaticRepresentation") << "ERROR: parentFunction not found, id: " << parentCall->function_id;
     else {
-      auto parentFunction = functionMap.find(parentCall->function_id);
-      if(parentFunction == functionMap.end()) ofLogNotice("drawStaticRepresentation") << "ERROR: parentFunction not found, id: " << parentCall->function_id;
-      else {
-        glm::vec2 p1 = function->second.pos;
-        glm::vec2 p2 = parentFunction->second.pos;
-        ofSetColor(ofColor::fromHsb(fc.scriptId*300 % 360, 210, 200, 60));
-        float distance = glm::distance(p1, p2);
-        if(distance > ofGetHeight()*0.02) {
-          ofPolyline line;
-          line.addVertex(p1.x, p1.y, 0);
-          glm::vec2 c1 = p1 + 0.25*(p2-p1);
-          glm::vec2 c2 = p1 + 0.75*(p2-p1);
-          // rotate the point
-          float rotation = (distance/float(ofGetHeight()));
-          c1 = glm::rotate(c1, rotation);
-          c2 = glm::rotate(c2, -rotation);
-          line.bezierTo(c1.x, c1.y, c2.x, c2.y, p2.x, p2.y);
-          line.draw();
-        } else {
-          ofDrawLine(p1, p2);
-        }
+      glm::vec2 p1 = function->second.pos;
+      glm::vec2 p2 = parentFunction->second.pos;
+      
+      float distance = glm::distance(p1, p2);
+      if(distance > ofGetHeight()*0.02) {
+        ofPolyline line;
+        line.addVertex(p1.x, p1.y, 0);
+        glm::vec2 c1 = p1 + 0.25*(p2-p1);
+        glm::vec2 c2 = p1 + 0.75*(p2-p1);
+        // rotate the point
+        float rotation = (distance/float(ofGetHeight()));
+        c1 = glm::rotate(c1, rotation);
+        c2 = glm::rotate(c2, -rotation);
+        line.bezierTo(c1.x, c1.y, c2.x, c2.y, p2.x, p2.y);
+        float thickness = ofMap(distance, WIDTH*0.01, WIDTH*0.3, .5, 7.0);
+        ofLogNotice("functionline") << "thickness: " << thickness;
+        ofSetColor(ofColor::fromHsb(scriptId*300 % 360, 210, 200, 60));
+        if(thickness > 1.2) drawThickPolyline(line, thickness);
+        line.draw();
+        
+      } else {
+        ofDrawLine(p1, p2);
       }
     }
   }
-  ofPopMatrix();
+  ofPopMatrix(); // restore drawing position
+}
+
+void ofApp::drawThickPolyline(ofPolyline line, float width) {
+  // code by zach https://github.com/ofZach/drawingCodeACT/blob/master/thickness/src/ofApp.cpp#L22-L70
+  ofMesh meshy;
+  meshy.setMode(OF_PRIMITIVE_TRIANGLE_STRIP);
+
+  float widthSmooth = width;
+  float angleSmooth;
+
+  for (int i = 0;  i < line.getVertices().size(); i++){        
+      int me_m_one = i-1;
+      int me_p_one = i+1;
+      if (me_m_one < 0) me_m_one = 0;
+      if (me_p_one ==  line.getVertices().size()) me_p_one =  line.getVertices().size()-1;
+      
+      ofPoint diff = line.getVertices()[me_p_one] - line.getVertices()[me_m_one];
+      float angle = atan2(diff.y, diff.x);
+      
+      if (i == 0) angleSmooth = angle;
+      else {
+          angleSmooth = ofLerpDegrees(angleSmooth, angle, 1.0);
+      }
+      float dist = diff.length();
+      float w = ofMap(dist, 0, 20, 10, 2, true);
+      widthSmooth = 0.9f * widthSmooth + 0.1f * w;
+      
+      ofPoint offset;
+      offset.x = cos(angleSmooth + PI/2) * widthSmooth;
+      offset.y = sin(angleSmooth + PI/2) * widthSmooth;
+      meshy.addVertex(  line.getVertices()[i] +  offset );
+      meshy.addVertex(  line.getVertices()[i] -  offset );    
+  }
+  // ofSetColor(0,0,0);
+  meshy.draw();
 }
 
 void ofApp::drawStaticPointsOfScripts() {
   ofPushMatrix();
   ofTranslate(ofGetWidth()/2, ofGetHeight()/2);
-  ofSetColor(80, 255);
+  ofSetColor(80, 200);
   for(auto& s : scripts) {
     glm::vec2 pos = s.getSpiralCoordinate(maxScriptId);
     // float size = 3;
-    float size = s.getSize() * ofGetHeight() * 0.06;
+    float size = s.getSize() * ofGetHeight() * 0.075;
     // ofSetColor(ofColor::fromHsb(s.scriptId*300 % 360, 210, 200, 60));
     ofDrawCircle(pos.x, pos.y, size);
   }

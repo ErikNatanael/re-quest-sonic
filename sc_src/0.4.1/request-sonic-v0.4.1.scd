@@ -231,7 +231,7 @@ s.waitForBoot({
 		sig = Pan2.ar(sig, \pan.kr(0)) * \amp.kr(1.0);
 		Out.ar(\out.kr(0), sig);
 	}).add;
-	~clickSample = Buffer.readChannel(s, "samples/442649__asetkeyzet__keyboard-click.wav".resolveRelative, channels: [0]);
+	~clickSample = Buffer.readChannel(s, "../samples/442649__asetkeyzet__keyboard-click.wav".resolveRelative, channels: [0]);
 	s.sync();
 	//cleanup
 	Pdef.all.do(_.clear);
