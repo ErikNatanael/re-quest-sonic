@@ -65,7 +65,7 @@ private:
   ofMutex oscMutex;
   
   double timeCursor = 0.0; // 8.0 is where a lot of stuff happens
-  float timeScale = 0.15;
+  float timeScale = 0.05;
   uint32_t nextEvent = 0;
   bool playing = false;
   bool rendering = false;
@@ -528,19 +528,24 @@ public:
     // ofBackground(0, 0);
     // ofSetColor(255, 255);
     timelineHeight = ofGetHeight()*0.01;
-    int y = (ofGetHeight()/2.0) - timelineHeight/2.0;
+    int y = (ofGetHeight() * 0.98) - timelineHeight/2.0;
     ofDrawRectangle(0, y, cursorX, timelineHeight);
     // timelineFbo.end();
     // timelineFbo.draw(0, 0);
     
-    int textX = ofClamp(cursorX-(fontSize*5), 0, WIDTH-(fontSize*10));
-    font.drawString(to_string(timeCursor), textX, y - timelineHeight*4.);
+    int textX = ofClamp(cursorX-(fontSize*2), 0, WIDTH-(fontSize*10));
     std::ostringstream out;
-    out.precision(4);
+    out.precision(2);
+    out << fixed;
+    out << timeCursor;
+    font.drawString(out.str() + " s", textX, y - timelineHeight*4.);
+    out.str("");
+    out.clear();
+    out.precision(2);
     out << timeScale;
     int numDigits = out.str().size();
-    int scaleX = ofClamp(cursorX-(fontSize*(float(numDigits)/2.)), 0, WIDTH-(fontSize*numDigits)); // TODO: center on end of timeline
-    font.drawString(out.str(), scaleX, y - timelineHeight*2.0);
+    // int scaleX = ofClamp(cursorX-(fontSize*(float(numDigits)/2.)), 0, WIDTH-(fontSize*numDigits)); // TODO: center on end of timeline
+    font.drawString(out.str() + " x", textX, y - timelineHeight*2.0);
   }
   
   void setCursor(uint64_t cur) {
