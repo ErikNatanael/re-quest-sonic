@@ -10,7 +10,7 @@ void ofApp::setup() {
   // must set makeContours to true in order to generate paths
   font.load("SourceCodePro-Regular.otf", 16, false, false, true);
   
-  string profilePath = "profiles/whyamisotired20200108/";
+  string profilePath = "profiles/kth.se/";
   
   timeline.init(WIDTH, HEIGHT);
   timeline.parseScriptingProfile(profilePath + "scores/scripting_events.json");
@@ -75,10 +75,12 @@ void ofApp::setupGui() {
   // all of the setup code for the ofxGui GUI
   // add listener function for buttons
   saveSVGButton.addListener(this, &ofApp::saveSVGButtonPressed);
+  sendActivityEnvelopeToSCButton.addListener(this, &ofApp::sendActivityDataOSC);
   
   // create the GUI panel
   gui.setup();
   gui.add(saveSVGButton.setup("Save SVG"));
+  gui.add(sendActivityEnvelopeToSCButton.setup("Send activity envelope to SC"));
   showGui = true;
 }
 
@@ -92,6 +94,10 @@ void ofApp::saveSVGButtonPressed() {
   drawStaticFunctionCallLines();
   // drawStaticRepresentation();
   ofEndSaveScreenAsSVG();
+}
+
+void ofApp::sendActivityDataOSC() {
+  timeline.sendActivityDataOSC();
 }
 
 //--------------------------------------------------------------

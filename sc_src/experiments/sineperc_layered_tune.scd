@@ -20,6 +20,7 @@ SynthDef(\sineperc, { var freq = \freq.kr(100), sig, env;
 	sig = Pan2.ar(sig, \pan.kr(0));
 	Out.ar(0, sig);
 }).add;
+~slide = 0;
 
 (
 Routine({ var i = 0, chord = [60, 63, 65, 67, 68, 70];

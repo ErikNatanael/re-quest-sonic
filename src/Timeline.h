@@ -480,6 +480,20 @@ public:
     oscMutex.unlock();
   }
   
+  void sendActivityDataOSC() {
+    oscMutex.lock();
+    oscMess.clear();
+    oscMess.setAddress("/functionCallTransmission");
+
+    // send all script data
+    for(auto& f : functionCalls) {
+      // send the timing of the function call as value between 0 and 1
+      oscMess.addDoubleArg(double(f.ts-firstts)/timeWidth);
+    }
+    oscSender.sendMessage(oscMess); 
+    oscMutex.unlock();
+  }
+  
   map<string, Function>& getFunctionMap() {
     return functionMap;
   }

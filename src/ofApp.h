@@ -42,6 +42,7 @@ class ofApp : public ofBaseApp{
 		// GUI related functions
 		void setupGui();
 		void saveSVGButtonPressed();
+		void sendActivityDataOSC();
 		
 		void drawStaticPointsOfFunctions(); // draws a circle for each function
 		void drawStaticPointsOfScripts(); // draws a circle for each script
@@ -71,4 +72,5 @@ class ofApp : public ofBaseApp{
 		bool showGui = true;
 		ofxPanel gui;
 		ofxButton saveSVGButton;
+		ofxButton sendActivityEnvelopeToSCButton;
 };
