@@ -43,9 +43,10 @@ class ofApp : public ofBaseApp{
 		void setupGui();
 		void saveSVGButtonPressed();
 		void sendActivityDataOSC();
+		void doLoopToggleFunc(bool &b);
 		
 		void drawStaticPointsOfFunctions(); // draws a circle for each function
-		void drawStaticPointsOfScripts(); // draws a circle for each script
+		void drawStaticPointsOfScripts(bool drawCenters = false); // draws a circle for each script
 		void drawStaticFunctionCallLines();
 		void drawSingleStaticFunctionCallLine(string function_id, int parent, int scriptId);
 		void drawStaticRepresentation(); // draws a static representation of the call graph data
@@ -62,6 +63,12 @@ class ofApp : public ofBaseApp{
 
 		int WIDTH = 1920;
 		int HEIGHT = 1080;
+		
+		int graphX = 0;
+		int graphY = 0;
+		vector<ofIcoSpherePrimitive> scriptSpheres;
+		vector<ofIcoSpherePrimitive> funcSpheres;
+		ofCamera cam;
 
 		ofTrueTypeFont font;
 		
@@ -73,9 +80,20 @@ class ofApp : public ofBaseApp{
 		ofFbo functionCallFbo;
 		vector<FunctionCall> functionCallsToDraw;
 		
+		ofShader invertShader;
+		
+		/// RENDERING
+		bool rendering = false;
+		int frameNumber = 0;
+		string renderDirectory;
+		ofFbo renderFbo;
+		ofPixels renderPixels;
+		ofImage grabImg;
+		
 		// GUI
 		bool showGui = true;
 		ofxPanel gui;
 		ofxButton saveSVGButton;
 		ofxButton sendActivityEnvelopeToSCButton;
+		ofxToggle doLoopToggle;
 };

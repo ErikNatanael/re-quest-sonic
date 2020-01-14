@@ -69,7 +69,8 @@ private:
   uint32_t nextEvent = 0;
   bool playing = false;
   bool rendering = false;
-  float frameRate = 60;
+  bool doLoop = true;
+  float frameRate = 25;
   double currentTime = 0;
   bool resetLastTime = true;
   ofMutex nonScaledCurrentTimeMutex;
@@ -100,7 +101,7 @@ private:
   int timelineHeight = 0;
   ofTrueTypeFont font;
   int fontSize;
-  
+  int counterStringWidth = 0;
   int WIDTH = 0, HEIGHT = 0;
   
   ofxOscSender oscSender;
@@ -138,7 +139,7 @@ private:
         lastTime = currentTime;
         
         progressQueue(timeCursor);
-        if(timeCursor > timeWidth_d) {
+        if(timeCursor > timeWidth_d && doLoop) {
           // reset and go back to the beginning
           timeCursor = 0;
           nextEvent = 0;
@@ -169,10 +170,12 @@ private:
         // if(score.size() == 0) break; // otherwise it segfaults
         nextEvent++;
         if(nextEvent >= score.size()) {
-          // send a timelineReset message
-          TM timelineReset = TM(0, "timelineReset");
-          sendViaOsc(timelineReset);
-          messageFIFO.push_back(timelineReset);
+          if(doLoop) {
+            // send a timelineReset message
+            TM timelineReset = TM(0, "timelineReset");
+            sendViaOsc(timelineReset);
+            messageFIFO.push_back(timelineReset);
+          }
           break; // break out of the loop to avoid index out of bound segfault
         }
       }
@@ -213,8 +216,9 @@ public:
     HEIGHT = h;
     timelineHeight = h*0.01;
     
-    fontSize = WIDTH/120;
-    font.load("SourceCodePro-Regular.otf", fontSize, false, false, true);
+    fontSize = WIDTH/60;
+    font.load("SourceCodePro-Regular.otf", fontSize, true, false, true);
+    counterStringWidth = font.stringWidth("0.00 s");
     
     oscSender.setup("127.0.0.1", 57120); // send to SuperCollider on the local machine
     sendTimeScale(); // send the timeScale start value
@@ -523,29 +527,35 @@ public:
   
   void draw() {
     // draw time cursor
-    int cursorX = ( timeCursor/timeWidth_d ) * ofGetWidth();
+    int cursorX = ( timeCursor/timeWidth_d ) * WIDTH;
     // timelineFbo.begin();
     // ofBackground(0, 0);
     // ofSetColor(255, 255);
-    timelineHeight = ofGetHeight()*0.01;
-    int y = (ofGetHeight() * 0.98) - timelineHeight/2.0;
+    timelineHeight = HEIGHT*0.01;
+    int y = HEIGHT - timelineHeight;
     ofDrawRectangle(0, y, cursorX, timelineHeight);
     // timelineFbo.end();
     // timelineFbo.draw(0, 0);
     
-    int textX = ofClamp(cursorX-(fontSize*2), 0, WIDTH-(fontSize*10));
+    // int textX = ofClamp(cursorX-(fontSize*2), 0, WIDTH-(fontSize*10)); // position relative to cursor
+    
+    int textHeight = HEIGHT * 0.04;
+    int textY = HEIGHT * 0.05;
+    int textX = WIDTH - textY - counterStringWidth;
+    textY += HEIGHT * 0.01;
+    // int textX = WIDTH*0.8;
     std::ostringstream out;
     out.precision(2);
     out << fixed;
     out << timeCursor;
-    font.drawString(out.str() + " s", textX, y - timelineHeight*4.);
+    font.drawString(out.str() + " s", textX, textY);
     out.str("");
     out.clear();
     out.precision(2);
     out << timeScale;
     int numDigits = out.str().size();
     // int scaleX = ofClamp(cursorX-(fontSize*(float(numDigits)/2.)), 0, WIDTH-(fontSize*numDigits)); // TODO: center on end of timeline
-    font.drawString(out.str() + " x", textX, y - timelineHeight*2.0);
+    font.drawString(out.str() + " x", textX, textY + textHeight);
   }
   
   void setCursor(uint64_t cur) {
@@ -561,6 +571,10 @@ public:
       resetLastTime = true;
     }
     playing = !playing;
+  }
+  
+  void setLoop(bool b) {
+    doLoop = b;
   }
   
   bool isPlaying() {
@@ -650,11 +664,16 @@ public:
     nonScaledCurrentTimeMutex.lock();
     nonScaledCurrentTime += (1./frameRate);
     nonScaledCurrentTimeMutex.unlock();
-    progressQueue((1./frameRate) * timeScale);
+    timeCursor += (1./frameRate) * timeScale;
+    progressQueue(timeCursor);
   }
   
   void startRendering() {
     rendering = true;
+    playing = true;
+  }
+  void stopRendering() {
+    rendering = false;
   }
   
   uint64_t getFirstts() {

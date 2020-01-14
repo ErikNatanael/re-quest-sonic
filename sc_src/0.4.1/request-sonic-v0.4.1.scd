@@ -131,21 +131,21 @@ s.waitForBoot({
 		Out.ar(outBus, [outs, DelayN.ar(outs, 0.01, 0.01)]);
 	}).add;
 	SynthDef(\swoosh, {
-		var sig, env, freq, clap, popEnv, centerFreq = Rand(100, 200), length = Rand(0.2, 0.7);
+		var sig, env, freq, clap, popEnv, centerFreq = Rand(100, 200), length = Rand(0.2, 0.7), release = Rand(0.4, 0.7);
 		env = EnvGen.ar(
 			Env(
 				levels: [0, 1, 0],
-				times: [length, 0.3],
+				times: [length, release],
 				curve: [0, -2]
 			),
 			doneAction:2
 		);
 		popEnv = EnvGen.ar(Env([3261, 410, Rand(30, 80)], [0.002, 0.01], curve: \exp));
 
-
 		freq = [
 			EnvGen.ar(Env([centerFreq*Rand(0.5, 1.2), centerFreq], [length], [Rand(4, 7)])),
-			EnvGen.ar(Env([centerFreq*Rand(0.2, 0.4), centerFreq], [length], [Rand(2, 8)]))];
+			EnvGen.ar(Env([centerFreq*Rand(0.4, 0.8), centerFreq], [length], [Rand(2, 8)]))];
+		freq = freq * LFNoise1.kr(Line.kr(1, Rand(3, 20), 2)).range(0.8, 1.1);
 		sig = Resonz.ar(WhiteNoise.ar(), freq, Rand(0.05, 0.2))*4;
 		sig = Mix(sig);
 		sig = Pan2.ar(sig, Line.kr(Rand(-1, 1), Rand(-1, 1), length+1));
@@ -255,7 +255,7 @@ s.waitForBoot({
 				// bring both notes into the lowest octave
 				old = note%edo;
 				new = degree%edo;
-				// check distance
+				// check distan  ce
 				distance = abs(new-old);
 				if(distance < minDistance) {
 					minDistance = distance;
@@ -336,7 +336,7 @@ s.waitForBoot({
 
 	~spectrumTriggers = ~spectrumChord.collect{|degree, i| Bus.control(s, 1);};
 	~spectrumSynths = ~spectrumChord.collect{|degree, i|
-		Synth(\sineperc_retrig, [\freq, ~degree53_to_freq.value(degree + (53*3)), \amp, 0.1, \trigBus, ~spectrumTriggers[i]]);
+		Synth(\sineperc_retrig, [\freq, ~degree53_to_freq.value(degree + (53*3)), \amp, 0.1, \trigBus, ~spectrumTriggers[i], \rel, 2]);
 	};
 
 	~drone = Synth(\windy, [\knob, 0.01, \amp, 0.0]);

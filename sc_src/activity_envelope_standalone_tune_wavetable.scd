@@ -102,18 +102,7 @@ Pbind(\instrument, \osc,
 )
 
 // MUSICAL PIECE
-// Uses only the sineperc SynthDef
 // Individual processes use the envelope for amplitude, subdividing it over different lengths of time.
-(
-SynthDef(\sineperc, { var freq = \freq.kr(100), sig, env;
-	env = EnvGen.kr(Env.perc(\atk.kr(0.01), \rel.kr(1), 1.0, [\c0.kr(4), \c1.kr(-4)]), doneAction: 2);
-	freq = XLine.ar(Rand(4000, 6000), freq, 0.006);
-	sig = SinOsc.ar(freq) * 0.5 * \amp.kr(1);
-	sig = sig * env;
-	sig = Pan2.ar(sig, \pan.kr(0));
-	Out.ar(0, sig);
-}).add;
-)
 (
 Routine({ var i = 0, chord = [60, 67, 68, 72, 75, 77, 79]-24;
 	loop{ var activity = ~averageFunctionCallDensity.(~functionCallTimestamps, 16).normalize;

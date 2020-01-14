@@ -52,7 +52,7 @@ public:
   }
   
   glm::vec2 getRelativeSpiralPos() {
-    float angle = float(lineNumber) * 0.1;
+    float angle = float(lineNumber + columnNumber + id) * 0.1;
     // have the distance from the middle of the circle depend on the number of calls to the function
     // many calls -> closer to the circle (which is why the number is reversed)
     float radius = 1. - float(ofClamp(calledTimes, 0.0, 10.0))/10.0;
