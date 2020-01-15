@@ -8,6 +8,7 @@
 #include "Function.h"
 #include "Script.h"
 #include "UserEvent.h"
+#include "GravityPlane.h"
 
 class Screenshot {
 public:
@@ -55,6 +56,7 @@ class ofApp : public ofBaseApp{
 		
 		void drawMesh();
 		void exportMesh();
+		void generateMesh();
 		// data structures containing a copy of the data used in Timeline in order to draw a static representation
 		vector<FunctionCall> functionCalls;
 	  map<string, Function> functionMap;
@@ -74,6 +76,7 @@ class ofApp : public ofBaseApp{
 		vector<ofIcoSpherePrimitive> funcSpheres;
 		ofCamera cam;
 		ofEasyCam easyCam;
+		ofMesh mesh;
 
 		ofTrueTypeFont font;
 		
@@ -102,5 +105,6 @@ class ofApp : public ofBaseApp{
 		ofxButton sendActivityEnvelopeToSCButton;
 		ofxToggle doLoopToggle;
 		ofxToggle doGraphicsToggle;
+		ofxButton exportMeshButton;
 		bool doDrawGraphics = true;
 };

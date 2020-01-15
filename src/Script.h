@@ -21,6 +21,10 @@ public:
   map<uint32_t, uint32_t> toScriptCounter;
   map<uint32_t, float> scriptInterconnectedness;
   
+  // for mesh export
+  float meshRadius = 0;
+  glm::vec2 meshPos;
+  
   Script() {
   }
   

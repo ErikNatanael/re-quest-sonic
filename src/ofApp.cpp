@@ -83,6 +83,9 @@ void ofApp::setup() {
     scriptSpheres.push_back(sphere);
   }
   
+  generateMesh();
+  easyCam.enableMouseInput();
+  
   // ***************************** INIT openFrameworks STUFF
   setupGui();
   ofBackground(0);
@@ -107,6 +110,7 @@ void ofApp::setupGui() {
   sendActivityEnvelopeToSCButton.addListener(this, &ofApp::sendActivityDataOSC);
   doLoopToggle.addListener(this, &ofApp::doLoopToggleFunc);
   doGraphicsToggle.addListener(this, &ofApp::toggleDoDrawGraphics);
+  exportMeshButton.addListener(this, &ofApp::exportMesh);
   
   // create the GUI panel
   gui.setup();
@@ -114,6 +118,7 @@ void ofApp::setupGui() {
   gui.add(sendActivityEnvelopeToSCButton.setup("Send activity envelope to SC"));
   gui.add(doLoopToggle.setup("loop", false));
   gui.add(doGraphicsToggle.setup("draw graphics", true));
+  gui.add(exportMeshButton.setup("export mesh"));
   showGui = true;
 }
 
@@ -134,27 +139,30 @@ void ofApp::toggleDoDrawGraphics(bool &b) {
 }
 
 void ofApp::exportMesh() {
-  
-  
-  
+  mesh.save("mesh_" + ofGetTimestampString() + ".ply");
+}
+
+void ofApp::generateMesh() {
+  GravityPlane gp;
+  gp.maxScriptId = maxScriptId;
+  for(auto& s : scripts) {
+    gp.addScriptPoint(s);
+  }
+  for(auto& fp : functionMap) {
+    auto script = std::find(scripts.begin(), scripts.end(), fp.second.scriptId);
+    gp.addFunctionPoint(fp.second, *script);
+  }
+  mesh = gp.generateMesh();
 }
 
 void ofApp::drawMesh() {
-  ofMesh mesh;
-  mesh.plane(2000, 2000, 200, 200);
-  mesh.setMode(OF_PRIMITIVE_TRIANGLE_STRIP);
-  for(auto& s : scripts) {
-    float offset = s.getSize() * 1000;
-    glm::vec2 pos = s.getSpiralCoordinate(maxScriptId, 2000);
-    mesh.addVertex(ofPoint(pos.x,pos.y,offset));
-  }
-  // for(auto& fp : functionMap) {
-  //   float offset = -100;
-  //   glm::vec2 pos = fp.second.pos;
-  //   mesh.addVertex(ofPoint(pos.x,pos.y,offset));
-  // }
-  ofSetColor(255, 255, 0, 255);
+  easyCam.begin();
+  ofPushMatrix();
+  ofTranslate(-WIDTH/2,-HEIGHT/2);
+  ofSetColor(255, 255);
   mesh.drawWireframe();
+  ofPopMatrix();
+  easyCam.end();
 }
 
 void ofApp::sendActivityDataOSC() {
@@ -264,9 +272,7 @@ void ofApp::draw(){
     timeline.progressFrame();
   }
   
-  // easyCam.begin();
-  // drawMesh();
-  // easyCam.end();
+  drawMesh();
   
   if(showGui){
 		gui.draw();
