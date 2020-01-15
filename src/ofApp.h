@@ -44,6 +44,7 @@ class ofApp : public ofBaseApp{
 		void saveSVGButtonPressed();
 		void sendActivityDataOSC();
 		void doLoopToggleFunc(bool &b);
+		void toggleDoDrawGraphics(bool &b);
 		
 		void drawStaticPointsOfFunctions(); // draws a circle for each function
 		void drawStaticPointsOfScripts(bool drawCenters = false); // draws a circle for each script
@@ -100,4 +101,6 @@ class ofApp : public ofBaseApp{
 		ofxButton saveSVGButton;
 		ofxButton sendActivityEnvelopeToSCButton;
 		ofxToggle doLoopToggle;
+		ofxToggle doGraphicsToggle;
+		bool doDrawGraphics = true;
 };

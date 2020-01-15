@@ -106,12 +106,14 @@ void ofApp::setupGui() {
   saveSVGButton.addListener(this, &ofApp::saveSVGButtonPressed);
   sendActivityEnvelopeToSCButton.addListener(this, &ofApp::sendActivityDataOSC);
   doLoopToggle.addListener(this, &ofApp::doLoopToggleFunc);
+  doGraphicsToggle.addListener(this, &ofApp::toggleDoDrawGraphics);
   
   // create the GUI panel
   gui.setup();
   gui.add(saveSVGButton.setup("Save SVG"));
   gui.add(sendActivityEnvelopeToSCButton.setup("Send activity envelope to SC"));
   gui.add(doLoopToggle.setup("loop", false));
+  gui.add(doGraphicsToggle.setup("draw graphics", true));
   showGui = true;
 }
 
@@ -125,6 +127,10 @@ void ofApp::saveSVGButtonPressed() {
   // drawStaticFunctionCallLines();
   // drawStaticRepresentation();
   ofEndSaveScreenAsSVG();
+}
+
+void ofApp::toggleDoDrawGraphics(bool &b) {
+  doDrawGraphics = b;
 }
 
 void ofApp::exportMesh() {
@@ -199,48 +205,51 @@ void ofApp::draw(){
     
   }
   
-  // set the current screenshot to use
-  if(screenshots[0].ts > timeline.getTimeCursor()) {
-    currentScreen = 0;
-  } else {
-    for(int i = 0; i < screenshots.size()-1; i++) {
-      if(screenshots[i].ts < timeline.getTimeCursor()
-        && screenshots[i+1].ts > timeline.getTimeCursor()
-      ) {
-        currentScreen = i;
-        break;
-      } else if (screenshots[i+1].ts < timeline.getTimeCursor()) {
-        currentScreen = i+1;
+  if(doDrawGraphics) {
+    // set the current screenshot to use
+    if(screenshots[0].ts > timeline.getTimeCursor()) {
+      currentScreen = 0;
+    } else {
+      for(int i = 0; i < screenshots.size()-1; i++) {
+        if(screenshots[i].ts < timeline.getTimeCursor()
+          && screenshots[i+1].ts > timeline.getTimeCursor()
+        ) {
+          currentScreen = i;
+          break;
+        } else if (screenshots[i+1].ts < timeline.getTimeCursor()) {
+          currentScreen = i+1;
+        }
       }
     }
-  }
-  ofSetColor(205, 191, 255, 255);
-  invertShader.begin();
-  invertShader.setUniformTexture("tex0", screenshots[currentScreen].img.getTexture(), 1);
-  invertShader.setUniform2f("resMult", float(screenshots[currentScreen].img.getWidth()) / float(WIDTH), float(screenshots[currentScreen].img.getHeight()) / float(HEIGHT));
-  invertShader.setUniform2f("imgRes", screenshots[currentScreen].img.getWidth(), screenshots[currentScreen].img.getHeight());
-  invertShader.setUniform2f("resolution", WIDTH, HEIGHT);
-  invertShader.setUniform1f("time", timeline.getTimeCursor());
-  screenshots[currentScreen].img.draw(0, 0, WIDTH, HEIGHT);
-  ofDrawRectangle(0, 0, WIDTH, HEIGHT);
-  invertShader.end();
+    ofSetColor(205, 191, 255, 255);
+    invertShader.begin();
+    invertShader.setUniformTexture("tex0", screenshots[currentScreen].img.getTexture(), 1);
+    invertShader.setUniform2f("resMult", float(screenshots[currentScreen].img.getWidth()) / float(WIDTH), float(screenshots[currentScreen].img.getHeight()) / float(HEIGHT));
+    invertShader.setUniform2f("imgRes", screenshots[currentScreen].img.getWidth(), screenshots[currentScreen].img.getHeight());
+    invertShader.setUniform2f("resolution", WIDTH, HEIGHT);
+    invertShader.setUniform1f("time", timeline.getTimeCursor());
+    screenshots[currentScreen].img.draw(0, 0, WIDTH, HEIGHT);
+    ofDrawRectangle(0, 0, WIDTH, HEIGHT);
+    invertShader.end();
   
-  // if(!rendering) timeline.draw();
+    cam.begin();
+    drawStaticPointsOfScripts();
+    drawStaticPointsOfFunctions();
+    // drawSpiral();
+    ofSetColor(255, 255);
+    // functionCallFbo.draw(0, 0);
+    for(auto& fc : functionCallsToDraw) {
+      drawSingleStaticFunctionCallLine(fc.function_id, fc.parent, fc.scriptId);
+    }
+    cam.end();
+  } else {
+    // if not drawing stuff, clear the screen
+    ofClear(0, 255);
+  }
+  // draw the timeline
   ofSetColor(130, 80);
   timeline.draw();
-  // drawStaticRepresentation();
-  cam.begin();
-  drawStaticPointsOfScripts();
-  drawStaticPointsOfFunctions();
-  ofSetColor(255, 255);
-  // functionCallFbo.draw(0, 0);
-  for(auto& fc : functionCallsToDraw) {
-    drawSingleStaticFunctionCallLine(fc.function_id, fc.parent, fc.scriptId);
-  }
-  cam.end();
-  // drawStaticFunctionCallLines();
-  // drawSpiral();
-  // ofLogNotice("timeCursor: ") << timeline.getTimeCursor();
+
   renderFbo.end();
   renderFbo.draw(0, 0);
   if(rendering) {
