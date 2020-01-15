@@ -51,6 +51,9 @@ class ofApp : public ofBaseApp{
 		void drawSingleStaticFunctionCallLine(string function_id, int parent, int scriptId);
 		void drawStaticRepresentation(); // draws a static representation of the call graph data
 		void drawThickPolyline(ofPolyline line, float width);
+		
+		void drawMesh();
+		void exportMesh();
 		// data structures containing a copy of the data used in Timeline in order to draw a static representation
 		vector<FunctionCall> functionCalls;
 	  map<string, Function> functionMap;
@@ -69,6 +72,7 @@ class ofApp : public ofBaseApp{
 		vector<ofIcoSpherePrimitive> scriptSpheres;
 		vector<ofIcoSpherePrimitive> funcSpheres;
 		ofCamera cam;
+		ofEasyCam easyCam;
 
 		ofTrueTypeFont font;
 		

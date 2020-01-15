@@ -65,7 +65,7 @@ private:
   ofMutex oscMutex;
   
   double timeCursor = 0.0; // 8.0 is where a lot of stuff happens
-  float timeScale = 0.05;
+  float timeScale = 0.10;
   uint32_t nextEvent = 0;
   bool playing = false;
   bool rendering = false;
@@ -543,6 +543,7 @@ public:
     int textY = HEIGHT * 0.05;
     int textX = WIDTH - textY - counterStringWidth;
     textY += HEIGHT * 0.01;
+    textY = HEIGHT - (textY*1.5);
     // int textX = WIDTH*0.8;
     std::ostringstream out;
     out.precision(2);

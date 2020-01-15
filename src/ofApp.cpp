@@ -7,13 +7,14 @@ void ofApp::setup() {
   WIDTH = ofGetWidth();
   HEIGHT = ofGetHeight();
   
-  graphX = WIDTH * 0.67;
-  graphY = HEIGHT * .5;
+  // graphX = WIDTH * 0.67;
+  // graphY = HEIGHT * .5;
+  graphX = WIDTH * 0.15;
   
   // must set makeContours to true in order to generate paths
   font.load("SourceCodePro-Regular.otf", 16, false, false, true);
   
-  string profilePath = "profiles/whyamisotired20200108/";
+  string profilePath = "profiles/whoami-20200114/";
   
   timeline.init(WIDTH, HEIGHT);
   timeline.parseScriptingProfile(profilePath + "scores/scripting_events.json");
@@ -86,7 +87,11 @@ void ofApp::setup() {
   setupGui();
   ofBackground(0);
   ofEnableAlphaBlending();
+  cam.setVFlip(false);
   cam.enableOrtho();
+  cam.setNearClip(0);
+  cam.setFarClip(-5000);
+  
   
   renderFbo.allocate(WIDTH, HEIGHT, GL_RGB);
   
@@ -106,7 +111,7 @@ void ofApp::setupGui() {
   gui.setup();
   gui.add(saveSVGButton.setup("Save SVG"));
   gui.add(sendActivityEnvelopeToSCButton.setup("Send activity envelope to SC"));
-  gui.add(doLoopToggle.setup("loop", true));
+  gui.add(doLoopToggle.setup("loop", false));
   showGui = true;
 }
 
@@ -120,6 +125,30 @@ void ofApp::saveSVGButtonPressed() {
   // drawStaticFunctionCallLines();
   // drawStaticRepresentation();
   ofEndSaveScreenAsSVG();
+}
+
+void ofApp::exportMesh() {
+  
+  
+  
+}
+
+void ofApp::drawMesh() {
+  ofMesh mesh;
+  mesh.plane(2000, 2000, 200, 200);
+  mesh.setMode(OF_PRIMITIVE_TRIANGLE_STRIP);
+  for(auto& s : scripts) {
+    float offset = s.getSize() * 1000;
+    glm::vec2 pos = s.getSpiralCoordinate(maxScriptId, 2000);
+    mesh.addVertex(ofPoint(pos.x,pos.y,offset));
+  }
+  // for(auto& fp : functionMap) {
+  //   float offset = -100;
+  //   glm::vec2 pos = fp.second.pos;
+  //   mesh.addVertex(ofPoint(pos.x,pos.y,offset));
+  // }
+  ofSetColor(255, 255, 0, 255);
+  mesh.drawWireframe();
 }
 
 void ofApp::sendActivityDataOSC() {
@@ -200,6 +229,7 @@ void ofApp::draw(){
   ofSetColor(130, 80);
   timeline.draw();
   // drawStaticRepresentation();
+  cam.begin();
   drawStaticPointsOfScripts();
   drawStaticPointsOfFunctions();
   ofSetColor(255, 255);
@@ -207,6 +237,7 @@ void ofApp::draw(){
   for(auto& fc : functionCallsToDraw) {
     drawSingleStaticFunctionCallLine(fc.function_id, fc.parent, fc.scriptId);
   }
+  cam.end();
   // drawStaticFunctionCallLines();
   // drawSpiral();
   // ofLogNotice("timeCursor: ") << timeline.getTimeCursor();
@@ -223,6 +254,10 @@ void ofApp::draw(){
     // move time forward by one frame time
     timeline.progressFrame();
   }
+  
+  // easyCam.begin();
+  // drawMesh();
+  // easyCam.end();
   
   if(showGui){
 		gui.draw();
