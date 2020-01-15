@@ -179,7 +179,7 @@ s.waitForBoot({
 		freq = freq * LFNoise1.kr(10).range(0.998, 1.002); // TODO: Less vibrato for high notes, more for low
 		freqEnv = EnvGen.ar(Env([TRand.ar(4000, 6000, inTrig), freq], [0.006]), gate: inTrig);
 		sawEnv = EnvGen.ar(Env([1, 1, 0.5, 0], [0.001, 0.01, 2]), gate: inTrig);
-		fmEnv = EnvGen.ar(Env([freq*6, freq*6, freq, 0], [0.00001, 0.3, 1]), gate: inTrig);
+		fmEnv = EnvGen.ar(Env([freq*6, freq*6, freq, 0], [0.00001, 1, 1]), gate: inTrig);
 		sig = SinOsc.ar(freqEnv + SinOsc.ar(freq*2, 0, fmEnv));
 		sig = sig + (SinOsc.ar(freq*0.5, 0, 0.4));
 		sig = sig + (Saw.ar(freq*2.01) * sawEnv);
