@@ -272,7 +272,7 @@ void ofApp::draw(){
     timeline.progressFrame();
   }
   
-  drawMesh();
+  // drawMesh();
   
   if(showGui){
 		gui.draw();
@@ -316,7 +316,8 @@ void ofApp::drawSingleStaticFunctionCallLine(string function_id, int parent, int
         float thickness = ofMap(distance, WIDTH*0.01, WIDTH*0.3, .5, 7.0);
         // ofLogNotice("functionline") << "thickness: " << thickness;
         // ofSetColor(ofColor::fromHsb((scriptId*300 - 100) % 360, 150, 255, 60));
-        ofSetColor(ofColor::fromHsb((scriptId*300 - 200) % 360, 150, 255, 60));
+        // ofSetColor(ofColor::fromHsb((scriptId*300 - 200) % 360, 150, 255, 60)); // bright colours
+        ofSetColor(ofColor::fromHsb((scriptId*300 - 200) % 360, 150, 200, 60)); // dark colours
         if(thickness > 1.2) drawThickPolyline(line, thickness);
         line.draw();
         
@@ -380,7 +381,8 @@ void ofApp::drawStaticPointsOfScripts(bool drawCenters) {
   //   }
   // }
   for(int i = 0; i < scripts.size(); i++) {
-    ofSetColor(ofColor::fromHsb((scripts[i].scriptId*300 - 200) % 360, 150, 255, 120));
+    // ofSetColor(ofColor::fromHsb((scripts[i].scriptId*300 - 200) % 360, 150, 255, 120)); // bright colours
+    ofSetColor(ofColor::fromHsb((scripts[i].scriptId*300 - 200) % 360, 210, 200, 120)); // dark colours
     scriptSpheres[i].drawWireframe();
   }
   ofPopMatrix();

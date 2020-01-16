@@ -140,7 +140,7 @@ void main()
 	st *= resMult;
 	// st.y =  imgRes.y - st.y; // inverts the coordinates, not necessary if drawing to an FBO
 	// st.x = imgRes.x - st.x; // invert x coordinates for mirror effect
-	st.x = imgRes.x * smoothstep(0, 1, nc.x*1.6);
+	st.x = imgRes.x * smoothstep(0, 1, nc.x*1.8);
 
 	// apply fbm to texture coordinates
 	// float fbmEffect = resolution.x * 0.002;
@@ -167,16 +167,18 @@ void main()
 	vec3 warpedPixel1 =  texture(tex0, st).rgb;// * vec4(1., 0., 0. ,1.);
 	st += r*resolution*0.1;
 	vec3 warpedPixel2 =  texture(tex0, st).rgb;// * vec4(1., 0., 0. ,1.);
-	vec3 color = normalPixel*.5 + warpedPixel1*.25 + warpedPixel2*.15;
+	// vec3 color = normalPixel*.5 + warpedPixel1*.25 + warpedPixel2*.15;
+  vec3 color = normalPixel;
+  // fade to white at the left side
+  color += smoothstep(0.9, 1.0, nc.x*1.8);
+  color += smoothstep(0.67, 1.0, nc.x*1.8)*0.3;
 	
 
 	// use the mask for alpha
-  // float alpha = maskCol.r; // the mask is greyscale, all channels are the same value
-  color = vec3(1., 1., 1.) - color;
+  // color = vec3(1., 1., 1.) - color; // inverse colours
+  
 	// color = vec3(r.x, r.y, q.x) - color;
 	// color = (vec3(noise(fract(nc*100)*40)*0.5+.5) - color);
-	// color = vec3(st.x/imgRes.x + 1.);
-	// color = vec3(nc.x+1.);
 
   outputColor = vec4(color, 1.0);
 }
