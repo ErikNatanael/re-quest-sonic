@@ -58,9 +58,10 @@ public:
     mesh.setMode(OF_PRIMITIVE_TRIANGLES);
     int stepSize = 5;
     int width = size/stepSize, height = size/stepSize;
-    for (int y = 0; y < height; y++){
-      for (int x = 0; x<width; x++){
+    for (int y = -height/2; y < height/2; y++){
+      for (int x = -width/2; x<width/2; x++){
         float offset = getGravityAtPoint(glm::vec2(x*stepSize, y*stepSize));
+        if(offset < 0) offset = 0; // avoid function holes extending under the model
         mesh.addVertex(ofPoint(x*stepSize,offset,y*stepSize)); // make a new vertex
         mesh.addColor(ofFloatColor(1,.5,1));  // add a color at that vertex
       }
@@ -85,7 +86,7 @@ public:
   void addScriptPoint(Script& s) {
     float scale = 0.7;
     float offset = (1.-pow(1.-s.getSize(), 2.0)) * size * scale * 0.15;
-    glm::vec2 pos = s.getSpiralCoordinate(maxScriptId, size*scale) + glm::vec2(size*0.5, size*.5);
+    glm::vec2 pos = s.getSpiralCoordinate(maxScriptId, size*scale); // + glm::vec2(size*0.5, size*.5);
     float radius = (1.-pow(1.-s.getSize(), 2.0)) * size * scale * .5;
     points.push_back(AttractionPoint(
       pos,

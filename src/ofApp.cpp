@@ -272,7 +272,7 @@ void ofApp::draw(){
     timeline.progressFrame();
   }
   
-  // drawMesh();
+  drawMesh();
   
   if(showGui){
 		gui.draw();
