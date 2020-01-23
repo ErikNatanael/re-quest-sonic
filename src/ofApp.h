@@ -56,6 +56,7 @@ class ofApp : public ofBaseApp{
 		
 		void drawMesh();
 		void exportMesh();
+		void exportMeshGrid();
 		void generateMesh();
 		// data structures containing a copy of the data used in Timeline in order to draw a static representation
 		vector<FunctionCall> functionCalls;
@@ -106,5 +107,6 @@ class ofApp : public ofBaseApp{
 		ofxToggle doLoopToggle;
 		ofxToggle doGraphicsToggle;
 		ofxButton exportMeshButton;
+		ofxButton exportMeshGridButton;
 		bool doDrawGraphics = true;
 };

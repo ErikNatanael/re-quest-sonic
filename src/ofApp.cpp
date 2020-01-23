@@ -111,6 +111,7 @@ void ofApp::setupGui() {
   doLoopToggle.addListener(this, &ofApp::doLoopToggleFunc);
   doGraphicsToggle.addListener(this, &ofApp::toggleDoDrawGraphics);
   exportMeshButton.addListener(this, &ofApp::exportMesh);
+  exportMeshGridButton.addListener(this, &ofApp::exportMeshGrid);
   
   // create the GUI panel
   gui.setup();
@@ -119,6 +120,7 @@ void ofApp::setupGui() {
   gui.add(doLoopToggle.setup("loop", false));
   gui.add(doGraphicsToggle.setup("draw graphics", true));
   gui.add(exportMeshButton.setup("export mesh"));
+  gui.add(exportMeshGridButton.setup("export mesh grid"));
   showGui = true;
 }
 
@@ -140,6 +142,26 @@ void ofApp::toggleDoDrawGraphics(bool &b) {
 
 void ofApp::exportMesh() {
   mesh.save("mesh_" + ofGetTimestampString() + ".ply");
+}
+
+void ofApp::exportMeshGrid() {
+  GravityPlane gp;
+  gp.maxScriptId = maxScriptId;
+  for(auto& s : scripts) {
+    gp.addScriptPoint(s);
+  }
+  for(auto& fp : functionMap) {
+    auto script = std::find(scripts.begin(), scripts.end(), fp.second.scriptId);
+    gp.addFunctionPoint(fp.second, *script);
+  }
+  int gridSize = 7; // n by n grid
+  vector<ofMesh> meshes = gp.generateMeshGrid(gridSize, 1);
+  string timestamp = ofGetTimestampString();
+  for(int y = 0; y < gridSize; y++) {
+      for(int x = 0; x < gridSize; x++) {
+        meshes[x + (y*gridSize)].save("mesh_grid" + timestamp + "/mesh_" + to_string(x) + "x" + to_string(y) + ".ply");
+      }
+    }
 }
 
 void ofApp::generateMesh() {
