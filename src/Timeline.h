@@ -355,6 +355,9 @@ public:
     // add which script a certain script is called from or calls the most
     for(auto& f : functionCalls) {
       auto thisScript = find(scripts.begin(), scripts.end(), f.scriptId);
+      // set the first time the script is called
+      double functionts = double(f.ts-firstts)/timeStepsPerSecond;
+      if(thisScript->firstCalled > functionts) thisScript->firstCalled = functionts;
       if(!f.withinScript) {
         auto parent = find(functionCalls.begin(), functionCalls.end(), f.parent);
         auto parentScript = find(scripts.begin(), scripts.end(), parent->scriptId);
@@ -373,6 +376,20 @@ public:
       }
     }
 
+    // set phases for scripts
+    for(auto& script : scripts) {
+      if(script.firstCalled < 2.13) {
+        script.phase = 0;
+      } else if(script.firstCalled < 3.25) {
+        script.phase = 1;
+      } else {
+        script.phase = 2;
+      }
+      if(script.scriptType == "built-in") {
+        script.phase = -1;
+      }
+    }
+
     cout << "** Functions sorted by how many times they are called: **" << endl << endl;
     functionVector[0].printHeaders();
     std::sort (functionVector.begin(), functionVector.end());
@@ -382,12 +399,18 @@ public:
     
     // sort scripts after number of functions to find a position for the biggest one first
     std::sort (scripts.begin(), scripts.end());
-    cout << endl << endl << "** Scripts sorted by how many functions they have: **" << endl << endl;
+    cout << endl << endl << "** Scripts sorted by when they are first called: **" << endl << endl;
     scripts[0].printHeaders();
     for(auto& script : scripts) {
       script.calculateInterconnectedness();
-      // script.print();
+      script.print();
       // script.printToAndFrom();
+    }
+
+    cout << endl << endl << "** Functions within script 317: **" << endl << endl;
+    for(auto& func : functionVector) {
+      if(func.scriptId == 317)
+        func.print();
     }
 
     callsWithin = 0;

@@ -109,4 +109,5 @@ class ofApp : public ofBaseApp{
 		ofxButton exportMeshButton;
 		ofxButton exportMeshGridButton;
 		bool doDrawGraphics = true;
+		ofParameter<int> numScriptsToDraw;
 };

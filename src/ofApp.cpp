@@ -121,6 +121,7 @@ void ofApp::setupGui() {
   gui.add(doGraphicsToggle.setup("draw graphics", true));
   gui.add(exportMeshButton.setup("export mesh"));
   gui.add(exportMeshGridButton.setup("export mesh grid"));
+  gui.add(numScriptsToDraw.set("num scripts to draw", 1, 0, maxScriptId));
   showGui = true;
 }
 
@@ -294,7 +295,7 @@ void ofApp::draw(){
     timeline.progressFrame();
   }
   
-  drawMesh();
+  // drawMesh();
   
   if(showGui){
 		gui.draw();
@@ -315,38 +316,42 @@ void ofApp::drawSingleStaticFunctionCallLine(string function_id, int parent, int
   
   auto function = functionMap.find(function_id);
   if(function == functionMap.end()) ofLogNotice("drawStaticRepresentation") << "ERROR: function not found, id: " << function_id;
-  auto parentCall = std::find(functionCalls.begin(), functionCalls.end(), parent);
-  if(parentCall == functionCalls.end()) ofLogNotice("drawStaticRepresentation") << "ERROR: parentCall not found, id: " << parent;
-  else {
-    auto parentFunction = functionMap.find(parentCall->function_id);
-    if(parentFunction == functionMap.end()) ofLogNotice("drawStaticRepresentation") << "ERROR: parentFunction not found, id: " << parentCall->function_id;
-    else {
-      glm::vec2 p1 = function->second.pos;
-      glm::vec2 p2 = parentFunction->second.pos;
-      
-      float distance = glm::distance(p1, p2);
-      if(distance > HEIGHT*0.02) {
-        ofPolyline line;
-        line.addVertex(p1.x, p1.y, 0);
-        glm::vec2 c1 = p1 + 0.25*(p2-p1);
-        glm::vec2 c2 = p1 + 0.75*(p2-p1);
-        // rotate the point
-        float rotation = (distance/float(HEIGHT));
-        c1 = glm::rotate(c1, rotation);
-        c2 = glm::rotate(c2, -rotation);
-        line.bezierTo(c1.x, c1.y, c2.x, c2.y, p2.x, p2.y);
-        float thickness = ofMap(distance, WIDTH*0.01, WIDTH*0.3, .5, 7.0);
-        // ofLogNotice("functionline") << "thickness: " << thickness;
-        // ofSetColor(ofColor::fromHsb((scriptId*300 - 100) % 360, 150, 255, 60));
-        // ofSetColor(ofColor::fromHsb((scriptId*300 - 200) % 360, 150, 255, 60)); // bright colours
-        ofSetColor(ofColor::fromHsb((scriptId*300 - 200) % 360, 150, 200, 60)); // dark colours
-        if(thickness > 1.2) drawThickPolyline(line, thickness);
-        line.draw();
-        
-      } else {
-        ofDrawLine(p1, p2);
+  if(function->second.scriptId <= numScriptsToDraw) {
+    if(parent != 0) { // the function call with id 0 doesn't exist
+      auto parentCall = std::find(functionCalls.begin(), functionCalls.end(), parent);
+      if(parentCall == functionCalls.end()) ofLogNotice("drawStaticRepresentation") << "ERROR: parentCall not found, id: " << parent;
+      else {
+        auto parentFunction = functionMap.find(parentCall->function_id);
+        if(parentFunction == functionMap.end()) ofLogNotice("drawStaticRepresentation") << "ERROR: parentFunction not found, id: " << parentCall->function_id;
+        else {
+          glm::vec2 p1 = function->second.pos;
+          glm::vec2 p2 = parentFunction->second.pos;
+          
+          float distance = glm::distance(p1, p2);
+          if(distance > HEIGHT*0.02) {
+            ofPolyline line;
+            line.addVertex(p1.x, p1.y, 0);
+            glm::vec2 c1 = p1 + 0.25*(p2-p1);
+            glm::vec2 c2 = p1 + 0.75*(p2-p1);
+            // rotate the point
+            float rotation = (distance/float(HEIGHT));
+            c1 = glm::rotate(c1, rotation);
+            c2 = glm::rotate(c2, -rotation);
+            line.bezierTo(c1.x, c1.y, c2.x, c2.y, p2.x, p2.y);
+            float thickness = ofMap(distance, WIDTH*0.01, WIDTH*0.3, .5, 7.0);
+            // ofLogNotice("functionline") << "thickness: " << thickness;
+            // ofSetColor(ofColor::fromHsb((scriptId*300 - 100) % 360, 150, 255, 60));
+            // ofSetColor(ofColor::fromHsb((scriptId*300 - 200) % 360, 150, 255, 60)); // bright colours
+            ofSetColor(ofColor::fromHsb((scriptId*300 - 200) % 360, 150, 200, 60)); // dark colours
+            if(thickness > 1.2) drawThickPolyline(line, thickness);
+            line.draw();
+            
+          } else {
+            ofDrawLine(p1, p2);
+          }
+        }
       }
-    }
+    } 
   }
   ofPopMatrix(); // restore drawing position
 }
@@ -403,9 +408,11 @@ void ofApp::drawStaticPointsOfScripts(bool drawCenters) {
   //   }
   // }
   for(int i = 0; i < scripts.size(); i++) {
-    // ofSetColor(ofColor::fromHsb((scripts[i].scriptId*300 - 200) % 360, 150, 255, 120)); // bright colours
+    if(scripts[i].scriptId <= numScriptsToDraw) {
+      // ofSetColor(ofColor::fromHsb((scripts[i].scriptId*300 - 200) % 360, 150, 255, 120)); // bright colours
     ofSetColor(ofColor::fromHsb((scripts[i].scriptId*300 - 200) % 360, 210, 200, 120)); // dark colours
     scriptSpheres[i].drawWireframe();
+    }
   }
   ofPopMatrix();
   

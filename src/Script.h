@@ -11,6 +11,9 @@ public:
   string scriptType; // extension, built-in, remote
   string name; // e.g. "google" "gstatic" "kth"
 
+  double firstCalled = DBL_MAX; // the first time a function from this script is called
+  int phase = 0; // what phase the script is in based on when it's first called
+
   // stats of calls from this function (this function is parent)
   int numCallsWithinScript = 0;
   int numCallsToOtherScript = 0;
@@ -24,6 +27,7 @@ public:
   // for mesh export
   float meshRadius = 0;
   glm::vec2 meshPos;
+  glm::vec2 pos;
   
   Script() {
   }
@@ -52,6 +56,9 @@ public:
       if(urlParts.size() >=3) {
         name = urlParts[2];
       }
+    }
+    else if(urlParts[0] == "file://") {
+      scriptType = "local";
     }
     else  scriptType = "built-in";
     
@@ -96,8 +103,19 @@ public:
     }
   }
 
+  // sort by number of functions
+  // bool operator<(const Script& s) {
+  //   return this->numFunctions > s.numFunctions;
+  // }
+
+  // sort by scriptId
+  // bool operator<(const Script& s) {
+  //   return this->scriptId < s.scriptId;
+  // }
+
+  // sort by when the script is first called
   bool operator<(const Script& s) {
-    return this->numFunctions > s.numFunctions;
+    return this->firstCalled < s.firstCalled;
   }
   
   bool operator==(const int id) {
@@ -139,6 +157,7 @@ public:
     cout << std::left << std::setw(9) << setfill(' ') << scriptId;
     cout << std::left << std::setw(12) << setfill(' ') << scriptType;
     cout << std::left << std::setw(10) << setfill(' ') << name;
+    cout << std::left << std::setw(13) << setfill(' ') << firstCalled;
     cout << std::left << std::setw(13) << setfill(' ') << numFunctions;
     cout << std::left << std::setw(15) << setfill(' ') << numCallsWithinScript;
     cout << std::left << std::setw(12) << setfill(' ') << numCallsToOtherScript;
@@ -151,6 +170,7 @@ public:
     cout << std::left << std::setw(9) << setfill(' ') << "scriptId";
     cout << std::left << std::setw(12) << setfill(' ') << "scriptType";
     cout << std::left << std::setw(10) << setfill(' ') << "name";
+    cout << std::left << std::setw(13) << setfill(' ') << "firstCalled";
     cout << std::left << std::setw(13) << setfill(' ') << "numFunctions";
     cout << std::left << std::setw(15) << setfill(' ') << "numCallsWithin";
     cout << std::left << std::setw(12) << setfill(' ') << "numCallsOut";
