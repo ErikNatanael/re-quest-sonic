@@ -2,6 +2,7 @@
 #include "ofMain.h"
 #include "Script.h"
 #include "Function.h"
+#include <unordered_set>
 
 // export function and script positions as a 3d plane where points are 
 // displaced based on their distance to scripts and points
@@ -47,11 +48,31 @@ public:
   }
 };
 
+enum class HoleRelation {HOLE = 0, WALL = 1, NONE = 2};
+class HolePoint {
+public:
+  glm::vec2 pos;
+  float wallRadius;
+  float holeRadius;
+  HolePoint(glm::vec2 p, float wr, float hr): pos(p), wallRadius(wr), holeRadius(hr) {}
+
+  // returns -1 if the 
+  HoleRelation insideHole(glm::vec2 p) {
+    float distance = glm::distance(pos, p);
+    if(distance < holeRadius) return HoleRelation::HOLE;
+    else if (distance < wallRadius) return HoleRelation::WALL;
+    return HoleRelation::NONE;
+  }
+};
+
 class GravityPlane {
 public:
   vector<AttractionPoint> points;
+  vector<HolePoint> holePoints;
   int maxScriptId;
   int size = 1500;
+  bool addBasePlate = false;
+  int holeYPos = -4000;
 
   ofMesh generateMesh() {
     int stepSize = 5;
@@ -70,6 +91,11 @@ public:
       for (int x = minW; x<maxW; x++){
         float offset = getGravityAtPoint(glm::vec2(x*stepSize, y*stepSize));
         if(offset < 0) offset = 0; // avoid function holes extending under the model
+        HoleRelation hr = getHole(glm::vec2(x*stepSize, y*stepSize));
+        if(hr == HoleRelation::HOLE) {
+          offset = holeYPos;
+        }
+        else if(hr == HoleRelation::WALL) offset = baseY;
         mesh.addVertex(ofPoint(x*stepSize,offset,y*stepSize)); // make a new vertex
         mesh.addColor(ofFloatColor(1,.5,1));  // add a color at that vertex
       }
@@ -111,13 +137,24 @@ public:
     // indices for the plane
     for (int y = 0; y<height-1; y++){
       for (int x=0; x<width-1; x++){
-        mesh.addIndex(x+y*width);               // 0
-        mesh.addIndex((x+1)+y*width);           // 1
-        mesh.addIndex(x+(y+1)*width);           // 10
+        // only add the triangles if we are not inside a hole
+        glm::vec3 p0 = mesh.getVertex(x+y*width);
+        glm::vec3 p1 = mesh.getVertex((x+1)+y*width);
+        glm::vec3 p10 = mesh.getVertex(x+(y+1)*width);
+        glm::vec3 p11 = mesh.getVertex((x+1)+(y+1)*width);
+        if(p0.y != holeYPos
+        && p1.y != holeYPos
+        && p10.y != holeYPos
+        && p11.y != holeYPos
+        ) {
+          mesh.addIndex(x+y*width);               // 0
+          mesh.addIndex((x+1)+y*width);           // 1
+          mesh.addIndex(x+(y+1)*width);           // 10
 
-        mesh.addIndex((x+1)+y*width);           // 1
-        mesh.addIndex((x+1)+(y+1)*width);       // 11
-        mesh.addIndex(x+(y+1)*width);           // 10
+          mesh.addIndex((x+1)+y*width);           // 1
+          mesh.addIndex((x+1)+(y+1)*width);       // 11
+          mesh.addIndex(x+(y+1)*width);           // 10
+        }
       }
     }
     int planeVertexLength = width*height;
@@ -125,63 +162,109 @@ public:
     // top
     y = 0;
     for (int i = 0; i < width-1; i++){
-      mesh.addIndex(i);               // 0
-      mesh.addIndex(i+1);           // 1
-      mesh.addIndex(planeVertexLength + i);           // 10
+      // only add the triangles if we are not inside a hole
+      glm::vec3 p0 = mesh.getVertex(i);
+      glm::vec3 p1 = mesh.getVertex(i+1);
+      glm::vec3 p10 = mesh.getVertex(planeVertexLength + i);
+      glm::vec3 p11 = mesh.getVertex(planeVertexLength + i + 1);
+      if(p0.y != holeYPos
+      && p1.y != holeYPos
+      && p10.y != holeYPos
+      && p11.y != holeYPos
+      ) {
+        mesh.addIndex(i);               // 0
+        mesh.addIndex(i+1);           // 1
+        mesh.addIndex(planeVertexLength + i);           // 10
 
-      mesh.addIndex(i+1);           // 1
-      mesh.addIndex(planeVertexLength + i + 1);       // 11
-      mesh.addIndex(planeVertexLength + i);           // 10
+        mesh.addIndex(i+1);           // 1
+        mesh.addIndex(planeVertexLength + i + 1);       // 11
+        mesh.addIndex(planeVertexLength + i);           // 10
+      }
     }
     planeVertexLength += width;
     // right
     x = width-1;
     for (int i = 0; i < height-1; i++){
-      mesh.addIndex(x+i*width);               // 0
-      mesh.addIndex(x + (i+1)*width);           // 1
-      mesh.addIndex(planeVertexLength + i);           // 10
+      // only add the triangles if we are not inside a hole
+      glm::vec3 p0 = mesh.getVertex(x+i*width);
+      glm::vec3 p1 = mesh.getVertex(x + (i+1)*width);
+      glm::vec3 p10 = mesh.getVertex(planeVertexLength + i);
+      glm::vec3 p11 = mesh.getVertex(planeVertexLength + i + 1);
+      if(p0.y != holeYPos
+      && p1.y != holeYPos
+      && p10.y != holeYPos
+      && p11.y != holeYPos
+      ) {
+        mesh.addIndex(x+i*width);               // 0
+        mesh.addIndex(x + (i+1)*width);           // 1
+        mesh.addIndex(planeVertexLength + i);           // 10
 
-      mesh.addIndex(x + (i+1)*width);           // 1
-      mesh.addIndex(planeVertexLength + i + 1);       // 11
-      mesh.addIndex(planeVertexLength + i);           // 10
+        mesh.addIndex(x + (i+1)*width);           // 1
+        mesh.addIndex(planeVertexLength + i + 1);       // 11
+        mesh.addIndex(planeVertexLength + i);           // 10
+      }
     }
     planeVertexLength += height;
     // bottom
     y = height-1;
     for (int i = 0; i < width-1; i++){
-      mesh.addIndex(i+y*width);               // 0
-      mesh.addIndex((i+1) + y*width);           // 1
-      mesh.addIndex(planeVertexLength + i);           // 10
+      // only add the triangles if we are not inside a hole
+      glm::vec3 p0 = mesh.getVertex(i+y*width);
+      glm::vec3 p1 = mesh.getVertex((i+1) + y*width);
+      glm::vec3 p10 = mesh.getVertex(planeVertexLength + i);
+      glm::vec3 p11 = mesh.getVertex(planeVertexLength + i + 1);
+      if(p0.y != holeYPos
+      && p1.y != holeYPos
+      && p10.y != holeYPos
+      && p11.y != holeYPos
+      ) {
+        mesh.addIndex(i+y*width);               // 0
+        mesh.addIndex((i+1) + y*width);           // 1
+        mesh.addIndex(planeVertexLength + i);           // 10
 
-      mesh.addIndex((i+1) + y*width);           // 1
-      mesh.addIndex(planeVertexLength + i + 1);       // 11
-      mesh.addIndex(planeVertexLength + i);           // 10
+        mesh.addIndex((i+1) + y*width);           // 1
+        mesh.addIndex(planeVertexLength + i + 1);       // 11
+        mesh.addIndex(planeVertexLength + i);           // 10
+      }
     }
     planeVertexLength += width;
     // left
     x = 0;
     for (int i = 0; i < height-1; i++){
-      mesh.addIndex(x+i*width);               // 0
-      mesh.addIndex(x + (i+1)*width);           // 1
-      mesh.addIndex(planeVertexLength + i);           // 10
+      // only add the triangles if we are not inside a hole
+      glm::vec3 p0 = mesh.getVertex(x+i*width);
+      glm::vec3 p1 = mesh.getVertex(x + (i+1)*width);
+      glm::vec3 p10 = mesh.getVertex(planeVertexLength + i);
+      glm::vec3 p11 = mesh.getVertex(planeVertexLength + i + 1);
+      if(p0.y != holeYPos
+      && p1.y != holeYPos
+      && p10.y != holeYPos
+      && p11.y != holeYPos
+      ) {
+        mesh.addIndex(x+i*width);               // 0
+        mesh.addIndex(x + (i+1)*width);           // 1
+        mesh.addIndex(planeVertexLength + i);           // 10
 
-      mesh.addIndex(x + (i+1)*width);           // 1
-      mesh.addIndex(planeVertexLength + i + 1);       // 11
-      mesh.addIndex(planeVertexLength + i);           // 10
+        mesh.addIndex(x + (i+1)*width);           // 1
+        mesh.addIndex(planeVertexLength + i + 1);       // 11
+        mesh.addIndex(planeVertexLength + i);           // 10
+      }
     }
 
     // add bottom plate
-    int topleft = width*height;
-    int topright = width*height + width;
-    int bottomleft = width*height + width + height;
-    int bottomright = width*height + width + height + width-1; // last element of bottom row
-    mesh.addIndex(topleft);
-    mesh.addIndex(topright);
-    mesh.addIndex(bottomleft);
+    if(addBasePlate) {
+      int topleft = width*height;
+      int topright = width*height + width;
+      int bottomleft = width*height + width + height;
+      int bottomright = width*height + width + height + width-1; // last element of bottom row
+      mesh.addIndex(topleft);
+      mesh.addIndex(topright);
+      mesh.addIndex(bottomleft);
 
-    mesh.addIndex(topright);
-    mesh.addIndex(bottomright);
-    mesh.addIndex(bottomleft);
+      mesh.addIndex(topright);
+      mesh.addIndex(bottomright);
+      mesh.addIndex(bottomleft);
+    }
 
     return mesh;
   }
@@ -223,16 +306,26 @@ public:
   }
   
   void addFunctionPoint(Function& f, Script& s) {
+    
     float offset = size * -0.04;
     // recalculate the pos relative to the mesh size instead of reusing the one meant for visual display
     glm::vec2 scriptPos = s.meshPos;
     float scriptSize = s.meshRadius;
     glm::vec2 funcRelativePos = f.getRelativeSpiralPos();
     glm::vec2 pos = scriptPos + (funcRelativePos * scriptSize);
-    points.push_back(AttractionPoint(
-      pos,
-      offset,
-      size * .003
+
+    // add as an attraction point
+    // points.push_back(AttractionPoint(
+    //   pos,
+    //   offset,
+    //   size * .003
+    // ));
+
+    // add as a hole point
+    holePoints.push_back(HolePoint(
+      pos, 
+      8,
+      6
     ));
   }
   
@@ -242,5 +335,14 @@ public:
       gravity += a.getGravity(p);
     }
     return gravity;
+  }
+
+  HoleRelation getHole(glm::vec2 p) {
+    HoleRelation hr = HoleRelation::NONE;
+    for(auto& h : holePoints) {
+      HoleRelation temphr = h.insideHole(p);
+      if(static_cast<int>(temphr) < static_cast<int>(hr)) hr = temphr;
+    }
+    return hr;
   }
 };
