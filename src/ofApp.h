@@ -20,6 +20,41 @@ public:
   }
 };
 
+class Triangle {
+	glm::vec2 p1, p2, p3;
+	float sign (glm::vec2 p1, glm::vec2 p2, glm::vec2 p3)
+	{
+			return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
+	}
+	bool isCircleInside (glm::vec2 pt, float r)
+	{
+		// distance between center of circle to each line in the triangle
+		// if the distance if less than the radius of the circle and the 
+		// circle center is inside the triangle we are good
+		if(
+			// test if either of the sides are closer to the point than r
+			false
+		) {
+			return false;
+		}
+
+			float d1, d2, d3;
+			bool has_neg, has_pos;
+
+			d1 = sign(pt, p1, p2);
+			d2 = sign(pt, p2, p3);
+			d3 = sign(pt, p3, p1);
+
+			has_neg = (d1 < 0) || (d2 < 0) || (d3 < 0);
+			has_pos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+
+			return !(has_neg && has_pos);
+	}
+	void draw() {
+		ofDrawTriangle(p1, p2, p3);
+	}
+};
+
 class ofApp : public ofBaseApp{
 
 	public:
@@ -53,6 +88,11 @@ class ofApp : public ofBaseApp{
 		void drawSingleStaticFunctionCallLine(string function_id, int parent, int scriptId);
 		void drawStaticRepresentation(); // draws a static representation of the call graph data
 		void drawThickPolyline(ofPolyline line, float width);
+		ofColor getColorFromScriptId(int scriptId, int alpha);
+		ofParameter<uint16_t> hueOffset;
+		ofParameter<uint16_t> hueRotation;
+		ofParameter<uint8_t> saturation;
+		ofParameter<uint8_t> brightness;
 		
 		void drawMesh();
 		void exportMesh();

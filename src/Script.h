@@ -28,6 +28,7 @@ public:
   float meshRadius = 0;
   glm::vec2 meshPos;
   glm::vec2 pos;
+  float radius;
   
   Script() {
   }

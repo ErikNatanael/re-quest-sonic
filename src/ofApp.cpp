@@ -14,7 +14,7 @@ void ofApp::setup() {
   // must set makeContours to true in order to generate paths
   font.load("SourceCodePro-Regular.otf", 16, false, false, true);
   
-  string profilePath = "profiles/whoami-20200114/";
+  string profilePath = "profiles/sing-wikipedia-20200204/";
   
   timeline.init(WIDTH, HEIGHT);
   timeline.parseScriptingProfile(profilePath + "scores/scripting_events.json");
@@ -121,7 +121,11 @@ void ofApp::setupGui() {
   gui.add(doGraphicsToggle.setup("draw graphics", true));
   gui.add(exportMeshButton.setup("export mesh"));
   gui.add(exportMeshGridButton.setup("export mesh grid"));
-  gui.add(numScriptsToDraw.set("num scripts to draw", 1, 0, maxScriptId));
+  gui.add(numScriptsToDraw.set("num scripts to draw", maxScriptId, 0, maxScriptId));
+  gui.add(hueRotation.set("hueRotation", 24, 0, 255));
+  gui.add(hueOffset.set("hueOffset", 247, 0, 255));
+  gui.add(saturation.set("saturation", 210));
+  gui.add(brightness.set("brightness", 180));
   showGui = true;
 }
 
@@ -342,7 +346,8 @@ void ofApp::drawSingleStaticFunctionCallLine(string function_id, int parent, int
             // ofLogNotice("functionline") << "thickness: " << thickness;
             // ofSetColor(ofColor::fromHsb((scriptId*300 - 100) % 360, 150, 255, 60));
             // ofSetColor(ofColor::fromHsb((scriptId*300 - 200) % 360, 150, 255, 60)); // bright colours
-            ofSetColor(ofColor::fromHsb((scriptId*300 - 200) % 360, 150, 200, 60)); // dark colours
+            ofSetColor(getColorFromScriptId(scriptId, 60)); // dark colours
+            
             if(thickness > 1.2) drawThickPolyline(line, thickness);
             line.draw();
             
@@ -362,7 +367,7 @@ void ofApp::drawThickPolyline(ofPolyline line, float width) {
   meshy.setMode(OF_PRIMITIVE_TRIANGLE_STRIP);
 
   float widthSmooth = width;
-  float angleSmooth;
+  float angleSmooth = 0;
 
   for (int i = 0;  i < line.getVertices().size(); i++){        
       int me_m_one = i-1;
@@ -410,8 +415,9 @@ void ofApp::drawStaticPointsOfScripts(bool drawCenters) {
   for(int i = 0; i < scripts.size(); i++) {
     if(scripts[i].scriptId <= numScriptsToDraw) {
       // ofSetColor(ofColor::fromHsb((scripts[i].scriptId*300 - 200) % 360, 150, 255, 120)); // bright colours
-    ofSetColor(ofColor::fromHsb((scripts[i].scriptId*300 - 200) % 360, 210, 200, 120)); // dark colours
-    scriptSpheres[i].drawWireframe();
+      ofSetColor(getColorFromScriptId(scripts[i].scriptId, 120)); // dark colours
+
+      scriptSpheres[i].drawWireframe();
     }
   }
   ofPopMatrix();
@@ -432,6 +438,12 @@ void ofApp::drawStaticPointsOfFunctions() {
     s.draw();
   }
   ofPopMatrix();
+}
+
+ofColor ofApp::getColorFromScriptId(int scriptId, int alpha) {
+  float hue = (scriptId*hueRotation + hueOffset) % 255;
+  // saturation and brightness are set in the GUI as ofParameters
+  return ofColor::fromHsb(hue, saturation, brightness, alpha);
 }
 
 void ofApp::drawSpiral() {
