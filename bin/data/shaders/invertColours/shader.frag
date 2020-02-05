@@ -140,7 +140,7 @@ void main()
 	st *= resMult;
 	// st.y =  imgRes.y - st.y; // inverts the coordinates, not necessary if drawing to an FBO
 	// st.x = imgRes.x - st.x; // invert x coordinates for mirror effect
-	st.x = imgRes.x * smoothstep(0, 1, nc.x*1.8);
+	// st.x = imgRes.x * smoothstep(0, 1, nc.x*1.8);
 
 	// apply fbm to texture coordinates
 	// float fbmEffect = resolution.x * 0.002;
@@ -169,9 +169,10 @@ void main()
 	vec3 warpedPixel2 =  texture(tex0, st).rgb;// * vec4(1., 0., 0. ,1.);
 	// vec3 color = normalPixel*.5 + warpedPixel1*.25 + warpedPixel2*.15;
   vec3 color = normalPixel;
+
   // fade to white at the left side
-  color += smoothstep(0.9, 1.0, nc.x*1.8);
-  color += smoothstep(0.67, 1.0, nc.x*1.8)*0.3;
+  // color += smoothstep(0.9, 1.0, nc.x*1.8);
+  // color += smoothstep(0.67, 1.0, nc.x*1.8)*0.3;
 	
 
 	// use the mask for alpha

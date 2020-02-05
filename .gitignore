@@ -52,6 +52,7 @@ Temporary Items
 /bin/*
 !/bin/data/
 /bin/data/screenshots/*
+/bin/data/mesh*
 
 # general
 

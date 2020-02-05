@@ -413,7 +413,7 @@ s.waitForBoot({
 			idDigits = Set[], tempid = id;
 
 			// if(~functionCallDensity < 99) {
-				{ var index = ((scriptId/300.0)*~spectrumChord.size).floor,
+			{ var index = (((scriptId/300.0)*~spectrumChord.size) % ~spectrumChord.size).floor,
 					degree = ~spectrumChord[index];
 					("index: " + index + "degree: " + degree + "scriptId" + scriptId).postln;
 				~spectrumTriggers[index].set(1.0); // trigger the sineperc_retrig envelope

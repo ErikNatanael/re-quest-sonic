@@ -14,7 +14,7 @@ void ofApp::setup() {
   // must set makeContours to true in order to generate paths
   font.load("SourceCodePro-Regular.otf", 16, false, false, true);
   
-  string profilePath = "profiles/sing-wikipedia-20200204/";
+  string profilePath = "profiles/taylor-swift-filming-20200205/";
   
   timeline.init(WIDTH, HEIGHT);
   timeline.parseScriptingProfile(profilePath + "scores/scripting_events.json");
@@ -85,6 +85,10 @@ void ofApp::setup() {
   
   generateMesh();
   easyCam.enableMouseInput();
+
+  triangle.p1 = glm::vec2(WIDTH/2, HEIGHT/4);
+  triangle.p2 = glm::vec2(WIDTH/4, HEIGHT*0.75);
+  triangle.p3 = glm::vec2(WIDTH*0.75, HEIGHT*0.5);
   
   // ***************************** INIT openFrameworks STUFF
   setupGui();
@@ -112,6 +116,7 @@ void ofApp::setupGui() {
   doGraphicsToggle.addListener(this, &ofApp::toggleDoDrawGraphics);
   exportMeshButton.addListener(this, &ofApp::exportMesh);
   exportMeshGridButton.addListener(this, &ofApp::exportMeshGrid);
+  functionPointOffsetRatio.addListener(this, &ofApp::regenerateMesh);
   
   // create the GUI panel
   gui.setup();
@@ -119,8 +124,10 @@ void ofApp::setupGui() {
   gui.add(sendActivityEnvelopeToSCButton.setup("Send activity envelope to SC"));
   gui.add(doLoopToggle.setup("loop", false));
   gui.add(doGraphicsToggle.setup("draw graphics", true));
+  gui.add(doDrawScreenshots.set("draw screenshots", true));
   gui.add(exportMeshButton.setup("export mesh"));
   gui.add(exportMeshGridButton.setup("export mesh grid"));
+  gui.add(functionPointOffsetRatio.set("function offset ratio", 0.005, -0.05, 0.05));
   gui.add(numScriptsToDraw.set("num scripts to draw", maxScriptId, 0, maxScriptId));
   gui.add(hueRotation.set("hueRotation", 24, 0, 255));
   gui.add(hueOffset.set("hueOffset", 247, 0, 255));
@@ -157,7 +164,7 @@ void ofApp::exportMeshGrid() {
   }
   for(auto& fp : functionMap) {
     auto script = std::find(scripts.begin(), scripts.end(), fp.second.scriptId);
-    gp.addFunctionPoint(fp.second, *script);
+    gp.addFunctionPoint(fp.second, *script, functionPointOffsetRatio);
   }
   int gridSize = 7; // n by n grid
   vector<ofMesh> meshes = gp.generateMeshGrid(gridSize, 1);
@@ -177,9 +184,13 @@ void ofApp::generateMesh() {
   }
   for(auto& fp : functionMap) {
     auto script = std::find(scripts.begin(), scripts.end(), fp.second.scriptId);
-    gp.addFunctionPoint(fp.second, *script);
+    gp.addFunctionPoint(fp.second, *script, functionPointOffsetRatio);
   }
   mesh = gp.generateMesh();
+}
+
+void ofApp::regenerateMesh(float& f)  {
+  generateMesh();
 }
 
 void ofApp::drawMesh() {
@@ -256,17 +267,22 @@ void ofApp::draw(){
         }
       }
     }
-    ofSetColor(205, 191, 255, 255);
-    invertShader.begin();
-    invertShader.setUniformTexture("tex0", screenshots[currentScreen].img.getTexture(), 1);
-    invertShader.setUniform2f("resMult", float(screenshots[currentScreen].img.getWidth()) / float(WIDTH), float(screenshots[currentScreen].img.getHeight()) / float(HEIGHT));
-    invertShader.setUniform2f("imgRes", screenshots[currentScreen].img.getWidth(), screenshots[currentScreen].img.getHeight());
-    invertShader.setUniform2f("resolution", WIDTH, HEIGHT);
-    invertShader.setUniform1f("time", timeline.getTimeCursor());
-    screenshots[currentScreen].img.draw(0, 0, WIDTH, HEIGHT);
-    ofDrawRectangle(0, 0, WIDTH, HEIGHT);
-    invertShader.end();
-  
+    if(doDrawScreenshots) {
+      ofSetColor(205, 191, 255, 255);
+      invertShader.begin();
+      invertShader.setUniformTexture("tex0", screenshots[currentScreen].img.getTexture(), 1);
+      invertShader.setUniform2f("resMult", float(screenshots[currentScreen].img.getWidth()) / float(WIDTH), float(screenshots[currentScreen].img.getHeight()) / float(HEIGHT));
+      invertShader.setUniform2f("imgRes", screenshots[currentScreen].img.getWidth(), screenshots[currentScreen].img.getHeight());
+      invertShader.setUniform2f("resolution", WIDTH, HEIGHT);
+      invertShader.setUniform1f("time", timeline.getTimeCursor());
+      screenshots[currentScreen].img.draw(0, 0, WIDTH, HEIGHT);
+      ofDrawRectangle(0, 0, WIDTH, HEIGHT);
+      invertShader.end();
+    } else {
+      // clear screen if we don't do screenshots
+      ofBackground(0, 255);
+    }
+    
     cam.begin();
     drawStaticPointsOfScripts();
     drawStaticPointsOfFunctions();
@@ -286,6 +302,7 @@ void ofApp::draw(){
   timeline.draw();
 
   renderFbo.end();
+  ofSetColor(255, 255);
   renderFbo.draw(0, 0);
   if(rendering) {
     // write frame to disk
@@ -299,10 +316,16 @@ void ofApp::draw(){
     timeline.progressFrame();
   }
   
-  // drawMesh();
+  drawMesh();
   
   if(showGui){
 		gui.draw();
+    ofSetColor(255, 0, 0, 255);
+    ofNoFill();
+    triangle.draw();
+    for(auto& c : circles) {
+      c.draw();
+    }
 	}
 }
 
@@ -496,6 +519,21 @@ void ofApp::mouseDragged(int x, int y, int button){
 void ofApp::mousePressed(int x, int y, int button){
   // only move timeline if GUI is not shown as otherwise interacting with the GUI would move the timeline every time
   if(!showGui) timeline.click(x, y);
+
+  // add circle to triangle
+  Circle tc;
+  tc.p = glm::vec2(x, y);
+  tc.r = 20;
+  if(triangle.isCircleInside(tc.p, tc.r)) {
+    bool overlaps = false;
+    for(auto& c : circles) {
+      if(c.circleOverlaps(tc)) {
+        overlaps = true;
+        break;
+      }
+    }
+    if(!overlaps) circles.push_back(tc);
+  }
 
 }
 

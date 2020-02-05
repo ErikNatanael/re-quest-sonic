@@ -305,9 +305,12 @@ public:
     s.meshPos = pos;
   }
   
-  void addFunctionPoint(Function& f, Script& s) {
+  void addFunctionPoint(Function& f, Script& s, float offsetRatio = -0.005) {
     
-    float offset = size * -0.04;
+    // float offset = size * -0.04;
+    float offset = size * 0.008;
+    // float radius = size * .003;
+    float radius = size * .005;
     // recalculate the pos relative to the mesh size instead of reusing the one meant for visual display
     glm::vec2 scriptPos = s.meshPos;
     float scriptSize = s.meshRadius;
@@ -315,18 +318,18 @@ public:
     glm::vec2 pos = scriptPos + (funcRelativePos * scriptSize);
 
     // add as an attraction point
-    // points.push_back(AttractionPoint(
-    //   pos,
-    //   offset,
-    //   size * .003
-    // ));
+    points.push_back(AttractionPoint(
+      pos,
+      offset,
+      radius
+    ));
 
     // add as a hole point
-    holePoints.push_back(HolePoint(
-      pos, 
-      8,
-      6
-    ));
+    // holePoints.push_back(HolePoint(
+    //   pos, 
+    //   8,
+    //   6
+    // ));
   }
   
   float getGravityAtPoint(glm::vec2 p) {
