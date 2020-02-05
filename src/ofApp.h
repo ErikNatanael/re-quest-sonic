@@ -144,6 +144,8 @@ class ofApp : public ofBaseApp{
 		ofEasyCam easyCam;
 		ofMesh mesh;
 		ofParameter<float> functionPointOffsetRatio;
+		bool doSpiralPositions = true;
+		bool doTrianglePositions = false;
 
 		ofTrueTypeFont font;
 		

@@ -58,29 +58,37 @@ void ofApp::setup() {
     if(s.scriptId > maxScriptId) maxScriptId = s.scriptId;
   }
   
+  // SPIRAL POSITIONS
   // calculate function position
-  for(auto& fp : functionMap) {
-    auto& f = fp.second;
-    auto script = std::find(scripts.begin(), scripts.end(), f.scriptId);
-    glm::vec2 scriptPos = script->getSpiralCoordinate(maxScriptId, HEIGHT);
-    float scriptSize = script->getSize() * HEIGHT * 0.075;
-    glm::vec2 funcPos = f.getRelativeSpiralPos();
-    f.pos = scriptPos + (funcPos * scriptSize);
-    ofIcoSpherePrimitive sphere;
-    sphere.setPosition(f.pos.x, f.pos.y, 0);
-    sphere.setRadius(2);
-    sphere.setResolution(1);
-    funcSpheres.push_back(sphere);
+  if(doSpiralPositions) {
+    for(auto& fp : functionMap) {
+      auto& f = fp.second;
+      auto script = std::find(scripts.begin(), scripts.end(), f.scriptId);
+      glm::vec2 scriptPos = script->getSpiralCoordinate(maxScriptId, HEIGHT);
+      float scriptSize = script->getSize() * HEIGHT * 0.075;
+      glm::vec2 funcPos = f.getRelativeSpiralPos();
+      f.pos = scriptPos + (funcPos * scriptSize);
+      ofIcoSpherePrimitive sphere;
+      sphere.setPosition(f.pos.x, f.pos.y, 0);
+      sphere.setRadius(2);
+      sphere.setResolution(1);
+      funcSpheres.push_back(sphere);
+    }
+    
+    // create script spheres
+    for(auto& s : scripts) {
+      ofIcoSpherePrimitive sphere;
+      sphere.setRadius( s.getSize() * HEIGHT * 0.075 );
+      glm::vec2 scriptPos = s.getSpiralCoordinate(maxScriptId, HEIGHT);
+      sphere.setPosition(scriptPos.x, scriptPos.y, 0);
+      sphere.setResolution(1);
+      scriptSpheres.push_back(sphere);
+    }
   }
-  
-  // create script spheres
-  for(auto& s : scripts) {
-    ofIcoSpherePrimitive sphere;
-    sphere.setRadius( s.getSize() * HEIGHT * 0.075 );
-    glm::vec2 scriptPos = s.getSpiralCoordinate(maxScriptId, HEIGHT);
-    sphere.setPosition(scriptPos.x, scriptPos.y, 0);
-    sphere.setResolution(1);
-    scriptSpheres.push_back(sphere);
+
+  // TRIANGLE POSITIONS
+  if(doTrianglePositions) {
+    
   }
   
   generateMesh();
@@ -316,7 +324,7 @@ void ofApp::draw(){
     timeline.progressFrame();
   }
   
-  drawMesh();
+  // drawMesh();
   
   if(showGui){
 		gui.draw();
