@@ -3,39 +3,49 @@ checking pkg-config libraries:   cairo zlib gstreamer-app-1.0 gstreamer-1.0 gstr
 with PKG_CONFIG_LIBDIR=
 [notice ] ofApp::setup JSON parsing successful: 
 urlParts[0]: 
+urlParts[0]: chrome-extension://
 urlParts[0]: file://
 urlParts[0]: https://
-urlParts[0]: chrome-extension://
-urlParts[0]: https://
-urlParts[0]: chrome-extension://
 urlParts[0]: https://
 urlParts[0]: https://
 urlParts[0]: https://
-urlParts[0]: https://
-urlParts[0]: https://
-urlParts[0]: chrome-extension://
-urlParts[0]: chrome-extension://
-urlParts[0]: chrome-extension://
-urlParts[0]: chrome-extension://
-urlParts[0]: chrome-extension://
-urlParts[0]: chrome-extension://
-urlParts[0]: chrome-extension://
-urlParts[0]: chrome-extension://
-urlParts[0]: chrome-extension://
-urlParts[0]: chrome-extension://
-urlParts[0]: chrome-extension://
-urlParts[0]: chrome-extension://
 urlParts[0]: chrome-extension://
 urlParts[0]: extensions::SafeBuiltins
 urlParts[0]: chrome-extension://
 urlParts[0]: chrome-extension://
 urlParts[0]: chrome-extension://
+urlParts[0]: chrome-extension://
+urlParts[0]: chrome-extension://
+urlParts[0]: chrome-extension://
+urlParts[0]: chrome-extension://
+urlParts[0]: chrome-extension://
+urlParts[0]: chrome-extension://
+urlParts[0]: chrome-extension://
+urlParts[0]: chrome-extension://
+urlParts[0]: chrome-extension://
+urlParts[0]: chrome-extension://
+urlParts[0]: chrome-extension://
+urlParts[0]: chrome-extension://
+urlParts[0]: chrome-extension://
+urlParts[0]: chrome-extension://
+urlParts[0]: chrome-extension://
+urlParts[0]: chrome-extension://
+urlParts[0]: chrome-extension://
+urlParts[0]: chrome-extension://
+urlParts[0]: chrome-extension://
+urlParts[0]: chrome-extension://
+urlParts[0]: chrome-extension://
+urlParts[0]: chrome-extension://
+urlParts[0]: chrome-extension://
+urlParts[0]: chrome-extension://
 urlParts[0]: 
 urlParts[0]: chrome-extension://
 urlParts[0]: chrome-extension://
 urlParts[0]: chrome-extension://
-urlParts[0]: https://
-urlParts[0]: https://
+urlParts[0]: chrome-extension://
+urlParts[0]: chrome-extension://
+urlParts[0]: chrome-extension://
+urlParts[0]: 
 urlParts[0]: chrome-extension://
 urlParts[0]: 
 urlParts[0]: https://
@@ -45,36 +55,54 @@ urlParts[0]: https://
 urlParts[0]: https://
 urlParts[0]: https://
 urlParts[0]: https://
-urlParts[0]: https://
-urlParts[0]: https://
-urlParts[0]: https://
-urlParts[0]: https://
-urlParts[0]: https://
-urlParts[0]: https://
-urlParts[0]: https://
-urlParts[0]: https://
-urlParts[0]: https://
+urlParts[0]: chrome-extension://
+urlParts[0]: 
 urlParts[0]: chrome-extension://
 urlParts[0]: chrome-extension://
 urlParts[0]: https://
-urlParts[0]: https://
-urlParts[0]: https://
-urlParts[0]: chrome-extension://
-urlParts[0]: chrome-extension://
-urlParts[0]: chrome-extension://
-urlParts[0]: chrome-extension://
+urlParts[0]: file://
 urlParts[0]: chrome-extension://
 urlParts[0]: file://
+urlParts[0]: chrome-extension://
+urlParts[0]: file://
+urlParts[0]: chrome-extension://
+urlParts[0]: file://
+urlParts[0]: file://
+urlParts[0]: file://
+urlParts[0]: file://
+urlParts[0]: file://
+urlParts[0]: file://
+urlParts[0]: file://
+urlParts[0]: file://
+urlParts[0]: file://
+urlParts[0]: file://
+urlParts[0]: 
+urlParts[0]: file://
+urlParts[0]: file://
+urlParts[0]: file://
+urlParts[0]: file://
+urlParts[0]: file://
+urlParts[0]: file://
+urlParts[0]: file://
+urlParts[0]: file://
+urlParts[0]: file://
+urlParts[0]: file://
+urlParts[0]: file://
+urlParts[0]: file://
+urlParts[0]: file://
+urlParts[0]: file://
+urlParts[0]: 
+urlParts[0]: 
+urlParts[0]: 
+urlParts[0]: 
+urlParts[0]: 
 urlParts[0]: https://
 urlParts[0]: https://
-urlParts[0]: https://
-urlParts[0]: https://
 urlParts[0]: chrome-extension://
 urlParts[0]: chrome-extension://
 urlParts[0]: chrome-extension://
-urlParts[0]: chrome-extension://
-urlParts[0]: chrome-extension://
-urlParts[0]: chrome-extension://
+urlParts[0]: 
+urlParts[0]: 
 urlParts[0]: 
 urlParts[0]: 
 urlParts[0]: 
@@ -83,133 +111,1152 @@ urlParts[0]:
 [notice ] Timeline::parseScriptingProfile: parent function call to functionCall not found, parent id: 0
 ** Functions sorted by how many times they are called: **
 
-Name                       id     calledTimes callingTimes numCallsWithinScript numCallsToOtherScript numCalledFromOutsideScript
+Name                       id     scriptId calledTimes callingTimes numCallsWithinScript numCallsToOtherScript numCalledFromOutsideScript
+                           409    530      349         336          333                  3                     4                         
+n                          411    530      168         223          223                  0                     0                         
+                           999    536      96          89           64                   25                    23                        
+each                       1017   536      87          91           79                   12                    13                        
+                           1154   543      55          72           46                   26                    12                        
+e.subscribe                963    530      42          49           49                   0                     0                         
+bJ                         1031   536      42          40           40                   0                     40                        
+init                       1032   536      40          36           36                   0                     0                         
+                           1089   541      38          58           24                   34                    21                        
+bJ.extend.bJ.fn.extend     1028   536      37          1            1                    0                     35                        
+buildFragment              1287   536      32          26           15                   11                    0                         
+t.next                     8      366      31          33           33                   0                     0                         
+t._next                    9      366      30          32           32                   0                     0                         
+t.next                     1982   530      30          32           32                   0                     0                         
+t._next                    1983   530      29          28           28                   0                     0                         
+e.call                     1972   530      27          31           31                   0                     0                         
+_render                    1383   541      25          48           25                   23                    12                        
+parseHTML                  1286   536      25          26           26                   0                     0                         
+appendChild                165    0        22          2            0                    2                     22                        
+find                       1106   536      22          22           22                   0                     12                        
+add                        1239   536      20          15           9                    6                     1                         
+on                         1235   536      20          20           20                   0                     16                        
+a.Views.Base               1382   541      20          30           18                   12                    11                        
+setTimeout                 108    0        19          0            0                    0                     19                        
+data                       1426   536      19          20           20                   0                     10                        
+a.$exec_template           1413   539      18          32           14                   18                    18                        
+cv                         1128   536      18          7            2                    5                     0                         
+b.Base                     1117   541      18          19           4                    15                    15                        
+ba                         1241   536      16          12           12                   0                     0                         
+s                          911    530      16          15           15                   0                     0                         
+domManip                   1290   536      16          22           22                   0                     0                         
+t                          878    530      15          13           13                   0                     1                         
+append                     1289   536      14          14           14                   0                     13                        
+r                          637    530      14          5            2                    3                     0                         
+a.exec_template            1414   539      14          14           0                    14                    0                         
+                           43     366      13          6            6                    0                     3                         
+e._trySubscribe            968    530      13          12           12                   0                     0                         
+t.a                        466    530      13          7            7                    0                     0                         
+setUninstallURL            374    0        12          0            0                    0                     12                        
+lp                         1094   536      12          12           12                   0                     6                         
+_wrapLinks                 1422   541      12          14           0                    14                    0                         
+i.emit                     1144   536      12          12           0                    12                    12                        
+set                        1140   541      11          11           11                   0                     4                         
+                           128    372      11          8            5                    3                     1                         
+_addToDOM                  1519   541      11          11           0                    11                    0                         
+merge                      1311   536      11          0            0                    0                     0                         
+_render                    1670   543      11          20           1                    19                    11                        
+bJ.fn.<computed>           1390   536      10          11           11                   0                     8                         
+                           1068   539      10          17           10                   7                     3                         
+                           2288   550      10          7            3                    4                     2                         
+addEventListener           397    0        10          0            0                    0                     10                        
+createElement              123    0        10          0            0                    0                     10                        
+acceptData                 1407   536      9           0            0                    0                     0                         
+bindEvents                 1543   539      9           8            0                    8                     9                         
+_data                      1240   536      9           8            8                    0                     0                         
+                           380    521      9           10           8                    2                     3                         
+_emitChange                1773   541      9           9            0                    9                     1                         
+removeChild                215    0        8           0            0                    0                     8                         
+n.d                        415    530      8           0            0                    0                     0                         
+t.notifyNext               10     366      8           8            8                    0                     0                         
+access                     1356   536      8           8            8                    0                     0                         
+t.notifyNext               1990   530      8           8            8                    0                     0                         
+t._innerSub                1985   530      8           8            8                    0                     0                         
+E                          423    530      8           9            9                    0                     0                         
+t._tryNext                 1984   530      8           10           10                   0                     0                         
+a                          1859   543      7           8            3                    5                     0                         
+css                        1558   536      7           7            7                    0                     3                         
+y                          1508   536      7           3            0                    3                     0                         
+each                       127    372      7           8            7                    1                     1                         
+apply                      2426   550      7           7            7                    0                     7                         
+                           2424   590      7           8            0                    8                     7                         
+insertBefore               124    0        7           2            0                    2                     7                         
+                           2382   578      7           7            5                    2                     6                         
+addItems                   1858   543      7           8            7                    1                     0                         
+aa                         1042   536      7           5            5                    0                     0                         
+a                          479    530      7           7            7                    0                     0                         
+                           299    478      6           5            3                    2                     1                         
+                           2387   581      6           5            4                    1                     4                         
+addClass                   1336   536      6           1            1                    0                     5                         
+e.exports                  457    530      6           2            2                    0                     0                         
+                           61     377      6           8            1                    7                     6                         
+removeClass                1348   536      6           0            0                    0                     5                         
+asyncFunctionWrapper       2427   550      6           6            6                    0                     0                         
+l                          1090   536      6           7            7                    0                     3                         
+clearTimeout               107    0        6           0            0                    0                     6                         
+                           293    3        6           5            5                    0                     2                         
+k                          1817   543      6           6            3                    3                     0                         
+                           369    512      6           5            0                    5                     6                         
+get runtime                362    0        6           0            0                    0                     6                         
+                           349    501      6           6            5                    1                     6                         
+                           2330   554      5           4            4                    0                     3                         
+w                          580    530      5           7            3                    4                     0                         
+                           1916   545      5           4            4                    0                     1                         
+sprintf                    1093   536      5           2            2                    0                     0                         
+e.pipe                     879    530      5           5            5                    0                     0                         
+remove                     1304   536      5           6            4                    2                     2                         
+e                          2090   530      5           3            3                    0                     0                         
+ce                         126    372      5           6            6                    0                     0                         
+_                          581    530      5           1            1                    0                     0                         
+                           2298   551      5           5            5                    0                     1                         
+attr                       1355   536      5           4            3                    1                     3                         
+A                          1421   536      5           1            0                    1                     0                         
+_cacheElems                1384   541      5           4            0                    4                     2                         
+map                        1438   536      5           4            4                    0                     0                         
+                           310    481      5           4            2                    2                     3                         
+pushStack                  1107   536      5           4            4                    0                     0                         
+type                       121    372      5           0            0                    0                     0                         
+e                          2653   543      5           5            2                    3                     1                         
+n                          1057   536      4           1            1                    0                     3                         
+addClass                   62     372      4           0            0                    0                     4                         
+i.setMaxListeners          1118   536      4           0            0                    0                     4                         
+e.create                   940    530      4           2            2                    0                     0                         
+removeClass                66     372      4           0            0                    0                     4                         
+__webpack_require__        382    521      4           5            5                    0                     0                         
+by                         1429   536      4           2            1                    1                     0                         
+type                       1463   536      4           0            0                    0                     0                         
+getElementsByTagName       206    0        4           0            0                    0                     4                         
+p                          917    530      4           3            3                    0                     0                         
+t                          135    366      4           3            3                    0                     0                         
+evaluate                   2472   0        4           0            0                    0                     4                         
+o                          2300   551      4           3            3                    0                     0                         
+set prototype              638    0        4           0            0                    0                     4                         
+setAttribute               1030   0        4           0            0                    0                     4                         
+show                       1897   543      4           7            1                    6                     1                         
+camelCase                  1435   536      4           0            0                    0                     0                         
+_send                      1903   539      4           5            0                    5                     0                         
+fire                       1902   539      4           4            4                    0                     4                         
+get                        2333   550      3           2            1                    1                     3                         
+                           2311   553      3           3            2                    1                     2                         
+deepCopy                   364    505      3           2            2                    0                     1                         
+focus                      94     377      3           1            0                    1                     0                         
+P                          2951   530      3           5            5                    0                     0                         
+                           358    517      3           2            2                    0                     3                         
+                           2314   556      3           3            1                    2                     2                         
+c                          2544   543      3           2            0                    2                     1                         
+                           406    528      3           3            1                    2                     2                         
+debug                      2454   556      3           3            0                    3                     3                         
+ce                         1021   536      3           8            8                    0                     0                         
+cv.contains                1288   536      3           1            1                    0                     0                         
+apply                      371    478      3           3            3                    0                     3                         
+asyncFunctionWrapper       372    478      3           3            3                    0                     0                         
+                           303    479      3           3            3                    0                     1                         
+t._subscribe               2092   530      3           3            3                    0                     0                         
+h                          480    530      3           3            3                    0                     0                         
+deepCopy                   2419   583      3           2            2                    0                     1                         
+add                        125    372      3           3            3                    0                     1                         
+importObject               2461   587      3           2            2                    0                     1                         
+l                          577    530      3           3            3                    0                     0                         
+aa                         169    372      3           3            3                    0                     0                         
+a.get_favicon_url          2644   539      3           1            0                    1                     3                         
+a.isInternalURL            1436   539      3           0            0                    0                     3                         
+t._complete                2045   530      3           2            2                    0                     0                         
+a.strip_all_html           115    375      3           0            0                    0                     3                         
+t.complete                 2044   530      3           3            3                    0                     0                         
+querySelectorAll           2340   0        3           0            0                    0                     3                         
+getPropertyValue           1788   0        3           0            0                    0                     3                         
+t.schedule                 2042   530      3           3            3                    0                     0                         
+get prototype              502    0        3           0            0                    0                     3                         
+u                          1926   530      3           3            3                    0                     0                         
+                           993    534      3           3            2                    1                     1                         
+E                          1787   536      3           3            0                    3                     0                         
+Gettext.dcnpgettext        1514   536      3           0            0                    0                     0                         
+e.add                      2048   530      3           0            0                    0                     0                         
+trigger                    1689   536      3           2            2                    0                     0                         
+r                          1058   536      3           1            1                    0                     0                         
+create                     952    530      3           2            2                    0                     0                         
+b4                         1274   536      3           4            2                    2                     1                         
+buildFragment              164    372      3           13           9                    4                     0                         
+c                          1121   541      3           5            4                    1                     2                         
+t.execute                  2158   530      2           2            2                    0                     0                         
+                           3017   509      2           3            0                    3                     1                         
+importObject               3013   509      2           1            1                    0                     1                         
+__webpack_require__        1918   545      2           3            3                    0                     0                         
+t.flush                    2157   530      2           2            2                    0                     1                         
+K                          1002   536      2           6            2                    4                     0                         
+e._subscribe               2004   530      2           2            2                    0                     0                         
+dl                         1301   536      2           2            2                    0                     0                         
+_getBingAttrs              2889   543      2           8            6                    2                     0                         
+                           356    513      2           1            1                    0                     1                         
+bJ.fn.offset               2770   536      2           3            1                    2                     2                         
+_formatEmbedURL            2890   543      2           1            0                    1                     0                         
+contentEditable            912    530      2           0            0                    0                     0                         
+nir                        1321   541      2           2            0                    2                     0                         
+filter                     1294   536      2           2            2                    0                     0                         
+trace                      1933   530      2           3            3                    0                     0                         
+Gettext.pgettext           1513   536      2           2            2                    0                     0                         
+b.Models.Answers.News      1880   543      2           2            2                    0                     0                         
+t                          1143   541      2           0            0                    0                     0                         
+                           977    532      2           2            2                    0                     1                         
+fireWith                   1273   536      2           2            2                    0                     0                         
+Gettext.gettext            1092   536      2           1            1                    0                     0                         
+c                          527    530      2           1            1                    0                     0                         
+b                          960    530      2           0            0                    0                     0                         
+fixed.exec                 330    489      2           0            0                    0                     0                         
+nua                        3058   541      2           2            0                    2                     0                         
+                           2277   526      2           4            1                    3                     1                         
+window.injectScript        987    525      2           4            0                    4                     2                         
+nrn                        2515   541      2           21           6                    15                    1                         
+addAnswer                  1821   543      2           4            2                    2                     0                         
+i                          1929   530      2           3            3                    0                     0                         
+nro                        3061   541      2           2            0                    2                     2                         
+cg                         1298   536      2           1            1                    0                     0                         
+je                         583    530      2           3            0                    3                     0                         
+e.unsubscribe              2174   530      2           1            1                    0                     0                         
+e.schedule                 2043   530      2           1            1                    0                     0                         
+                           398    523      2           2            1                    1                     2                         
+listen                     1255   530      2           2            2                    0                     0                         
+transform                  2888   543      2           2            2                    0                     0                         
+match                      2170   530      2           2            2                    0                     0                         
+cv.compile                 1300   536      2           1            1                    0                     0                         
+nrj                        1279   541      2           4            1                    3                     2                         
+s.set                      2957   530      2           0            0                    0                     0                         
+t.__tryOrUnsub             2165   530      2           2            2                    0                     0                         
+loadContent                2872   543      2           4            4                    0                     0                         
+d                          1178   536      2           0            0                    0                     0                         
+value                      395    518      2           1            0                    1                     2                         
+nrb                        2377   541      2           2            1                    1                     0                         
+df                         1297   536      2           6            6                    0                     0                         
+t._execute                 2159   530      2           2            2                    0                     0                         
+                           2282   527      2           2            1                    1                     1                         
+_emitChange                99     377      2           2            0                    2                     0                         
+toggleClass                1877   536      2           2            2                    0                     2                         
+style                      1780   536      2           1            1                    0                     0                         
+k                          172    372      2           3            2                    1                     0                         
+merge                      210    372      2           0            0                    0                     0                         
+e.remove                   195    366      2           0            0                    0                     0                         
+nodeName                   214    372      2           0            0                    0                     0                         
+parseHTML                  163    372      2           2            2                    0                     0                         
+ready                      1033   536      2           4            4                    0                     0                         
+                           2373   574      2           1            1                    0                     1                         
+canShowAddToBrowser        1481   541      2           2            1                    1                     1                         
+registerAll                1656   539      2           2            1                    1                     2                         
+_displayResults            101    377      2           5            4                    1                     2                         
+init                       162    372      2           3            3                    0                     0                         
+set                        2746   539      2           2            2                    0                     1                         
+                           2369   569      2           2            1                    1                     1                         
+XRegExp.addUnicodeData     2367   568      2           1            1                    0                     1                         
+                           2364   568      2           3            2                    1                     1                         
+getElementsByClassName     1376   0        2           0            0                    0                     2                         
+getElementById             1814   0        2           0            0                    0                     2                         
+off                        1639   536      2           2            2                    0                     1                         
+self.exec                  2357   565      2           3            3                    0                     0                         
+self.addToken              2348   565      2           2            2                    0                     1                         
+                           2914   603      2           1            1                    0                     1                         
+getSuggestions             97     377      2           4            1                    3                     0                         
+getBoundingClientRect      2771   0        2           0            0                    0                     2                         
+                           2466   587      2           4            0                    4                     1                         
+t._tryNext                 133    366      2           3            3                    0                     0                         
+b.require                  2863   539      2           2            2                    0                     2                         
+t._innerSub                134    366      2           4            4                    0                     0                         
+t.execute                  5      366      2           2            2                    0                     0                         
+t.flush                    2      366      2           2            2                    0                     1                         
+t.schedule                 39     366      2           2            2                    0                     0                         
+a.getDateFromString        2892   539      2           0            0                    0                     2                         
+A                          209    372      2           1            0                    1                     0                         
+t._execute                 6      366      2           2            2                    0                     0                         
+_data                      63     372      2           2            2                    0                     0                         
+acceptData                 73     372      2           0            0                    0                     0                         
+eval                       2460   587      2           1            1                    0                     2                         
+                           2352   566      2           2            1                    1                     1                         
+sendMessage                2398   581      2           1            1                    0                     0                         
+bJ                         161    372      2           2            2                    0                     2                         
+a                          2864   539      2           3            1                    2                     0                         
+t.__tryOrUnsub             53     366      2           2            2                    0                     0                         
+_updatePath                2743   539      2           4            0                    4                     0                         
+bJ.extend.bJ.fn.extend     119    372      2           2            2                    0                     0                         
+s                          174    366      2           3            3                    0                     0                         
+ba                         64     372      2           2            2                    0                     0                         
+cv.contains                216    372      2           1            1                    0                     0                         
+e.unsubscribe              92     366      2           2            2                    0                     0                         
+u.template                 1151   536      2           2            2                    0                     2                         
+i.emit                     100    372      2           2            0                    2                     2                         
+                           2433   557      2           2            0                    2                     2                         
+initInject                 360    481      2           4            1                    3                     2                         
+                           340    493      2           2            1                    1                     1                         
+normalize                  339    492      2           0            0                    0                     0                         
+XRegExp.addUnicodeData     338    492      2           2            2                    0                     1                         
+                           335    492      2           3            2                    1                     1                         
+                           324    490      2           2            1                    1                     1                         
+k                          1591   536      2           2            2                    0                     0                         
+                           2989   482      2           2            0                    2                     2                         
+o                          1056   536      2           2            2                    0                     0                         
+                           313    484      2           1            1                    0                     1                         
+Save                       2285   0        2           0            0                    0                     2                         
+isWindow                   1043   536      2           0            0                    0                     0                         
+                           315    486      2           1            1                    0                     1                         
+self.exec                  329    489      2           2            2                    0                     0                         
+                           317    487      2           1            1                    0                     1                         
+self.addToken              321    489      2           2            2                    0                     1                         
+initInject                 2416   556      2           4            1                    3                     2                         
+clear                      1142   541      2           3            2                    1                     0                         
+                           319    489      2           2            2                    0                     1                         
+createHTMLDocument         584    0        2           0            0                    0                     2                         
+createDocumentFragment     212    0        2           0            0                    0                     2                         
+debug                      3008   481      2           2            0                    2                     2                         
+getAttribute               1606   0        2           0            0                    0                     2                         
+nodeName                   1592   536      2           0            0                    0                     0                         
+fixed.exec                 2359   565      2           0            0                    0                     0                         
+copy                       2349   565      2           1            1                    0                     0                         
+set                        98     377      2           2            2                    0                     0                         
+show                       96     377      2           3            1                    2                     1                         
+get top                    2279   0        2           1            0                    1                     2                         
+saveBuiltin                295    3        2           4            1                    3                     0                         
+                           2346   565      2           2            2                    0                     1                         
+ltd                        1062   536      2           2            2                    0                     1                         
+get name                   390    0        2           0            0                    0                     2                         
+                           2344   561      2           0            0                    0                     1                         
+o                          305    479      2           1            1                    0                     0                         
+                           2342   559      2           1            1                    0                     1                         
+                           346    498      2           1            1                    0                     1                         
+parseATB                   1150   541      1           0            0                    0                     0                         
+p.Models.Settings.Settings 1129   541      1           6            6                    0                     0                         
+_onSettingsLoaded          1345   541      1           3            3                    0                     1                         
+_onFetchedSuggested        2186   541      1           1            1                    0                     0                         
+toQueryString              1346   541      1           0            0                    0                     0                         
+_onVisibilityChange        3077   541      1           0            0                    0                     1                         
+_initializePage            1317   541      1           6            1                    5                     0                         
+_rerender                  2192   541      1           3            0                    3                     1                         
+_setFirstPageRendered      2734   541      1           1            1                    0                     0                         
+get                        1363   541      1           0            0                    0                     0                         
+_updateHiddenFields        1464   541      1           1            0                    1                     0                         
+setTheme                   1139   541      1           1            1                    0                     0                         
+_hasCustomizedTheme        1136   541      1           1            1                    0                     0                         
+_setFromQuerystring        1131   541      1           0            0                    0                     0                         
+setBucket                  2514   541      1           0            0                    0                     1                         
+_splitNrnResults           2529   541      1           2            2                    0                     0                         
+setAds                     2524   541      1           1            1                    0                     0                         
+_toggleAppearanceSettingListeners 1146   541      1           0            0                    0                     0                         
+_updateAutocomplete        1408   541      1           1            1                    0                     0                         
+_updateDeviceDependentSettings 1130   541      1           0            0                    0                     0                         
+_sendAdImpressions         2517   541      1           1            0                    1                     0                         
+setTrigger                 1625   541      1           0            0                    0                     0                         
+_updateInput               1396   541      1           0            0                    0                     0                         
+_setFromLocalStorage       1134   541      1           0            0                    0                     0                         
+_setFromCookie             1133   541      1           0            0                    0                     0                         
+_updateLayout              2528   541      1           0            0                    0                     1                         
+scrollTop                  2378   541      1           1            0                    1                     0                         
+ready                      1306   541      1           7            5                    2                     1                         
+_updateScreenSize          1124   541      1           0            0                    0                     0                         
+getDefaultAtbVariant       1148   541      1           1            1                    0                     0                         
+kai                        1377   541      1           1            0                    1                     0                         
+kag                        1365   541      1           1            0                    1                     0                         
+kad                        1364   541      1           0            0                    0                     0                         
+k1                         1350   541      1           1            0                    1                     0                         
+canShowAttribution         2691   541      1           0            0                    0                     0                         
+j                          1347   541      1           1            0                    1                     0                         
+isInstalled                1283   541      1           4            0                    4                     0                         
+initSideMenu               1480   541      1           2            2                    0                     0                         
+initSearchBar              1380   541      1           1            1                    0                     0                         
+getSmallIconURL            2199   541      1           0            0                    0                     1                         
+getSettingsForTheme        1137   541      1           1            0                    1                     0                         
+kf                         1371   541      1           1            0                    1                     0                         
+getCountry                 1683   541      1           1            0                    1                     0                         
+b.Views.AnswerBarMenuItem  1830   543      1           2            0                    2                     0                         
+canShowBadgeAgain          1482   541      1           1            1                    0                     0                         
+clearCloudSave             1341   541      1           1            1                    0                     0                         
+e.Deep                     1119   541      1           1            0                    1                     0                         
+f.Views.SearchBar          1381   541      1           1            1                    0                     0                         
+fetchSuggested             1682   541      1           1            1                    0                     1                         
+fireStat                   1901   541      1           1            0                    1                     1                         
+getAddToBrowserDirections  1492   541      1           1            1                    0                     0                         
+g.Views.AutoComplete       1410   541      1           3            1                    2                     0                         
+g.Views.SideMenu           1484   541      1           2            1                    1                     0                         
+c.Models.Keyboard          1234   541      1           1            0                    1                     0                         
+_upgradeToJSForm           1387   541      1           2            0                    2                     0                         
+_useColorScheme            1135   541      1           3            3                    0                     0                         
+nrv                        3065   541      1           3            1                    2                     1                         
+a.Pages.Base               1233   541      1           1            1                    0                     1                         
+nrnWrapper                 2516   541      1           3            3                    0                     0                         
+appendAdClass              2729   541      1           0            0                    0                     0                         
+b.SelectList               1223   541      1           0            0                    0                     1                         
+b.Views.Modal              1620   541      1           1            1                    0                     0                         
+c.Models.AdFeed            1116   541      1           1            1                    0                     0                         
+c.Models.Ads               1242   541      1           1            1                    0                     1                         
+nis                        2376   541      1           1            1                    0                     1                         
+nun                        3069   541      1           1            0                    1                     0                         
+c.OpenSearch               1147   541      1           2            2                    0                     0                         
+c.Views.HeaderLinks        1566   541      1           7            3                    4                     1                         
+loadFromCloud              1338   541      1           1            1                    0                     0                         
+canAddToBraveAndroid       1493   541      1           0            0                    0                     0                         
+canAddToBrowser            1491   541      1           1            1                    0                     0                         
+load                       1339   541      1           1            1                    0                     0                         
+ks                         1352   541      1           1            0                    1                     0                         
+kj                         1370   541      1           0            0                    0                     0                         
+kh                         1354   541      1           1            0                    1                     0                         
+kg                         1358   541      1           1            0                    1                     0                         
+setHandler                 2432   578      1           0            0                    0                     1                         
+_detect                    2450   578      1           1            0                    1                     0                         
+_detectTranslatorLoaded    2469   578      1           5            1                    4                     0                         
+_detectTranslatorsCollected 2498   578      1           2            1                    1                     0                         
+_generateSandbox           2453   578      1           3            0                    3                     0                         
+_inheritFromBase           2383   578      1           0            0                    0                     0                         
+_runHandler                2505   578      1           1            1                    0                     0                         
+complete                   2497   578      1           1            1                    0                     0                         
+debug                      2492   578      1           1            1                    0                     1                         
+decrementAsyncProcesses    2473   578      1           1            1                    0                     0                         
+done                       2494   578      1           0            0                    0                     1                         
+_debug                     2493   578      1           0            0                    0                     0                         
+Zotero.Translator          2445   579      1           1            1                    0                     1                         
+Zotero.Translator.init     2446   579      1           1            1                    0                     0                         
+Zotero.Translator.replaceDeprecatedStatements 2447   579      1           1            0                    1                     0                         
+check                      2393   581      1           3            3                    0                     0                         
+debug                      2399   581      1           0            0                    0                     0                         
+f                          2397   581      1           1            1                    0                     0                         
+hide                       3078   581      1           1            0                    1                     1                         
+init                       2391   581      1           4            3                    1                     0                         
+make                       2400   581      1           1            0                    1                     0                         
+mod                        2394   581      1           0            0                    0                     0                         
+registerFlag               2351   565      1           0            0                    0                     0                         
+initialize                 2331   554      1           1            1                    0                     0                         
+replaceIndividualButton    2339   554      1           1            0                    1                     0                         
+replaceInitialTrackerButtonsHelper 2337   554      1           1            1                    0                     0                         
+loadNamespace              2423   556      1           1            0                    1                     0                         
+                           2341   558      1           0            0                    0                     1                         
+init                       2418   561      1           2            1                    1                     1                         
+                           2345   562      1           0            0                    0                     1                         
+init                       2441   563      1           0            0                    0                     1                         
+clipDuplicates             2350   565      1           0            0                    0                     0                         
+prepareFlags               2363   565      1           0            0                    0                     0                         
+over                       3052   581      1           0            0                    0                     1                         
+rewrite                    2362   565      1           0            0                    0                     0                         
+runTokens                  2356   565      1           1            1                    0                     0                         
+self                       2355   565      1           3            3                    0                     0                         
+self.union                 2354   565      1           2            2                    0                     1                         
+normalize                  2368   568      1           0            0                    0                     0                         
+                           2372   573      1           0            0                    0                     1                         
+                           2375   576      1           1            0                    1                     1                         
+Zotero.Translate.Web._getTranslatorsGetPotentialTranslators 2435   578      1           1            0                    1                     0                         
+Zotero.Translate.Web.complete 2474   578      1           2            1                    1                     0                         
+                           3028   606      1           0            0                    0                     1                         
+detectWeb                  2488   599      1           1            1                    0                     1                         
+getPrefixes                2490   599      1           0            0                    0                     0                         
+init                       2489   599      1           2            1                    1                     0                         
+detectWeb                  2495   600      1           1            1                    0                     1                         
+getDOIs                    2496   600      1           0            0                    0                     0                         
+                           2507   601      1           1            0                    1                     1                         
+                           2513   602      1           3            0                    3                     1                         
+                           3018   605      1           1            0                    1                     1                         
+detectWeb                  3022   605      1           1            1                    0                     1                         
+getUnAPIIDs                3023   605      1           1            0                    1                     0                         
+                           2487   599      1           0            0                    0                     1                         
+detectWeb                  3029   606      1           1            0                    1                     1                         
+                           3031   607      1           0            0                    0                     1                         
+detectWeb                  3032   607      1           1            1                    0                     1                         
+getPrefixes                3034   607      1           0            0                    0                     0                         
+init                       3033   607      1           2            1                    1                     0                         
+detectWeb                  3036   608      1           1            1                    0                     1                         
+getDOIs                    3037   608      1           0            0                    0                     0                         
+                           3060   610      1           1            0                    1                     1                         
+                           3064   611      1           1            0                    1                     1                         
+                           2512   0        1           0            0                    0                     0                         
+init                       2417   590      1           0            0                    0                     1                         
+pongLogin                  2408   581      1           0            0                    0                     0                         
+random60                   2392   581      1           0            0                    0                     0                         
+refreshContext             2406   581      1           1            1                    0                     0                         
+renderFeatureBlock         2405   581      1           1            1                    0                     0                         
+                           2389   582      1           0            0                    0                     1                         
+                           2403   583      1           0            0                    0                     1                         
+                           2409   584      1           0            0                    0                     1                         
+                           2410   588      1           0            0                    0                     1                         
+                           2444   589      1           1            0                    1                     0                         
+postReceive                2443   589      1           1            1                    0                     1                         
+getTrackerData             2386   554      1           0            0                    0                     0                         
+                           2411   594      1           0            0                    0                     1                         
+                           2412   595      1           2            1                    1                     1                         
+doInject                   2415   595      1           2            1                    1                     0                         
+init                       2430   595      1           3            1                    2                     0                         
+initTranslation            2431   595      1           0            0                    0                     0                         
+                           2467   597      1           0            0                    0                     1                         
+detectWeb                  2470   597      1           1            1                    0                     1                         
+getUnAPIIDs                2471   597      1           1            0                    1                     0                         
+detectWeb                  2480   598      1           1            0                    1                     1                         
+b.DirectionSource          1222   543      1           1            0                    1                     0                         
+_showPendingTabs           2764   543      1           1            1                    0                     1                         
+_updateId                  1860   543      1           1            0                    1                     0                         
+_updateLogoParams          1659   543      1           1            0                    1                     0                         
+a.DuckbarTab               1816   543      1           3            3                    0                     0                         
+a.extend                   1172   543      1           1            0                    1                     0                         
+add                        1815   543      1           6            5                    1                     0                         
+addExperimentParameters    1280   543      1           1            1                    0                     1                         
+append                     1857   543      1           1            1                    0                     0                         
+b                          1818   543      1           1            0                    1                     0                         
+b.DateFilter               1713   543      1           1            0                    1                     0                         
+_showFeedbackBtn           2774   543      1           1            1                    0                     0                         
+b.FilterContainer          1665   543      1           1            1                    0                     0                         
+b.Models.Answers.Maps      1895   543      1           1            1                    0                     0                         
+b.Models.Header            1553   543      1           1            0                    1                     0                         
+b.Models.ResultExtras      2642   543      1           3            2                    1                     1                         
+b.Models.ResultSnippet     2532   543      1           0            0                    0                     1                         
+b.Models.VQD               1224   543      1           1            0                    1                     0                         
+b.Pages.SERP               1230   543      1           3            0                    3                     1                         
+b.RegionFilter             1667   543      1           2            0                    2                     0                         
+b.ReportAdsButton          2812   543      1           1            0                    1                     0                         
+b.SafeSearchFilter         1698   543      1           1            0                    1                     0                         
+_onActiveChanged           2756   543      1           1            0                    1                     1                         
+                           1153   542      1           0            0                    0                     1                         
+nrji                       1278   542      1           1            0                    1                     1                         
+_addItem                   1829   543      1           2            1                    1                     0                         
+_appendModel               1864   543      1           3            3                    0                     0                         
+_appendSerpBadgeDesktop    1900   543      1           0            0                    0                     0                         
+_combineSelectors          1221   543      1           0            0                    0                     0                         
+_getActiveExperiments      1905   543      1           0            0                    0                     0                         
+_getImageUrl               2643   543      1           1            0                    1                     0                         
+_getTitle                  2645   543      1           1            0                    1                     0                         
+_initFilters               1666   543      1           3            3                    0                     0                         
+b.SettingsDropdown         2860   543      1           2            0                    2                     0                         
+_onDeepFinished            2738   543      1           9            2                    7                     1                         
+_onDeepStarted             2634   543      1           0            0                    0                     1                         
+_onItemActiveChange        2759   543      1           0            0                    0                     1                         
+_onItemsChanged            1827   543      1           1            1                    0                     1                         
+_onVisibleChanged          1856   543      1           1            0                    1                     1                         
+_renderDropdown            2918   543      1           1            0                    1                     1                         
+_renderSettings            2859   543      1           1            1                    0                     1                         
+_setContentMinHeight       1776   543      1           1            0                    1                     0                         
+_show                      1775   543      1           2            1                    1                     1                         
+                           2286   549      1           1            0                    1                     1                         
+load                       2871   543      1           2            2                    0                     1                         
+onReady                    1801   543      1           4            3                    1                     0                         
+open                       2740   543      1           3            2                    1                     0                         
+ready                      1305   543      1           8            6                    2                     1                         
+setActive                  2751   543      1           2            0                    2                     0                         
+                           1229   544      1           1            0                    1                     1                         
+initializeComposer         1923   545      1           1            0                    1                     0                         
+                           2295   546      1           1            0                    1                     1                         
+                           2267   548      1           1            1                    0                     1                         
+injected                   2268   548      1           1            0                    1                     0                         
+initSearchFilters          1664   543      1           1            1                    0                     0                         
+addListener                2509   550      1           0            0                    0                     0                         
+onMessage                  2511   550      1           0            0                    0                     1                         
+wrapAPIs                   2291   550      1           0            0                    0                     0                         
+wrapObject                 2334   550      1           0            0                    0                     0                         
+4../decode                 2308   551      1           1            1                    0                     0                         
+5../util                   2305   551      1           1            1                    0                     0                         
+7.url                      2301   551      1           1            1                    0                     0                         
+r                          2299   551      1           1            1                    0                     0                         
+canHazLogic                2319   553      1           1            0                    1                     0                         
+init                       2318   553      1           2            1                    1                     0                         
+c.Views.AdBadge            2571   543      1           1            0                    1                     1                         
+b.Views.AdBadgeTooltip     2574   543      1           1            0                    1                     0                         
+b.Views.AnswerBarMenu      1802   543      1           1            0                    1                     0                         
+                           3074   612      1           1            0                    1                     1                         
+b.Views.Footer             1739   543      1           3            0                    3                     0                         
+b.Views.ModulesLayout      1220   543      1           1            1                    0                     0                         
+b.Views.ResultExtras       2560   543      1           1            0                    1                     1                         
+b.Views.ResultSnippet      2535   543      1           2            0                    2                     1                         
+b.Views.SERPMessages       1736   543      1           1            0                    1                     0                         
+c.Button                   2775   543      1           1            0                    1                     0                         
+c.Models.AnswerBarMenuItem 1822   543      1           1            0                    1                     0                         
+updateAll                  1349   541      1           10           10                   0                     0                         
+c.Views.Header             1561   543      1           2            0                    2                     0                         
+e.Models.Answers.Images    1865   543      1           1            1                    0                     0                         
+e.Models.SearchExperiments 1216   543      1           1            1                    0                     0                         
+getNameId                  1879   543      1           0            0                    0                     0                         
+getPixelParameters         1904   543      1           1            1                    0                     1                         
+h.Duckbar                  1219   543      1           1            1                    0                     0                         
+initFooter                 1738   543      1           1            1                    0                     0                         
+initHeader                 1552   543      1           3            3                    0                     0                         
+initSERPMessages           1735   543      1           1            1                    0                     0                         
+copy                       322    489      1           0            0                    0                     0                         
+get                        370    478      1           0            0                    0                     1                         
+wrapAPIs                   302    478      1           0            0                    0                     0                         
+7.url                      306    479      1           1            1                    0                     0                         
+r                          304    479      1           1            1                    0                     0                         
+loadNamespace              368    481      1           1            0                    1                     0                         
+                           367    485      1           0            0                    0                     0                         
+init                       363    485      1           2            1                    1                     1                         
+init                       984    487      1           0            0                    0                     1                         
+clipDuplicates             334    489      1           0            0                    0                     0                         
+                           266    474      1           0            0                    0                     1                         
+prepareFlags               333    489      1           1            1                    0                     0                         
+registerFlag               323    489      1           0            0                    0                     0                         
+runTokens                  328    489      1           1            1                    0                     0                         
+self                       327    489      1           3            3                    0                     0                         
+self.union                 326    489      1           1            1                    0                     1                         
+                           344    495      1           0            0                    0                     1                         
+                           345    497      1           0            0                    0                     1                         
+                           348    499      1           0            0                    0                     1                         
+Zotero.Translate.Web._getTranslatorsGetPotentialTranslators 2991   501      1           1            0                    1                     0                         
+hide                       102    377      1           1            0                    1                     0                         
+DDGisBrowserDefault        285    377      1           0            0                    0                     0                         
+_onKeyUp                   113    377      1           1            1                    0                     1                         
+_onKeydown                 106    377      1           2            0                    2                     1                         
+_renderSingleRowTextResults 157    377      1           3            0                    3                     0                         
+_updateClearButton         110    377      1           2            0                    2                     0                         
+canShowAddToBrowser        282    377      1           2            2                    0                     0                         
+e                          104    377      1           1            1                    0                     1                         
+g                          280    377      1           3            2                    1                     1                         
+get                        284    377      1           0            0                    0                     0                         
+Zotero.Translate.Web.complete 3026   501      1           2            1                    1                     0                         
+isBangQuery                156    377      1           0            0                    0                     0                         
+isDefault                  283    377      1           1            1                    0                     0                         
+isInstalled                281    377      1           0            0                    0                     0                         
+m                          93     377      1           1            1                    0                     1                         
+n                          109    377      1           2            2                    0                     1                         
+ncf                        67     377      1           0            0                    0                     1                         
+makeCallable               296    3        1           1            1                    0                     0                         
+over                       56     415      1           0            0                    0                     1                         
+ElemHideEmulation          393    521      1           1            0                    1                     0                         
+init                       361    512      1           1            0                    1                     1                         
+doInject                   359    517      1           1            0                    1                     0                         
+init                       2986   517      1           3            1                    2                     0                         
+initTranslation            2987   517      1           0            0                    0                     0                         
+                           375    518      1           1            1                    0                     1                         
+getAPIWrappables           377    518      1           1            0                    1                     0                         
+wrapAsyncAPI               376    518      1           1            1                    0                     0                         
+                           379    520      1           0            0                    0                     1                         
+ContentFiltering           392    521      1           1            1                    0                     0                         
+postReceive                2998   511      1           1            1                    0                     1                         
+apply                      394    521      1           1            0                    1                     0                         
+checkCollapse              2327   521      1           2            2                    0                     0                         
+getSelectorForBlockedElement 2329   521      1           0            0                    0                     0                         
+getURLsFromElement         2328   521      1           0            0                    0                     0                         
+                           387    522      1           1            1                    0                     1                         
+copyProperties             389    522      1           1            0                    1                     0                         
+injected                   388    522      1           1            1                    0                     0                         
+onReady                    2275   523      1           1            0                    1                     0                         
+                           399    524      1           2            1                    1                     1                         
+Zotero.Translator          3000   502      1           1            1                    0                     1                         
+_detect                    3004   501      1           1            0                    1                     0                         
+_detectTranslatorLoaded    3021   501      1           5            1                    4                     0                         
+_detectTranslatorsCollected 3039   501      1           2            1                    1                     0                         
+_generateSandbox           3007   501      1           2            0                    2                     0                         
+_inheritFromBase           350    501      1           0            0                    0                     0                         
+_runHandler                3042   501      1           0            0                    0                     0                         
+complete                   3038   501      1           1            1                    0                     0                         
+decrementAsyncProcesses    3025   501      1           1            1                    0                     0                         
+                           351    502      1           0            0                    0                     1                         
+fire                       286    375      1           1            1                    0                     1                         
+Zotero.Translator.init     3001   502      1           1            1                    0                     0                         
+Zotero.Translator.replaceDeprecatedStatements 3002   502      1           0            0                    0                     0                         
+                           352    503      1           0            0                    0                     1                         
+                           353    504      1           0            0                    0                     1                         
+                           354    505      1           0            0                    0                     1                         
+                           355    506      1           0            0                    0                     1                         
+eval                       3016   509      1           1            1                    0                     1                         
+                           2999   511      1           1            0                    1                     0                         
+t._complete                192    366      1           2            2                    0                     0                         
+setInterval                2085   0        1           0            0                    0                     1                         
+                           279    357      1           0            0                    0                     1                         
+T._disposeOnRemovedFields  231    366      1           1            1                    0                     0                         
+T._initializeOnNewField    54     366      1           1            1                    0                     0                         
+a                          7      366      1           1            1                    0                     0                         
+e                          262    366      1           0            0                    0                     0                         
+e.observe                  49     366      1           1            1                    0                     0                         
+e.schedule                 40     366      1           1            1                    0                     0                         
+i                          257    366      1           0            0                    0                     0                         
+send                       1697   0        1           0            0                    0                     1                         
+t.complete                 191    366      1           1            1                    0                     0                         
+t.dispatch                 48     366      1           2            2                    0                     0                         
+t.notifyComplete           246    366      1           1            1                    0                     0                         
+t.requestAsyncId           42     366      1           0            0                    0                     0                         
+t.scheduleMessage          38     366      1           1            1                    0                     0                         
+t.unsubscribe              193    366      1           1            1                    0                     0                         
+u                          218    366      1           0            0                    0                     0                         
+Deferred                   232    372      1           2            2                    0                     0                         
+access                     153    372      1           1            1                    0                     0                         
+createElementNS            1013   0        1           0            0                    0                     1                         
+(garbage collector)        237    0        1           0            0                    0                     0                         
+(idle)                     4      0        1           0            0                    0                     0                         
+(program)                  3      0        1           0            0                    0                     0                         
+(root)                     1      0        1           133          4                    129                   0                         
+RegExp: <(?!area|br|col|embed|hr|img|input|link|meta|param)(([\w:]+)[^>]*)\/> 2608   0        1           0            0                    0                     1                         
+RegExp: ^([^.]*)(?:\.(.+)|)$ 1333   0        1           0            0                    0                     1                         
+RegExp: ^(\s*)for each\s*\((var )?([^ ]+) in (.*?)\)(\s*){ 2448   0        1           0            0                    0                     1                         
+RegExp: ^.*?\/\/([^\/\?\:\#]+) 2896   0        1           0            0                    0                     1                         
+compareDocumentPosition    1599   0        1           0            0                    0                     1                         
+ajax                       116    372      1           6            6                    0                     1                         
+get MutationObserver       2274   0        1           0            0                    0                     1                         
+get RTCPeerConnection      2269   0        1           0            0                    0                     1                         
+get WebSocket              402    0        1           0            0                    0                     1                         
+get location               400    0        1           0            0                    0                     1                         
+getBytesInUse              2313   0        1           0            0                    0                     1                         
+observe                    2105   0        1           0            0                    0                     1                         
+open                       1696   0        1           0            0                    0                     1                         
+replaceState               2942   0        1           0            0                    0                     1                         
+q                          150    372      1           0            0                    0                     0                         
+handle                     60     372      1           2            0                    2                     0                         
+html                       152    372      1           1            1                    0                     1                         
+i                          264    372      1           1            1                    0                     0                         
+inArray                    236    372      1           0            0                    0                     0                         
+isPlainObject              120    372      1           1            1                    0                     0                         
+isWindow                   171    372      1           0            0                    0                     0                         
+map                        168    372      1           1            1                    0                     0                         
+n                          226    372      1           0            0                    0                     1                         
+o                          219    372      1           1            1                    0                     0                         
+fix                        59     372      1           1            1                    0                     0                         
+s                          118    372      1           1            1                    0                     0                         
+send                       122    372      1           2            0                    2                     0                         
+show                       149    372      1           1            1                    0                     0                         
+simulate                   69     372      1           1            1                    0                     0                         
+statusCode                 270    372      1           1            1                    0                     0                         
+trigger                    70     372      1           1            1                    0                     0                         
+_send                      287    375      1           1            0                    1                     0                         
+a.$exec_template           160    375      1           2            1                    1                     1                         
+a.exec_template            173    375      1           1            0                    1                     0                         
+bJ.fn.<computed>           148    372      1           1            1                    0                     1                         
+ajaxSetup                  117    372      1           1            1                    0                     0                         
+always                     271    372      1           1            1                    0                     0                         
+append                     166    372      1           1            1                    0                     1                         
+b4                         140    372      1           1            1                    0                     0                         
+b5                         68     372      1           1            1                    0                     1                         
+b7                         265    372      1           0            0                    0                     0                         
+b8                         220    372      1           1            1                    0                     0                         
+bJ.Callbacks               239    372      1           0            0                    0                     0                         
+bJ.Event                   253    372      1           0            0                    0                     0                         
+onLoad                     401    524      1           1            0                    1                     0                         
+bJ.param                   263    372      1           1            1                    0                     0                         
+cE                         217    372      1           0            0                    0                     0                         
+cd.handle                  57     372      1           1            1                    0                     1                         
+cleanData                  155    372      1           0            0                    0                     0                         
+dispatch                   58     372      1           11           3                    8                     0                         
+domManip                   167    372      1           3            3                    0                     0                         
+e.onload.e.onreadystatechange 137    372      1           2            1                    1                     1                         
+fireWith                   139    372      1           1            1                    0                     0                         
+g                          2181   536      1           1            1                    0                     0                         
+cE                         1845   536      1           0            0                    0                     0                         
+cd.handle                  3053   536      1           1            1                    0                     1                         
+cleanData                  2196   536      1           0            0                    0                     0                         
+cv.matches                 1441   536      1           1            1                    0                     0                         
+cv.matchesSelector         1295   536      1           1            1                    0                     0                         
+cv.setDocument             1020   536      1           1            1                    0                     0                         
+cv.uniqueSort              1597   536      1           1            1                    0                     0                         
+dispatch                   3054   536      1           2            2                    0                     0                         
+fix                        3055   536      1           0            0                    0                     0                         
+cD                         1598   536      1           1            0                    1                     0                         
+get                        1559   536      1           1            1                    0                     0                         
+getResponseHeader          2182   536      1           0            0                    0                     0                         
+handle                     3056   536      1           2            0                    2                     0                         
+hover                      1389   536      1           1            1                    0                     1                         
+i                          2906   536      1           1            1                    0                     0                         
+i.on                       1120   536      1           0            0                    0                     1                         
+inArray                    2686   536      1           0            0                    0                     0                         
+is                         1292   536      1           1            1                    0                     1                         
+isPlainObject              1688   536      1           0            0                    0                     0                         
+bJ.Callbacks               1036   536      1           1            1                    0                     0                         
+after                      1753   536      1           1            1                    0                     1                         
+ajax                       1684   536      1           4            4                    0                     1                         
+ajaxSetup                  1685   536      1           1            1                    0                     0                         
+argarr                     1170   536      1           0            0                    0                     0                         
+b5                         1618   536      1           1            0                    1                     0                         
+b7                         2907   536      1           0            0                    0                     0                         
+b8                         1693   536      1           1            1                    0                     0                         
+bD                         1044   536      1           0            0                    0                     0                         
+bE                         1789   536      1           1            1                    0                     0                         
+now                        1691   536      1           0            0                    0                     0                         
+bJ.Event                   1690   536      1           1            1                    0                     0                         
+bJ.expr.filters.hidden     1303   536      1           0            0                    0                     0                         
+bJ.extend.trim             1337   536      1           0            0                    0                     0                         
+bJ.param                   2905   536      1           1            1                    0                     1                         
+bJ.ready.promise           1034   536      1           1            1                    0                     0                         
+bX                         1271   536      1           1            1                    0                     1                         
+before                     2214   536      1           1            1                    0                     1                         
+c9                         1446   536      1           0            0                    0                     0                         
+DDG.get_now                2297   541      1           0            0                    0                     1                         
+clear                      2742   539      1           1            1                    0                     1                         
+f                          2773   539      1           0            0                    0                     0                         
+get                        2850   539      1           0            0                    0                     1                         
+j                          2769   539      1           1            0                    1                     0                         
+load                       2867   539      1           1            0                    1                     0                         
+register                   2768   539      1           2            2                    0                     0                         
+require                    2865   539      1           1            1                    0                     0                         
+DDG.addClass               1335   541      1           1            0                    1                     0                         
+DDG.get_header_height      1554   541      1           1            0                    1                     1                         
+c                          2866   539      1           1            1                    0                     0                         
+DDG.stem                   1869   541      1           0            0                    0                     1                         
+UUID                       1861   541      1           0            0                    0                     1                         
+_applyTheme                1141   541      1           1            1                    0                     0                         
+_autocompleteOn            1409   541      1           2            1                    1                     0                         
+_backfillGlobals           1132   541      1           0            0                    0                     0                         
+_canShowAgain              1483   541      1           0            0                    0                     0                         
+_checkForForceReload       1231   541      1           1            0                    1                     1                         
+_createPopouts             1615   541      1           2            1                    1                     0                         
+_enableColorSchemeMatching 1145   541      1           1            1                    0                     0                         
+                           1061   537      1           1            0                    1                     1                         
+parents                    1439   536      1           0            0                    0                     0                         
+q                          1784   536      1           2            2                    0                     0                         
+registerHelper             1059   536      1           0            0                    0                     0                         
+s                          1686   536      1           1            1                    0                     0                         
+send                       1695   536      1           2            0                    2                     0                         
+show                       1783   536      1           1            1                    0                     0                         
+v                          1560   536      1           0            0                    0                     0                         
+val                        1084   536      1           1            1                    0                     1                         
+z                          2543   536      1           1            0                    1                     0                         
+ad                         1037   536      1           0            0                    0                     0                         
+_getVal                    1082   539      1           0            0                    0                     0                         
+_initFromDOM               1081   539      1           1            1                    0                     0                         
+_resetDOM                  1083   539      1           1            0                    1                     0                         
+a.BackData                 1080   539      1           2            2                    0                     0                         
+a.Utils.History            1087   539      1           0            0                    0                     0                         
+a.Utils.Perf               1088   539      1           0            0                    0                     0                         
+a.abbrevNumber             2898   539      1           0            0                    0                     1                         
+a.querystringParam         1232   539      1           0            0                    0                     1                         
+e.lift                     882    530      1           0            0                    0                     0                         
+_render                    1943   530      1           1            1                    0                     0                         
+a.clear                    483    530      1           0            0                    0                     0                         
+at                         935    530      1           0            0                    0                     0                         
+canExecute                 1948   530      1           1            1                    0                     0                         
+contenteditable            2172   530      1           0            0                    0                     0                         
+e.createFlattenHot         1952   530      1           1            1                    0                     0                         
+e.createFocusObservable    1958   530      1           1            1                    0                     0                         
+e.generic                  930    530      1           1            1                    0                     0                         
+e.get                      2167   530      1           1            1                    0                     0                         
+_onBgPortMessage           996    530      1           1            1                    0                     1                         
+e.observe                  2161   530      1           1            1                    0                     0                         
+execute                    1950   530      1           1            1                    0                     0                         
+f                          938    530      1           1            1                    0                     0                         
+fire                       2943   530      1           1            1                    0                     0                         
+get isEmpty                2261   530      1           0            0                    0                     0                         
+getTargetEnv               951    530      1           1            1                    0                     0                         
+h.clear                    481    530      1           1            1                    0                     0                         
+init                       948    530      1           1            1                    0                     0                         
+injectEventPluginsByName   576    530      1           1            1                    0                     0                         
+Q._onUpdate                1930   530      1           5            4                    1                     0                         
+runBandaids                2326   524      1           0            0                    0                     1                         
+                           404    525      1           1            1                    0                     1                         
+getFrameUrl                405    525      1           0            0                    0                     0                         
+                           990    529      1           1            0                    1                     1                         
+$                          1944   530      1           2            2                    0                     0                         
+C                          607    530      1           0            0                    0                     0                         
+Mt.extend                  573    530      1           0            0                    0                     0                         
+O                          936    530      1           1            1                    0                     0                         
+Q                          1262   530      1           1            0                    1                     0                         
+j                          1253   530      1           0            0                    0                     0                         
+S.create                   954    530      1           2            2                    0                     0                         
+T                          1951   530      1           3            3                    0                     0                         
+T._disposeOnRemovedFields  2257   530      1           1            1                    0                     0                         
+T._initializeOnNewField    2166   530      1           2            2                    0                     0                         
+W                          1945   530      1           1            1                    0                     0                         
+_init                      1932   530      1           1            1                    0                     0                         
+_initOnGrammarly           1270   530      1           0            0                    0                     0                         
+_logMessage                1939   530      1           0            0                    0                     0                         
+Gettext.try_load_lang      1065   536      1           2            2                    0                     0                         
+toArray                    2260   530      1           1            1                    0                     0                         
+trackBgConnectionError     1940   530      1           1            1                    0                     0                         
+x                          937    530      1           3            3                    0                     0                         
+init                       979    532      1           1            0                    1                     0                         
+                           989    533      1           0            0                    0                     1                         
+Deferred                   1035   536      1           2            2                    0                     0                         
+Gettext                    1064   536      1           1            1                    0                     0                         
+Gettext.get_lang_refs      1067   536      1           0            0                    0                     0                         
+Gettext.parse_locale_data  1066   536      1           0            0                    0                     0                         
+t.unsubscribe              2252   530      1           1            1                    0                     0                         
+O                          1785   536      1           1            1                    0                     0                         
+PSEUDO                     1299   536      1           0            0                    0                     0                         
+V.csstransforms3d          1007   536      1           1            1                    0                     0                         
+V.opacity                  1006   536      1           0            0                    0                     0                         
+V.svg                      1012   536      1           1            0                    1                     0                         
+V.touch                    1001   536      1           1            1                    0                     0                         
+_removeData                1648   536      1           0            0                    0                     0                         
+a1                         1790   536      1           3            3                    0                     0                         
+aN                         1293   536      1           1            1                    0                     0                         
+s.delete                   2964   530      1           0            0                    0                     0                         
+load                       972    530      1           2            2                    0                     0                         
+m.detect                   959    530      1           0            0                    0                     0                         
+message                    944    530      1           1            1                    0                     0                         
+n.r                        774    530      1           0            0                    0                     0                         
+o                          1968   530      1           1            1                    0                     0                         
+onInitEnd                  2154   530      1           0            0                    0                     0                         
+onLoadEnd                  976    530      1           0            0                    0                     0                         
+re                         947    530      1           2            2                    0                     0                         
+run                        1264   530      1           3            3                    0                     0                         
+_getHost                   1149   541      1           0            0                    0                     0                         
+subscribe                  1265   530      1           1            1                    0                     0                         
+t.Lens.t.Lens              615    530      1           0            0                    0                     0                         
+t._trySubscribe            2094   530      1           1            1                    0                     0                         
+t._unsubscribe             2175   530      1           0            0                    0                     0                         
+t.connect                  2096   530      1           1            1                    0                     0                         
+t.dispatch                 2160   530      1           2            2                    0                     0                         
+t.requestAsyncId           2084   530      1           1            0                    1                     0                         
+t.scheduleMessage          2041   530      1           1            1                    0                     0                         
 
 
 ** Scripts sorted by when they are first called: **
 
 scriptId scriptType  name      firstCalled  numFunctions numCallsWithin numCallsOut numCalledIn url
-0        built-in              0            70           3              125         281            
-79       local                 0.000125     5            4              0           2           file:///Users/Nadia/Library/Application%20Support/Google/Chrome/Default/Extensions/gpdjojdkbbmdfjfahjcgigfpmkopogic/4.0.96_0/js/logic.js
-59       remote      google    0.000879     8            15             11          10          https://www.google.com/
-52       extension             0.230435     22           66             1           3           chrome-extension://kbfnbcaeplbcioakkpcpgfkobkghlhen/src/js/Grammarly.js
-72       remote      google    0.445171     270          851            73          14          https://www.google.com/xjs/_/js/k=xjs.s.en_GB.HYvz6NGAbYM.O/ck=xjs.s.QwHcSNbPBhk.L.W.O/m=Fkg7bd,HcFEGb,IvlUe,MC8mtf,OF7gzc,RMhBfe,T4BAC,TJw5qb,TbaHGc,Y33vzc,cdos,hsm,iDPoPb,jsa,mvYTse,tg8oTe,uz938c,vWNDde,ws9Tlc,yQ43ff,d,csi/am=AAAAAEsAu-6AIP83AQAAwI4BAAABboINC4QhoYKoOoEEBA/d=1/dg=2/br=1/ct=zgms/rs=ACT90oFA8AzuPM9WL1qXy86nY_6h8_30nQ
-69       extension             0.465136     1            0              0           1           chrome-extension://gighmmpiobklfepjocnamgkkbiglidom/include.postload.js
-66       remote      google    0.832816     8            7              1           1           https://www.google.com/
-73       remote      google    1.6667       1            0              0           1           https://www.google.com/xjs/_/js/k=xjs.s.en_GB.HYvz6NGAbYM.O/ck=xjs.s.QwHcSNbPBhk.L.W.O/am=AAAAAEsAu-6AIP83AQAAwI4BAAABboINC4QhoYKoOoEEBA/d=1/exm=Fkg7bd,HcFEGb,IvlUe,MC8mtf,OF7gzc,RMhBfe,T4BAC,TJw5qb,TbaHGc,Y33vzc,cdos,csi,d,hsm,iDPoPb,jsa,mvYTse,tg8oTe,uz938c,vWNDde,ws9Tlc,yQ43ff/ed=1/dg=2/br=1/ct=zgms/rs=ACT90oFA8AzuPM9WL1qXy86nY_6h8_30nQ/m=WgDvvc,aa,abd,async,dvl,fEVMic,foot,lu,m,mUpTid,mu,sb_wiz,sf,sonic,spch,xz7cCd?xjs=s1
-129      remote      gstatic   2.1395       1            0              0           1           https://www.gstatic.com/og/_/js/k=og.og2.en_US.eZ_66q66g64.O/rt=j/m=drt,def,aswid/exm=in,fot/d=1/ed=1/rs=AA2YrTsle5R12mYiz5B2uh90ClOZJiGkng
-250      remote      gstatic   2.13951      23           26             6           4           https://www.gstatic.com/_/mss/boq-one-google/_/js/k=boq-one-google.OneGoogleWidgetUi.en.Lshfm0UpwVU.es5.O/am=Ew/d=1/excm=_b,_tp,appwidgetauthview/ed=1/dg=0/wt=2/ct=zgms/rs=AM-SdHvC4UyNwuQxaRsgPDkOBJGGQwE1_Q/m=_b,_tp
-251      remote      gstatic   2.15329      10           5              3           5           https://www.gstatic.com/_/mss/boq-one-google/_/js/k=boq-one-google.OneGoogleWidgetUi.en.Lshfm0UpwVU.es5.O/ck=boq-one-google.OneGoogleWidgetUi.Oh4b2fefRXo.L.B1.O/am=Ew/d=1/exm=_b,_tp,wmwg8b/excm=_b,_tp,appwidgetauthview/ed=1/wt=2/ct=zgms/rs=AM-SdHtsqv8D7ksge6OjQ28ykvXi7Vz1og/m=A7fCU,BVgquf,CBlRxf,COQbmf,EFQ78c,GkRiKb,HDvRde,HLo3Ef,IZT63,JNoxi,KG2eXe,L1AAkb,MI6k7c,MdUzUe,NpD4ec,O6y8ed,OmgaI,PQaYAf,PrPYRd,QIhFr,RMhBfe,SF3gsd,SdcwHb,SpsfSb,U0aPgd,Uas9Hd,UgAtXe,V3dDOb,VwDzFe,XAzchc,XVMNvd,ZfAoz,ZwDk9d,ZxDaqc,aDfbSd,aW3pY,aurFic,blwjVc,dodICd,e5qFLc,fKUV3e,hKSk3e,hc6Ubd,iTsyac,iWP1Yb,kjKdXe,lKZxSd,lPKSwe,lazG7b,lwddkf,mI3LFb,mdR7q,o02Jie,pB6Zqd,pjICDe,pw70Gc,rE6Mgd,rHjpXd,s39S4,tfTN8c,tn2Ukb,w9hDv,ws9Tlc,x60fie,xQtZb,xiqEse,yDVVkb,zbML3c
-273      extension             2.28945      4            13             6           10          chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/browser-polyfill.js
-274      extension             2.2895       7            15             0           1           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/node_modules.js
-276      extension             2.29081      4            2              7           6           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/zotero.js
-285      extension             2.29954      1            1              1           1           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/zotero/xregexp/addons/build.js
-284      extension             2.29955      5            6              0           1           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/zotero/xregexp/xregexp.js
-293      extension             2.3154       1            0              0           1           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/zotero/rdf/identity.js
-296      extension             2.31541      13           12             15          9           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/zotero/translation/translate.js
-298      extension             2.31543      1            0              0           1           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/translate_item.js
-300      extension             2.31544      2            2              0           2           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/zotero/utilities.js
-307      extension             2.31546      2            0              8           9           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/messaging_inject.js
-308      extension             2.31547      1            1              1           1           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/inject/progressWindow_inject.js
-312      extension             2.31554      4            3              4           3           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/inject/inject.js
-280      extension             2.31743      2            1              1           1           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/cachedTypes.js
-3        built-in              2.32013      3            4              0           1           extensions::SafeBuiltins
-313      extension             2.32014      4            2              2           2           chrome-extension://gighmmpiobklfepjocnamgkkbiglidom/polyfill.js
-314      extension             2.3246       1            0              0           1           chrome-extension://gighmmpiobklfepjocnamgkkbiglidom/ext/common.js
-316      extension             2.3246       4            10             1           3           chrome-extension://gighmmpiobklfepjocnamgkkbiglidom/include.preload.js
-317      built-in              2.32463      2            1              0           1              
-320      extension             2.3892       175          1290           27          8           chrome-extension://kbfnbcaeplbcioakkpcpgfkobkghlhen/src/js/Grammarly.js
-322      extension             2.62596      3            1              3           3           chrome-extension://pkehgijcmpdhfbdbbnkijodmdjhbjlgp/js/contentscripts/utils.js
-325      extension             2.62904      1            1              2           2           chrome-extension://pkehgijcmpdhfbdbbnkijodmdjhbjlgp/js/contentscripts/dnt.js
-327      remote      google    2.62905      21           23             18          20          https://www.google.com/search?sxsrf=ACYBGNR8WSG4g_Jqm2Dc4lCdan6vJV8ypA%3A1579012050305&source=hp&ei=0s8dXsjBEOWEmwWI5aYw&q=who+am+i&oq=who+am+i&gs_l=psy-ab.3..0l10.16480.17314..17781...2.0..0.63.391.8......0....1..gws-wiz.....10..35i362i39j35i39.mHgGwVnngZA&ved=0ahUKEwjI8uiipoPnAhVlwqYKHYiyCQYQ4dUDCAY&uact=5
-329      remote      google    2.63388      36           39             4           19          https://www.google.com/search?sxsrf=ACYBGNR8WSG4g_Jqm2Dc4lCdan6vJV8ypA%3A1579012050305&source=hp&ei=0s8dXsjBEOWEmwWI5aYw&q=who+am+i&oq=who+am+i&gs_l=psy-ab.3..0l10.16480.17314..17781...2.0..0.63.391.8......0....1..gws-wiz.....10..35i362i39j35i39.mHgGwVnngZA&ved=0ahUKEwjI8uiipoPnAhVlwqYKHYiyCQYQ4dUDCAY&uact=5
-326      extension             2.65343      1            0              1           1           chrome-extension://pkehgijcmpdhfbdbbnkijodmdjhbjlgp/js/contentscripts/fingerprinting.js
-331      built-in              2.65344      1            2              0           1              
-332      remote      google    2.71685      1            1              0           1           https://www.google.com/search?sxsrf=ACYBGNR8WSG4g_Jqm2Dc4lCdan6vJV8ypA%3A1579012050305&source=hp&ei=0s8dXsjBEOWEmwWI5aYw&q=who+am+i&oq=who+am+i&gs_l=psy-ab.3..0l10.16480.17314..17781...2.0..0.63.391.8......0....1..gws-wiz.....10..35i362i39j35i39.mHgGwVnngZA&ved=0ahUKEwjI8uiipoPnAhVlwqYKHYiyCQYQ4dUDCAY&uact=5
-333      remote      google    3.25024      1            1              0           1           https://www.google.com/search?sxsrf=ACYBGNR8WSG4g_Jqm2Dc4lCdan6vJV8ypA%3A1579012050305&source=hp&ei=0s8dXsjBEOWEmwWI5aYw&q=who+am+i&oq=who+am+i&gs_l=psy-ab.3..0l10.16480.17314..17781...2.0..0.63.391.8......0....1..gws-wiz.....10..35i362i39j35i39.mHgGwVnngZA&ved=0ahUKEwjI8uiipoPnAhVlwqYKHYiyCQYQ4dUDCAY&uact=5
-334      remote      google    3.27095      2            2              1           1           https://www.google.com/search?sxsrf=ACYBGNR8WSG4g_Jqm2Dc4lCdan6vJV8ypA%3A1579012050305&source=hp&ei=0s8dXsjBEOWEmwWI5aYw&q=who+am+i&oq=who+am+i&gs_l=psy-ab.3..0l10.16480.17314..17781...2.0..0.63.391.8......0....1..gws-wiz.....10..35i362i39j35i39.mHgGwVnngZA&ved=0ahUKEwjI8uiipoPnAhVlwqYKHYiyCQYQ4dUDCAY&uact=5
-335      remote      google    3.35631      2            2              1           1           https://www.google.com/search?sxsrf=ACYBGNR8WSG4g_Jqm2Dc4lCdan6vJV8ypA%3A1579012050305&source=hp&ei=0s8dXsjBEOWEmwWI5aYw&q=who+am+i&oq=who+am+i&gs_l=psy-ab.3..0l10.16480.17314..17781...2.0..0.63.391.8......0....1..gws-wiz.....10..35i362i39j35i39.mHgGwVnngZA&ved=0ahUKEwjI8uiipoPnAhVlwqYKHYiyCQYQ4dUDCAY&uact=5
-336      remote      google    3.38383      1            2              0           1           https://www.google.com/search?sxsrf=ACYBGNR8WSG4g_Jqm2Dc4lCdan6vJV8ypA%3A1579012050305&source=hp&ei=0s8dXsjBEOWEmwWI5aYw&q=who+am+i&oq=who+am+i&gs_l=psy-ab.3..0l10.16480.17314..17781...2.0..0.63.391.8......0....1..gws-wiz.....10..35i362i39j35i39.mHgGwVnngZA&ved=0ahUKEwjI8uiipoPnAhVlwqYKHYiyCQYQ4dUDCAY&uact=5
-337      remote      google    3.42277      6            5              6           4           https://www.google.com/search?sxsrf=ACYBGNR8WSG4g_Jqm2Dc4lCdan6vJV8ypA%3A1579012050305&source=hp&ei=0s8dXsjBEOWEmwWI5aYw&q=who+am+i&oq=who+am+i&gs_l=psy-ab.3..0l10.16480.17314..17781...2.0..0.63.391.8......0....1..gws-wiz.....10..35i362i39j35i39.mHgGwVnngZA&ved=0ahUKEwjI8uiipoPnAhVlwqYKHYiyCQYQ4dUDCAY&uact=5
-341      remote      google    3.42283      1            1              1           1           https://www.google.com/search?sxsrf=ACYBGNR8WSG4g_Jqm2Dc4lCdan6vJV8ypA%3A1579012050305&source=hp&ei=0s8dXsjBEOWEmwWI5aYw&q=who+am+i&oq=who+am+i&gs_l=psy-ab.3..0l10.16480.17314..17781...2.0..0.63.391.8......0....1..gws-wiz.....10..35i362i39j35i39.mHgGwVnngZA&ved=0ahUKEwjI8uiipoPnAhVlwqYKHYiyCQYQ4dUDCAY&uact=5
-338      remote      google    3.42285      2            4              0           6           https://www.google.com/search?sxsrf=ACYBGNR8WSG4g_Jqm2Dc4lCdan6vJV8ypA%3A1579012050305&source=hp&ei=0s8dXsjBEOWEmwWI5aYw&q=who+am+i&oq=who+am+i&gs_l=psy-ab.3..0l10.16480.17314..17781...2.0..0.63.391.8......0....1..gws-wiz.....10..35i362i39j35i39.mHgGwVnngZA&ved=0ahUKEwjI8uiipoPnAhVlwqYKHYiyCQYQ4dUDCAY&uact=5
-343      remote      google    3.42565      1            1              1           1           https://www.google.com/search?sxsrf=ACYBGNR8WSG4g_Jqm2Dc4lCdan6vJV8ypA%3A1579012050305&source=hp&ei=0s8dXsjBEOWEmwWI5aYw&q=who+am+i&oq=who+am+i&gs_l=psy-ab.3..0l10.16480.17314..17781...2.0..0.63.391.8......0....1..gws-wiz.....10..35i362i39j35i39.mHgGwVnngZA&ved=0ahUKEwjI8uiipoPnAhVlwqYKHYiyCQYQ4dUDCAY&uact=5
-344      remote      google    3.42566      1            1              1           1           https://www.google.com/search?sxsrf=ACYBGNR8WSG4g_Jqm2Dc4lCdan6vJV8ypA%3A1579012050305&source=hp&ei=0s8dXsjBEOWEmwWI5aYw&q=who+am+i&oq=who+am+i&gs_l=psy-ab.3..0l10.16480.17314..17781...2.0..0.63.391.8......0....1..gws-wiz.....10..35i362i39j35i39.mHgGwVnngZA&ved=0ahUKEwjI8uiipoPnAhVlwqYKHYiyCQYQ4dUDCAY&uact=5
-346      remote      google    3.42567      1            1              1           1           https://www.google.com/search?sxsrf=ACYBGNR8WSG4g_Jqm2Dc4lCdan6vJV8ypA%3A1579012050305&source=hp&ei=0s8dXsjBEOWEmwWI5aYw&q=who+am+i&oq=who+am+i&gs_l=psy-ab.3..0l10.16480.17314..17781...2.0..0.63.391.8......0....1..gws-wiz.....10..35i362i39j35i39.mHgGwVnngZA&ved=0ahUKEwjI8uiipoPnAhVlwqYKHYiyCQYQ4dUDCAY&uact=5
-348      remote      google    3.43611      1            1              1           1           https://www.google.com/search?sxsrf=ACYBGNR8WSG4g_Jqm2Dc4lCdan6vJV8ypA%3A1579012050305&source=hp&ei=0s8dXsjBEOWEmwWI5aYw&q=who+am+i&oq=who+am+i&gs_l=psy-ab.3..0l10.16480.17314..17781...2.0..0.63.391.8......0....1..gws-wiz.....10..35i362i39j35i39.mHgGwVnngZA&ved=0ahUKEwjI8uiipoPnAhVlwqYKHYiyCQYQ4dUDCAY&uact=5
-350      remote      google    3.43615      1            1              1           1           https://www.google.com/search?sxsrf=ACYBGNR8WSG4g_Jqm2Dc4lCdan6vJV8ypA%3A1579012050305&source=hp&ei=0s8dXsjBEOWEmwWI5aYw&q=who+am+i&oq=who+am+i&gs_l=psy-ab.3..0l10.16480.17314..17781...2.0..0.63.391.8......0....1..gws-wiz.....10..35i362i39j35i39.mHgGwVnngZA&ved=0ahUKEwjI8uiipoPnAhVlwqYKHYiyCQYQ4dUDCAY&uact=5
-354      remote      google    3.45245      2            29             6           3           https://www.google.com/search?sxsrf=ACYBGNR8WSG4g_Jqm2Dc4lCdan6vJV8ypA%3A1579012050305&source=hp&ei=0s8dXsjBEOWEmwWI5aYw&q=who+am+i&oq=who+am+i&gs_l=psy-ab.3..0l10.16480.17314..17781...2.0..0.63.391.8......0....1..gws-wiz.....10..35i362i39j35i39.mHgGwVnngZA&ved=0ahUKEwjI8uiipoPnAhVlwqYKHYiyCQYQ4dUDCAY&uact=5
-357      remote      google    3.45564      2            3              2           1           https://www.google.com/search?sxsrf=ACYBGNR8WSG4g_Jqm2Dc4lCdan6vJV8ypA%3A1579012050305&source=hp&ei=0s8dXsjBEOWEmwWI5aYw&q=who+am+i&oq=who+am+i&gs_l=psy-ab.3..0l10.16480.17314..17781...2.0..0.63.391.8......0....1..gws-wiz.....10..35i362i39j35i39.mHgGwVnngZA&ved=0ahUKEwjI8uiipoPnAhVlwqYKHYiyCQYQ4dUDCAY&uact=5
-358      remote      google    3.45566      10           7              6           6           https://www.google.com/search?sxsrf=ACYBGNR8WSG4g_Jqm2Dc4lCdan6vJV8ypA%3A1579012050305&source=hp&ei=0s8dXsjBEOWEmwWI5aYw&q=who+am+i&oq=who+am+i&gs_l=psy-ab.3..0l10.16480.17314..17781...2.0..0.63.391.8......0....1..gws-wiz.....10..35i362i39j35i39.mHgGwVnngZA&ved=0ahUKEwjI8uiipoPnAhVlwqYKHYiyCQYQ4dUDCAY&uact=5
-359      extension             3.49859      3            6              1           1           chrome-extension://gighmmpiobklfepjocnamgkkbiglidom/include.postload.js
-360      extension             3.49862      1            0              0           1           chrome-extension://gighmmpiobklfepjocnamgkkbiglidom/adblock-uiscripts-rightclick_hook.js
-363      remote      gstatic   3.55777      112          155            38          4           https://www.gstatic.com/og/_/js/k=og.qtm.en_US.XQsFVjkAE_M.O/rt=j/m=qabr,qgl,q_d,qdid,qcwid,qmutsd,qapid/exm=qaaw,qadd,qaid,qein,qhaw,qhbr,qhch,qhga,qhid,qhin,qhpr/d=1/ed=1/rs=AA2YrTs9lXdWY2A2Qw-5oWtGGTmrLlgIag
-362      remote      google    3.60976      576          2073           194         199         https://www.google.com/xjs/_/js/k=xjs.s.en_GB.HYvz6NGAbYM.O/ck=xjs.s.QwHcSNbPBhk.L.W.O/m=Fkg7bd,HcFEGb,IvlUe,MC8mtf,OF7gzc,RMhBfe,T4BAC,TJw5qb,TbaHGc,Y33vzc,ZyRBae,cdos,hsm,iDPoPb,jsa,mvYTse,tg8oTe,uz938c,vWNDde,ws9Tlc,yQ43ff,d,csi/am=AAAAAEsAu-6APP83AQAAwI4BAAABboINC4QgoYKoOoEEBA/d=1/dg=2/br=1/ct=zgms/rs=ACT90oG7GNgYHOMFipeOppF3OcpUIyQP0g
-364      remote      google    3.72876      26           35             3           3           https://apis.google.com/_/scs/abc-static/_/js/k=gapi.gapi.en.7kWSr24wXFc.O/m=gapi_iframes,googleapis_client,plusone/rt=j/sv=1/d=1/ed=1/rs=AHpOoo-i9r7IbCTUQfJ0v-FPhRKRS8aihQ/cb=gapi.loaded_0
-371      extension             3.75547      2            2              2           2           chrome-extension://gpdjojdkbbmdfjfahjcgigfpmkopogic/js/content.js
-375      extension             3.75549      1            1              0           1           chrome-extension://pkehgijcmpdhfbdbbnkijodmdjhbjlgp/js/contentscripts/supercookie.js
-373      extension             3.75802      2            2              2           1           chrome-extension://pkehgijcmpdhfbdbbnkijodmdjhbjlgp/js/firstparties/google-search.js
-372      extension             3.75802      1            0              1           1           chrome-extension://pkehgijcmpdhfbdbbnkijodmdjhbjlgp/js/firstparties/lib/utils.js
-374      extension             3.76298      5            6              1           2           chrome-extension://pkehgijcmpdhfbdbbnkijodmdjhbjlgp/js/contentscripts/socialwidgets.js
-376      local                 3.77207      11           13             6           3           file:///Users/Nadia/Library/Application%20Support/Google/Chrome/Default/Extensions/gpdjojdkbbmdfjfahjcgigfpmkopogic/4.0.96_0/js/logic.js
-370      remote      google    3.77214      270          277            175         89          https://www.google.com/xjs/_/js/k=xjs.s.en_GB.HYvz6NGAbYM.O/ck=xjs.s.QwHcSNbPBhk.L.W.O/am=AAAAAEsAu-6APP83AQAAwI4BAAABboINC4QgoYKoOoEEBA/d=1/exm=Fkg7bd,HcFEGb,IvlUe,MC8mtf,OF7gzc,RMhBfe,T4BAC,TJw5qb,TbaHGc,Y33vzc,ZyRBae,cdos,csi,d,hsm,iDPoPb,jsa,mvYTse,tg8oTe,uz938c,vWNDde,ws9Tlc,yQ43ff/ed=1/dg=2/br=1/ct=zgms/rs=ACT90oG7GNgYHOMFipeOppF3OcpUIyQP0g/m=EPszLb,F8FRnd,MkHyGd,NBZ7u,NpD4ec,OG6ZHd,RI5Krb,RqxLvf,SvnKM,T6sTsf,T7XTS,TxZWcc,URQPYc,WgDvvc,Wq6lxf,XjCeUc,ZDfS0b,a7RyVe,aCZVp,aa,aam1T,abd,aspn,async,bgd,dvl,eN4qad,ebqyud,exdc,fEVMic,foot,kyn,lazG7b,lli,ltgt,lu,m,mI3LFb,mUpTid,mpck,mu,o02Jie,pB6Zqd,qik19b,rHjpXd,sb_wiz,sf,sonic,spch,tl,uiNkee,vs,wkrYee,wrFDyc,xc1DSd,xz7cCd,zbML3c?xjs=s1
-328      remote      google    3.78684      1            0              1           1           https://www.google.com/search?sxsrf=ACYBGNR8WSG4g_Jqm2Dc4lCdan6vJV8ypA%3A1579012050305&source=hp&ei=0s8dXsjBEOWEmwWI5aYw&q=who+am+i&oq=who+am+i&gs_l=psy-ab.3..0l10.16480.17314..17781...2.0..0.63.391.8......0....1..gws-wiz.....10..35i362i39j35i39.mHgGwVnngZA&ved=0ahUKEwjI8uiipoPnAhVlwqYKHYiyCQYQ4dUDCAY&uact=5
-377      remote      google    4.00812      12           5              12          9           https://www.google.com/xjs/_/js/k=xjs.s.en_GB.HYvz6NGAbYM.O/ck=xjs.s.QwHcSNbPBhk.L.W.O/am=AAAAAEsAu-6APP83AQAAwI4BAAABboINC4QgoYKoOoEEBA/d=1/exm=EPszLb,F8FRnd,Fkg7bd,HcFEGb,IvlUe,MC8mtf,MkHyGd,NBZ7u,NpD4ec,OF7gzc,OG6ZHd,RI5Krb,RMhBfe,RqxLvf,SvnKM,T4BAC,T6sTsf,T7XTS,TJw5qb,TbaHGc,TxZWcc,URQPYc,WgDvvc,Wq6lxf,XjCeUc,Y33vzc,ZDfS0b,ZyRBae,a7RyVe,aCZVp,aa,aam1T,abd,aspn,async,bgd,cdos,csi,d,dvl,eN4qad,ebqyud,exdc,fEVMic,foot,hsm,iDPoPb,jsa,kyn,lazG7b,lli,ltgt,lu,m,mI3LFb,mUpTid,mpck,mu,mvYTse,o02Jie,pB6Zqd,qik19b,rHjpXd,sb_wiz,sf,sonic,spch,tg8oTe,tl,uiNkee,uz938c,vWNDde,vs,wkrYee,wrFDyc,ws9Tlc,xc1DSd,xz7cCd,yQ43ff,zbML3c/ed=1/dg=2/br=1/ct=zgms/rs=ACT90oG7GNgYHOMFipeOppF3OcpUIyQP0g/m=ZuqZhb,c3JEL,qOaBwc?xjs=s2
-378      remote      google    4.07739      9            5              5           6           https://www.google.com/xjs/_/js/k=xjs.s.en_GB.HYvz6NGAbYM.O/ck=xjs.s.QwHcSNbPBhk.L.W.O/am=AAAAAEsAu-6APP83AQAAwI4BAAABboINC4QgoYKoOoEEBA/d=1/exm=EPszLb,F8FRnd,Fkg7bd,HcFEGb,IvlUe,MC8mtf,MkHyGd,NBZ7u,NpD4ec,OF7gzc,OG6ZHd,RI5Krb,RMhBfe,RqxLvf,SvnKM,T4BAC,T6sTsf,T7XTS,TJw5qb,TbaHGc,TxZWcc,URQPYc,WgDvvc,Wq6lxf,XjCeUc,Y33vzc,ZDfS0b,ZuqZhb,ZyRBae,a7RyVe,aCZVp,aa,aam1T,abd,aspn,async,bgd,c3JEL,cdos,csi,d,dvl,eN4qad,ebqyud,exdc,fEVMic,foot,hsm,iDPoPb,jsa,kyn,lazG7b,lli,ltgt,lu,m,mI3LFb,mUpTid,mpck,mu,mvYTse,o02Jie,pB6Zqd,qOaBwc,qik19b,rHjpXd,sb_wiz,sf,sonic,spch,tg8oTe,tl,uiNkee,uz938c,vWNDde,vs,wkrYee,wrFDyc,ws9Tlc,xc1DSd,xz7cCd,yQ43ff,zbML3c/ed=1/dg=2/br=1/ct=zgms/rs=ACT90oG7GNgYHOMFipeOppF3OcpUIyQP0g/m=IkchZc,QPfswe,Uuupec,UxJOle,WVLMce,ZvxbPe,bfCVtd,r36a9c?xjs=s2
-277      extension             4.08587      1            0              3           4           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/promise.js
-318      extension             4.08589      1            0              1           1           chrome-extension://gighmmpiobklfepjocnamgkkbiglidom/adblock-functions.js
-319      extension             4.08709      1            0              0           1           chrome-extension://gighmmpiobklfepjocnamgkkbiglidom/adblock-bandaids.js
-306      extension             4.11296      2            1              1           1           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/messages.js
-297      extension             4.1143       3            2              1           1           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/zotero/translation/translator.js
-304      extension             4.11629      3            4              6           4           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/inject/translate_inject.js
-380      built-in              4.12413      2            0              1           2              
-381      built-in              4.1279       3            1              1           2              
-382      built-in              4.12791      2            0              2           2              
-383      built-in              4.13331      4            2              1           2              
-384      built-in              4.13479      2            0              0           2              
+0        built-in              0            46           4              134         159            
+366      extension             5.3e-05      30           117            0           4           chrome-extension://kbfnbcaeplbcioakkpcpgfkobkghlhen/src/js/Grammarly.js
+415      local                 0.953192     1            0              0           1           file:///Users/Nadia/Library/Application%20Support/Google/Chrome/Default/Extensions/gpdjojdkbbmdfjfahjcgigfpmkopogic/4.0.96_0/js/logic.js
+372      remote      duckduckgo1.72476      60           86             25          23          https://duckduckgo.com/lib/l113.js
+377      remote      duckduckgo1.72481      23           19             25          16          https://duckduckgo.com/d2742.js
+375      remote      duckduckgo3.30455      5            2              3           5           https://duckduckgo.com/util/u422.js
+474      remote      duckduckgo5.63581      1            0              0           1           https://duckduckgo.com/ac/?callback=autocompleteCallback&q=taylor+sw&kl=wt-wt&_=1580894261192
+357      extension             6.6407       1            0              0           1           chrome-extension://gighmmpiobklfepjocnamgkkbiglidom/include.preload.js
+3        built-in              7.04421      3            7              3           2           extensions::SafeBuiltins
+478      extension             7.0567       5            9              2           5           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/browser-polyfill.js
+479      extension             7.05674      4            6              0           1           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/node_modules.js
+481      extension             7.06128      4            3              8           7           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/zotero.js
+484      extension             7.0613       1            1              0           1           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/proxy.js
+486      extension             7.06132      1            1              0           1           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/zotero/date.js
+487      extension             7.06133      2            1              0           2           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/zotero/debug.js
+489      extension             7.06134      11           12             0           3           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/zotero/xregexp/xregexp.js
+490      extension             7.06326      1            1              1           1           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/zotero/xregexp/addons/build.js
+492      extension             7.06749      3            4              1           2           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/zotero/xregexp/addons/unicode/unicode-base.js
+493      extension             7.06751      1            1              1           1           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/zotero/xregexp/addons/unicode/unicode-categories.js
+495      extension             7.07503      1            0              0           1           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/zotero/rdf/init.js
+497      extension             7.07504      1            0              0           1           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/zotero/rdf/term.js
+498      extension             7.07505      1            1              0           1           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/zotero/rdf/identity.js
+499      extension             7.07506      1            0              0           1           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/zotero/rdf/match.js
+501      extension             7.07507      11           10             11          6           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/zotero/translation/translate.js
+502      extension             7.07508      4            2              0           2           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/zotero/translation/translator.js
+503      extension             7.07509      1            0              0           1           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/translate_item.js
+504      extension             7.0751       1            0              0           1           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/zotero/connectorTypeSchemaData.js
+505      extension             7.08177      2            2              0           2           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/zotero/utilities.js
+506      extension             7.08178      1            0              0           1           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/zotero/utilities_translate.js
+513      extension             7.08178      1            1              0           1           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/inject/progressWindow_inject.js
+517      extension             7.0818       4            3              3           3           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/inject/inject.js
+512      extension             7.08182      2            0              6           7           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/messaging_inject.js
+485      extension             7.08183      2            1              1           1           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/cachedTypes.js
+518      extension             7.08787      4            2              2           3           chrome-extension://gighmmpiobklfepjocnamgkkbiglidom/polyfill.js
+520      extension             7.08789      1            0              0           1           chrome-extension://gighmmpiobklfepjocnamgkkbiglidom/ext/content.js
+521      extension             7.08789      8            16             4           3           chrome-extension://gighmmpiobklfepjocnamgkkbiglidom/include.preload.js
+522      built-in              7.09134      3            2              1           1              
+523      extension             7.09885      2            1              2           2           chrome-extension://gighmmpiobklfepjocnamgkkbiglidom/adblock-functions.js
+524      extension             7.09886      3            1              2           2           chrome-extension://gighmmpiobklfepjocnamgkkbiglidom/adblock-bandaids.js
+525      extension             7.09889      3            1              4           3           chrome-extension://pkehgijcmpdhfbdbbnkijodmdjhbjlgp/js/contentscripts/utils.js
+528      extension             7.09891      1            1              2           2           chrome-extension://pkehgijcmpdhfbdbbnkijodmdjhbjlgp/js/contentscripts/dnt.js
+530      extension             7.13102      107          909            16          7           chrome-extension://kbfnbcaeplbcioakkpcpgfkobkghlhen/src/js/Grammarly.js
+532      extension             7.26253      2            2              1           1           chrome-extension://bkdgflcldnnnapblkhphbgpggdiikppg/public/js/content-scripts/element-hiding.js
+533      built-in              7.27344      1            0              0           1              
+529      extension             7.27346      1            0              1           1           chrome-extension://pkehgijcmpdhfbdbbnkijodmdjhbjlgp/js/contentscripts/fingerprinting.js
+534      built-in              7.27349      1            2              1           1              
+536      remote      duckduckgo7.31415      130          554            98          236         https://duckduckgo.com/lib/l113.js
+537      remote      duckduckgo7.37197      1            0              1           1           https://duckduckgo.com/locale/sv_SE/duckduckgo28.js
+539      remote      duckduckgo7.37205      30           42             63          51          https://duckduckgo.com/util/u422.js
+541      remote      duckduckgo7.39796      108          165            197         94          https://duckduckgo.com/d2742.js
+542      remote      duckduckgo7.43316      2            0              1           2           https://duckduckgo.com/?q=taylor+swift&atb=v207-1__
+543      remote      duckduckgo7.43811      81           131            126         46          https://duckduckgo.com/g2262.js
+544      remote      duckduckgo7.44591      1            0              1           1           https://duckduckgo.com/?q=taylor+swift&atb=v207-1__
+545      extension             7.53548      3            7              1           1           chrome-extension://gighmmpiobklfepjocnamgkkbiglidom/include.postload.js
+548      built-in              7.60534      2            1              1           1              
+526      extension             7.61595      1            1              3           1           chrome-extension://pkehgijcmpdhfbdbbnkijodmdjhbjlgp/js/contentscripts/clobbercookie.js
+527      extension             7.616        1            1              1           1           chrome-extension://pkehgijcmpdhfbdbbnkijodmdjhbjlgp/js/contentscripts/clobberlocalstorage.js
+549      remote      duckduckgo7.61605      1            0              1           1           https://duckduckgo.com/post2.html
+550      local                 7.62987      8            17             5           13          file:///Users/Nadia/Library/Application%20Support/Google/Chrome/Default/Extensions/ekhagklcjbdpajgpjgmbionohlpdbjgc/5.0.61_0/browser-polyfill.js
+546      extension             7.64806      1            0              1           1           chrome-extension://gighmmpiobklfepjocnamgkkbiglidom/adblock-uiscripts-rightclick_hook.js
+551      local                 7.64807      6            12             0           1           file:///Users/Nadia/Library/Application%20Support/Google/Chrome/Default/Extensions/ekhagklcjbdpajgpjgmbionohlpdbjgc/5.0.61_0/node_modules.js
+553      extension             7.67283      3            3              3           2           chrome-extension://gpdjojdkbbmdfjfahjcgigfpmkopogic/js/content.js
+556      local                 7.67286      4            2              9           7           file:///Users/Nadia/Library/Application%20Support/Google/Chrome/Default/Extensions/ekhagklcjbdpajgpjgmbionohlpdbjgc/5.0.61_0/zotero.js
+554      extension             7.67624      5            6              1           3           chrome-extension://pkehgijcmpdhfbdbbnkijodmdjhbjlgp/js/contentscripts/socialwidgets.js
+558      local                 7.68542      1            0              0           1           file:///Users/Nadia/Library/Application%20Support/Google/Chrome/Default/Extensions/ekhagklcjbdpajgpjgmbionohlpdbjgc/5.0.61_0/http.js
+559      local                 7.68543      1            1              0           1           file:///Users/Nadia/Library/Application%20Support/Google/Chrome/Default/Extensions/ekhagklcjbdpajgpjgmbionohlpdbjgc/5.0.61_0/proxy.js
+561      local                 7.68545      2            1              1           2           file:///Users/Nadia/Library/Application%20Support/Google/Chrome/Default/Extensions/ekhagklcjbdpajgpjgmbionohlpdbjgc/5.0.61_0/cachedTypes.js
+562      local                 7.69648      1            0              0           1           file:///Users/Nadia/Library/Application%20Support/Google/Chrome/Default/Extensions/ekhagklcjbdpajgpjgmbionohlpdbjgc/5.0.61_0/zotero/date.js
+565      local                 7.69649      12           14             0           3           file:///Users/Nadia/Library/Application%20Support/Google/Chrome/Default/Extensions/ekhagklcjbdpajgpjgmbionohlpdbjgc/5.0.61_0/zotero/xregexp/xregexp.js
+566      local                 7.69656      1            1              1           1           file:///Users/Nadia/Library/Application%20Support/Google/Chrome/Default/Extensions/ekhagklcjbdpajgpjgmbionohlpdbjgc/5.0.61_0/zotero/xregexp/addons/build.js
+568      local                 7.70222      3            3              1           2           file:///Users/Nadia/Library/Application%20Support/Google/Chrome/Default/Extensions/ekhagklcjbdpajgpjgmbionohlpdbjgc/5.0.61_0/zotero/xregexp/addons/unicode/unicode-base.js
+569      local                 7.71231      1            1              1           1           file:///Users/Nadia/Library/Application%20Support/Google/Chrome/Default/Extensions/ekhagklcjbdpajgpjgmbionohlpdbjgc/5.0.61_0/zotero/xregexp/addons/unicode/unicode-categories.js
+573      local                 7.71234      1            0              0           1           file:///Users/Nadia/Library/Application%20Support/Google/Chrome/Default/Extensions/ekhagklcjbdpajgpjgmbionohlpdbjgc/5.0.61_0/zotero/rdf/term.js
+574      local                 7.71235      1            1              0           1           file:///Users/Nadia/Library/Application%20Support/Google/Chrome/Default/Extensions/ekhagklcjbdpajgpjgmbionohlpdbjgc/5.0.61_0/zotero/rdf/identity.js
+576      built-in              7.71237      1            0              1           1              
+578      local                 7.72508      15           12             13          9           file:///Users/Nadia/Library/Application%20Support/Google/Chrome/Default/Extensions/ekhagklcjbdpajgpjgmbionohlpdbjgc/5.0.61_0/zotero/translation/translate.js
+581      local                 7.72514      14           14             4           6           file:///Users/Nadia/Library/Application%20Support/Google/Chrome/Default/Extensions/gpdjojdkbbmdfjfahjcgigfpmkopogic/4.0.96_0/js/logic.js
+582      local                 7.73872      1            0              0           1           file:///Users/Nadia/Library/Application%20Support/Google/Chrome/Default/Extensions/ekhagklcjbdpajgpjgmbionohlpdbjgc/5.0.61_0/zotero/connectorTypeSchemaData.js
+583      local                 7.7612       2            2              0           2           file:///Users/Nadia/Library/Application%20Support/Google/Chrome/Default/Extensions/ekhagklcjbdpajgpjgmbionohlpdbjgc/5.0.61_0/zotero/utilities.js
+584      local                 7.77483      1            0              0           1           file:///Users/Nadia/Library/Application%20Support/Google/Chrome/Default/Extensions/ekhagklcjbdpajgpjgmbionohlpdbjgc/5.0.61_0/zotero/utilities_translate.js
+588      local                 7.78712      1            0              0           1           file:///Users/Nadia/Library/Application%20Support/Google/Chrome/Default/Extensions/ekhagklcjbdpajgpjgmbionohlpdbjgc/5.0.61_0/integration/connectorIntegration.js
+594      local                 7.78713      1            0              0           1           file:///Users/Nadia/Library/Application%20Support/Google/Chrome/Default/Extensions/ekhagklcjbdpajgpjgmbionohlpdbjgc/5.0.61_0/api.js
+595      local                 7.78943      4            3              4           1           file:///Users/Nadia/Library/Application%20Support/Google/Chrome/Default/Extensions/ekhagklcjbdpajgpjgmbionohlpdbjgc/5.0.61_0/inject/inject.js
+590      local                 7.78945      2            0              8           8           file:///Users/Nadia/Library/Application%20Support/Google/Chrome/Default/Extensions/ekhagklcjbdpajgpjgmbionohlpdbjgc/5.0.61_0/messaging_inject.js
+557      local                 7.79302      1            0              2           2           file:///Users/Nadia/Library/Application%20Support/Google/Chrome/Default/Extensions/ekhagklcjbdpajgpjgmbionohlpdbjgc/5.0.61_0/promise.js
+563      local                 7.79303      1            0              0           1           file:///Users/Nadia/Library/Application%20Support/Google/Chrome/Default/Extensions/ekhagklcjbdpajgpjgmbionohlpdbjgc/5.0.61_0/zotero/debug.js
+589      local                 7.79797      2            1              1           1           file:///Users/Nadia/Library/Application%20Support/Google/Chrome/Default/Extensions/ekhagklcjbdpajgpjgmbionohlpdbjgc/5.0.61_0/messages.js
+579      local                 7.79798      3            2              1           1           file:///Users/Nadia/Library/Application%20Support/Google/Chrome/Default/Extensions/ekhagklcjbdpajgpjgmbionohlpdbjgc/5.0.61_0/zotero/translation/translator.js
+587      local                 7.79849      3            3              4           4           file:///Users/Nadia/Library/Application%20Support/Google/Chrome/Default/Extensions/ekhagklcjbdpajgpjgmbionohlpdbjgc/5.0.61_0/inject/translate_inject.js
+597      built-in              7.80004      3            1              1           2              
+598      built-in              7.80112      1            0              1           1              
+599      built-in              7.80432      4            2              1           2              
+600      built-in              7.80434      2            1              0           1              
+601      built-in              7.81841      1            0              1           1              
+602      remote      duckduckgo8.36786      1            0              3           1           https://duckduckgo.com/d.js?q=taylor%20swift&t=N&l=se-sv&s=0&dl=sv&ck=news_taylor%20swift&ct=SE&ss_mkt=se&vqd=3-241617009101837092747375765871961606142-258878423455862693263329789758451153000&atb=v207-1__&p_ent=&ex=-1&sp=1&ext=1&v7exp=a&wiali2=b
+603      remote      duckduckgo8.43899      1            1              0           1           https://duckduckgo.com/s2475.js
+482      extension             8.89132      1            0              2           2           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/promise.js
+511      extension             8.89768      2            1              1           1           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/messages.js
+509      extension             8.89917      3            2              3           3           chrome-extension://ekhagklcjbdpajgpjgmbionohlpdbjgc/inject/translate_inject.js
+605      built-in              8.89917      3            1              2           2              
+606      built-in              8.90296      2            0              1           2              
+607      built-in              8.90297      4            2              1           2              
+608      built-in              8.91788      2            1              0           1              
+610      built-in              11.6359      1            0              1           1              
+611      built-in              11.636       1            0              1           1              
+612      built-in              11.8651      1            0              1           1              
 
 
 ** Functions within script 317: **
 
-injected                   1161   1           0            0                    0                     0                         
-                           1160   1           1            1                    0                     1                         
-calls within script: 5059
-calls out from script: 807
-ratio out/within: 0.159518
-5866 function calls registered
-1809 functions registered
-78 script ids registered
-first ts: 38989461256
-last ts: 38994934526
-time width: 5473270
-first ts: 38989.5
-last ts: 38994.9
-time width: 5.47327
+calls within script: 2245
+calls out from script: 835
+ratio out/within: 0.371938
+3080 function calls registered
+870 functions registered
+106 script ids registered
+first ts: 744117097610
+last ts: 744130020837
+time width: 12923227
+first ts: 744117
+last ts: 744130
+time width: 12.9232
 [notice ] ofApp::setup JSON parsing successful: 
-[notice ] screenshot ts: 38990532948 1.07169
-[notice ] screenshot ts: 38990316251 0.854995
-[notice ] screenshot ts: 38991616433 2.15518
-[notice ] screenshot ts: 38990399596 0.93834
-[notice ] screenshot ts: 38992833270 3.37201
-[notice ] screenshot ts: 38990849659 1.3884
-[notice ] screenshot ts: 38991049687 1.58843
-[notice ] screenshot ts: 38992733256 3.272
-[notice ] screenshot ts: 38990449603 0.988347
-[notice ] screenshot ts: 38989932864 0.471608
-[notice ] screenshot ts: 38990566286 1.10503
-[notice ] screenshot ts: 38992916615 3.45536
-[notice ] screenshot ts: 38989999540 0.538284
-[notice ] screenshot ts: 38992883277 3.42202
-[notice ] screenshot ts: 38990916335 1.45508
-[notice ] screenshot ts: 38990699638 1.23838
-[notice ] screenshot ts: 38992199848 2.73859
-[notice ] screenshot ts: 38989296833 1.84467e+13
-[notice ] screenshot ts: 38992183179 2.72192
-[notice ] screenshot ts: 38990749645 1.28839
-[notice ] screenshot ts: 38991149701 1.68844
-[notice ] screenshot ts: 38992966622 3.50537
-[notice ] screenshot ts: 38990782983 1.32173
-[notice ] screenshot ts: 38991199708 1.73845
-[notice ] screenshot ts: 38989499470 0.038214
-[notice ] screenshot ts: 38990983011 1.52175
-[notice ] screenshot ts: 38991649771 2.18852
+[notice ] screenshot ts: 744121468019 4.37041
+[notice ] screenshot ts: 744124668467 7.57086
+[notice ] screenshot ts: 744122034765 4.93715
+[notice ] screenshot ts: 744122734863 5.63725
+[notice ] screenshot ts: 744118900815 1.8032
+[notice ] screenshot ts: 744121301329 4.20372
+[notice ] screenshot ts: 744125585262 8.48765
+[notice ] screenshot ts: 744125818628 8.72102
+[notice ] screenshot ts: 744120634569 3.53696
+[notice ] screenshot ts: 744122968229 5.87062
+[notice ] screenshot ts: 744122351476 5.25387
+[notice ] screenshot ts: 744121234653 4.13704
+[notice ] screenshot ts: 744124635129 7.53752
+[notice ] screenshot ts: 744123751672 6.65406
+[notice ] screenshot ts: 744124685136 7.58753
+[notice ] screenshot ts: 744119600913 2.5033
+[notice ] screenshot ts: 744118834139 1.73653
+[notice ] screenshot ts: 744120100983 3.00337
+[notice ] screenshot ts: 744120417694 3.32008
+[notice ] screenshot ts: 744117367267 0.269657
+[notice ] screenshot ts: 744119250864 2.15325
+[notice ] screenshot ts: 744120934611 3.837
+[notice ] screenshot ts: 744126001987 8.90438
+[notice ] screenshot ts: 744125568593 8.47098
+[notice ] screenshot ts: 744121851406 4.7538
+[notice ] screenshot ts: 744122784870 5.68726
+[notice ] screenshot ts: 744122434821 5.33721
+[notice ] screenshot ts: 744120801259 3.70365
+[notice ] screenshot ts: 744120317680 3.22007
+[notice ] screenshot ts: 744124035045 6.93743
+[notice ] screenshot ts: 744122568173 5.47056
+[notice ] screenshot ts: 744122601511 5.5039
+[notice ] screenshot ts: 744121434681 4.33707
+[notice ] screenshot ts: 744116916663 1.84467e+13
+[notice ] screenshot ts: 744128969069 11.8715
+[notice ] screenshot ts: 744123418292 6.32068
+[notice ] screenshot ts: 744123534975 6.43736
+[notice ] screenshot ts: 744120817928 3.72032
+[notice ] screenshot ts: 744123268271 6.17066
+[notice ] screenshot ts: 744120484548 3.38694
+[notice ] screenshot ts: 744121084632 3.98702
+[notice ] screenshot ts: 744128752372 11.6548
+[notice ] screenshot ts: 744125551924 8.45431
+[notice ] screenshot ts: 744121618040 4.52043
+[notice ] script size: 0.60454
+[notice ] script size: 0.463069
+[notice ] script size: 0.616349
+[notice ] script size: 0.393221
+[notice ] script size: 0.283728
+[notice ] script size: 0.390088
+[notice ] script size: 0.272379
+[notice ] script size: 0.301516
+[notice ] script size: 0.205741
+[notice ] script size: 0.163927
+[notice ] script size: 0.142608
+[notice ] script size: 0.124234
+[notice ] script size: 0.118167
+[notice ] script size: 0.149488
+[notice ] script size: 0.140201
+[notice ] script size: 0.165839
+[notice ] script size: 0.111593
+[notice ] script size: 0.100475
+[notice ] script size: 0.121257
+[notice ] script size: 0.100475
+[notice ] script size: 0.127107
+[notice ] script size: 0.096329
+[notice ] script size: 0.0761462
+[notice ] script size: 0.069644
+[notice ] script size: 0.0761462
+[notice ] script size: 0.0871163
+[notice ] script size: 0.0871163
+[notice ] script size: 0.127107
+[notice ] script size: 0.0918959
+[notice ] script size: 0.096329
+[notice ] script size: 0.0918959
+[notice ] script size: 0.0918959
+[notice ] script size: 0.0819069
+[notice ] script size: 0.069644
+[notice ] script size: 0.10438
+[notice ] script size: 0.069644
+[notice ] script size: 0.0918959
+[notice ] script size: 0.0761462
+[notice ] script size: 0.0871163
+[notice ] script size: 0.0761462
+[notice ] script size: 0.069644
+[notice ] script size: 0.108077
+[notice ] script size: 0.0761462
+[notice ] script size: 0.069644
+[notice ] script size: 0.121257
+[notice ] script size: 0.0620738
+[notice ] script size: 0.069644
+[notice ] script size: 0.0620738
+[notice ] script size: 0.0527803
+[notice ] script size: 0.069644
+[notice ] script size: 0.0620738
+[notice ] script size: 0.0620738
+[notice ] script size: 0.0620738
+[notice ] script size: 0.069644
+[notice ] script size: 0.111593
+[notice ] script size: 0.0620738
+[notice ] script size: 0.0620738
+[notice ] script size: 0.0527803
+[notice ] script size: 0.0527803
+[notice ] script size: 0.0527803
+[notice ] script size: 0.04
+[notice ] script size: 0.04
+[notice ] script size: 0.04
+[notice ] script size: 0.0620738
+[notice ] script size: 0.0527803
+[notice ] script size: 0.069644
+[notice ] script size: 0.04
+[notice ] script size: 0.0527803
+[notice ] script size: 0.04
+[notice ] script size: 0.04
+[notice ] script size: 0.0527803
+[notice ] script size: 0.0527803
+[notice ] script size: 0.0527803
+[notice ] script size: 0.069644
+[notice ] script size: 0.0527803
+[notice ] script size: 0.069644
+[notice ] script size: 0.04
+[notice ] script size: 0.04
+[notice ] script size: 0.0761462
+[notice ] script size: 0.04
+[notice ] script size: 0.0527803
+[notice ] script size: 0.069644
+[notice ] script size: 0.04
+[notice ] script size: 0.0527803
+[notice ] script size: 0.0527803
+[notice ] script size: 0.0527803
+[notice ] script size: 0.04
+[notice ] script size: 0.0761462
+[notice ] script size: 0.0620738
+[notice ] script size: 0.0527803
+[notice ] script size: 0.0527803
+[notice ] script size: 0.04
+[notice ] script size: 0.04
+[notice ] script size: 0.04
+[notice ] script size: 0.0527803
+[notice ] script size: 0.04
+[notice ] script size: 0.0527803
+[notice ] script size: 0.04
+[notice ] script size: 0.04
+[notice ] script size: 0.0620738
+[notice ] script size: 0.04
+[notice ] script size: 0.0620738
+[notice ] script size: 0.04
+[notice ] script size: 0.0527803
+[notice ] script size: 0.0527803
+[notice ] script size: 0.0620738

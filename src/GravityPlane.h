@@ -70,9 +70,21 @@ public:
   vector<AttractionPoint> points;
   vector<HolePoint> holePoints;
   int maxScriptId;
-  int size = 1500;
-  bool addBasePlate = false;
+  int size = 6000;
+  float scale = 0.4; // used to scale things down so they don't overshoot the edge
+  bool addBasePlate = true;
+  bool functionsAsHoles = true;
   int holeYPos = -4000;
+  glm::vec2 pointOffset;
+
+  GravityPlane() {
+    points.push_back(AttractionPoint(
+      glm::vec2(0, 0),
+      200,
+      size*0.6
+    ));
+    pointOffset = glm::vec2(0, -0.25); // compensate for an off center mid point
+  }
 
   ofMesh generateMesh() {
     int stepSize = 5;
@@ -84,13 +96,13 @@ public:
     ofMesh mesh;
     mesh.setMode(OF_PRIMITIVE_TRIANGLES);
 
-    int baseY = -4;
+    int baseY = -2;
     
     // plane vertexes
     for (int y = minH; y < maxH; y++){
       for (int x = minW; x<maxW; x++){
         float offset = getGravityAtPoint(glm::vec2(x*stepSize, y*stepSize));
-        if(offset < 0) offset = 0; // avoid function holes extending under the model
+        // if(offset < 0) offset = 0; // avoid function holes extending under the model
         HoleRelation hr = getHole(glm::vec2(x*stepSize, y*stepSize));
         if(hr == HoleRelation::HOLE) {
           offset = holeYPos;
@@ -128,9 +140,28 @@ public:
       mesh.addColor(ofFloatColor(1,.5,0));  // add a color at that vertex
     }
 
+    if(addBasePlate && functionsAsHoles) {
+      // base plate vertexes
+      for (int y = minH; y < maxH; y++){
+        for (int x = minW; x<maxW; x++){
+          float offset = baseY;
+          HoleRelation hr = getHole(glm::vec2(x*stepSize, y*stepSize));
+          if(hr == HoleRelation::HOLE) {
+            offset = holeYPos;
+          }
+          else if(hr == HoleRelation::WALL) offset = holeYPos;
+          mesh.addVertex(ofPoint(x*stepSize,offset,y*stepSize)); // make a new vertex
+          mesh.addColor(ofFloatColor(1,0.,.5));  // add a color at that vertex
+        }
+      }
+    }
+
 
     int width = maxW - minW;
     int height = maxH - minH;
+
+    // the offset into the base plate vertices
+    uint32_t basePlateVerticesOffset = width*height + width*2 + height*2;
 
     // now it's important to make sure that each vertex is correctly connected with the
     // other vertices around it. This is done using indices, which you can set up like so:
@@ -142,11 +173,12 @@ public:
         glm::vec3 p1 = mesh.getVertex((x+1)+y*width);
         glm::vec3 p10 = mesh.getVertex(x+(y+1)*width);
         glm::vec3 p11 = mesh.getVertex((x+1)+(y+1)*width);
-        if(p0.y != holeYPos
-        && p1.y != holeYPos
-        && p10.y != holeYPos
-        && p11.y != holeYPos
-        ) {
+        bool isNotAHole = p0.y != holeYPos && p1.y != holeYPos && p10.y != holeYPos && p11.y != holeYPos;
+        float groundLimit = (1.0 / (glm::distance(p0, glm::vec3(0, 0, 0))/(size*0.04)) * -500) + 40;
+        groundLimit = -500;
+
+        bool isNotFlatGround = p0.y > groundLimit || p1.y > groundLimit || p10.y > groundLimit || p11.y > groundLimit;
+        if(isNotAHole && isNotFlatGround) {
           mesh.addIndex(x+y*width);               // 0
           mesh.addIndex((x+1)+y*width);           // 1
           mesh.addIndex(x+(y+1)*width);           // 10
@@ -157,7 +189,7 @@ public:
         }
       }
     }
-    int planeVertexLength = width*height;
+    int planeVertexLength = width*height; // the offset for the walls, gets incremented after each wall
     // add wall indices
     // top
     y = 0;
@@ -167,11 +199,10 @@ public:
       glm::vec3 p1 = mesh.getVertex(i+1);
       glm::vec3 p10 = mesh.getVertex(planeVertexLength + i);
       glm::vec3 p11 = mesh.getVertex(planeVertexLength + i + 1);
-      if(p0.y != holeYPos
-      && p1.y != holeYPos
-      && p10.y != holeYPos
-      && p11.y != holeYPos
-      ) {
+      bool isNotAHole = p0.y != holeYPos && p1.y != holeYPos && p10.y != holeYPos && p11.y != holeYPos;
+      bool isNotFlatGround = p0.y > 0 || p1.y > 0 || p10.y > 0 || p11.y > 0;
+      if(isNotAHole) {
+        // also don't add 
         mesh.addIndex(i);               // 0
         mesh.addIndex(i+1);           // 1
         mesh.addIndex(planeVertexLength + i);           // 10
@@ -190,11 +221,9 @@ public:
       glm::vec3 p1 = mesh.getVertex(x + (i+1)*width);
       glm::vec3 p10 = mesh.getVertex(planeVertexLength + i);
       glm::vec3 p11 = mesh.getVertex(planeVertexLength + i + 1);
-      if(p0.y != holeYPos
-      && p1.y != holeYPos
-      && p10.y != holeYPos
-      && p11.y != holeYPos
-      ) {
+      bool isNotAHole = p0.y != holeYPos && p1.y != holeYPos && p10.y != holeYPos && p11.y != holeYPos;
+      bool isNotFlatGround = p0.y > 0 || p1.y > 0 || p10.y > 0 || p11.y > 0;
+      if(isNotAHole) {
         mesh.addIndex(x+i*width);               // 0
         mesh.addIndex(x + (i+1)*width);           // 1
         mesh.addIndex(planeVertexLength + i);           // 10
@@ -213,11 +242,9 @@ public:
       glm::vec3 p1 = mesh.getVertex((i+1) + y*width);
       glm::vec3 p10 = mesh.getVertex(planeVertexLength + i);
       glm::vec3 p11 = mesh.getVertex(planeVertexLength + i + 1);
-      if(p0.y != holeYPos
-      && p1.y != holeYPos
-      && p10.y != holeYPos
-      && p11.y != holeYPos
-      ) {
+      bool isNotAHole = p0.y != holeYPos && p1.y != holeYPos && p10.y != holeYPos && p11.y != holeYPos;
+      bool isNotFlatGround = p0.y > 0 || p1.y > 0 || p10.y > 0 || p11.y > 0;
+      if(isNotAHole) {
         mesh.addIndex(i+y*width);               // 0
         mesh.addIndex((i+1) + y*width);           // 1
         mesh.addIndex(planeVertexLength + i);           // 10
@@ -236,11 +263,9 @@ public:
       glm::vec3 p1 = mesh.getVertex(x + (i+1)*width);
       glm::vec3 p10 = mesh.getVertex(planeVertexLength + i);
       glm::vec3 p11 = mesh.getVertex(planeVertexLength + i + 1);
-      if(p0.y != holeYPos
-      && p1.y != holeYPos
-      && p10.y != holeYPos
-      && p11.y != holeYPos
-      ) {
+      bool isNotAHole = p0.y != holeYPos && p1.y != holeYPos && p10.y != holeYPos && p11.y != holeYPos;
+      bool isNotFlatGround = p0.y > 0 || p1.y > 0 || p10.y > 0 || p11.y > 0;
+      if(isNotAHole) {
         mesh.addIndex(x+i*width);               // 0
         mesh.addIndex(x + (i+1)*width);           // 1
         mesh.addIndex(planeVertexLength + i);           // 10
@@ -253,17 +278,42 @@ public:
 
     // add bottom plate
     if(addBasePlate) {
-      int topleft = width*height;
-      int topright = width*height + width;
-      int bottomleft = width*height + width + height;
-      int bottomright = width*height + width + height + width-1; // last element of bottom row
-      mesh.addIndex(topleft);
-      mesh.addIndex(topright);
-      mesh.addIndex(bottomleft);
+      if(!functionsAsHoles) {
+        // simple base plate 
+        int topleft = width*height;
+        int topright = width*height + width;
+        int bottomleft = width*height + width + height;
+        int bottomright = width*height + width + height + width-1; // last element of bottom row
+        mesh.addIndex(topleft);
+        mesh.addIndex(topright);
+        mesh.addIndex(bottomleft);
 
-      mesh.addIndex(topright);
-      mesh.addIndex(bottomright);
-      mesh.addIndex(bottomleft);
+        mesh.addIndex(topright);
+        mesh.addIndex(bottomright);
+        mesh.addIndex(bottomleft);
+      } else {
+        // fine grained function holes in the bottom plate
+        // this will increase the complexity and file size by a lot!
+        for (int y = 0; y<height-1; y++){
+          for (int x=0; x<width-1; x++){
+            // only add the triangles if we are not inside a hole
+            glm::vec3 p0 = mesh.getVertex(x+y*width + basePlateVerticesOffset);
+            glm::vec3 p1 = mesh.getVertex((x+1)+y*width + basePlateVerticesOffset);
+            glm::vec3 p10 = mesh.getVertex(x+(y+1)*width + basePlateVerticesOffset);
+            glm::vec3 p11 = mesh.getVertex((x+1)+(y+1)*width + basePlateVerticesOffset);
+            bool isNotAHole = p0.y != holeYPos && p1.y != holeYPos && p10.y != holeYPos && p11.y != holeYPos;
+            if(isNotAHole) {
+              mesh.addIndex(x+(y+1)*width + basePlateVerticesOffset);           // 10
+              mesh.addIndex((x+1)+y*width + basePlateVerticesOffset);           // 1
+              mesh.addIndex(x+y*width + basePlateVerticesOffset);               // 0
+
+              mesh.addIndex((x+1)+(y+1)*width + basePlateVerticesOffset);       // 11
+              mesh.addIndex(x+(y+1)*width + basePlateVerticesOffset);           // 10
+              mesh.addIndex((x+1)+y*width + basePlateVerticesOffset);           // 1
+            }
+          }
+        }
+      }
     }
 
     return mesh;
@@ -290,12 +340,44 @@ public:
     }
     return meshes;
   }
+
+  ofMesh generateMeshGridPiece(int gridSize = 10, int pieceX = 0, int pieceY = 0, int stepSize = 5) {
+    int width = size/stepSize, height = size/stepSize;
+    int minHeight = -height/2;
+    int minWidth = -width/2;
+    int partWidth = width/gridSize;
+    int partHeight = height/gridSize;
+
+    return generateMesh(
+      minWidth + partWidth*pieceX,
+      minWidth + partWidth*(pieceX+1),
+      minHeight + partHeight*pieceY,
+      minHeight + partHeight*(pieceY+1),
+      stepSize
+    );
+  }
   
   void addScriptPoint(Script& s) {
-    float scale = 0.7;
-    float offset = (1.-pow(1.-s.getSize(), 2.0)) * size * scale * 0.15;
-    glm::vec2 pos = s.getSpiralCoordinate(maxScriptId, size*scale); // + glm::vec2(size*0.5, size*.5);
-    float radius = (1.-pow(1.-s.getSize(), 2.0)) * size * scale * .5;
+    // SPIRAL:
+    // float scale = 0.7;
+    // float offset = (1.-pow(1.-s.getSize(), 2.0)) * size * scale * 0.15;
+    // glm::vec2 pos = s.getSpiralCoordinate(maxScriptId, size*scale); // + glm::vec2(size*0.5, size*.5);
+    // float radius = (1.-pow(1.-s.getSize(), 2.0)) * size * scale * .5;
+    // points.push_back(AttractionPoint(
+    //   pos,
+    //   offset,
+    //   radius
+    // ));
+    // s.meshRadius = radius * 0.25;
+    // s.meshPos = pos;
+    // TRIANGLE:
+    float offset = (1.-pow(1.-s.scriptCircle.r, .5)) * size * scale * 3.0;
+    offset *= 0.2; // shallower mountains for shorter print time
+    if(s.scriptType == "built-in") {
+      offset *= -.5;
+    }
+    glm::vec2 pos = (s.scriptCircle.p + pointOffset) * size*scale;
+    float radius = (1.-pow(1.-s.scriptCircle.r, 2.0)) * size * scale * 3.0;
     points.push_back(AttractionPoint(
       pos,
       offset,
@@ -307,29 +389,38 @@ public:
   
   void addFunctionPoint(Function& f, Script& s, float offsetRatio = -0.005) {
     
-    // float offset = size * -0.04;
-    float offset = size * 0.008;
+
+    // float offset = size * -0.04; // negative bump
+    float offset = size * offsetRatio; // bump
     // float radius = size * .003;
-    float radius = size * .005;
+    // float radius = size * .005;
+    float radius = f.functionCircle.r * size;
     // recalculate the pos relative to the mesh size instead of reusing the one meant for visual display
     glm::vec2 scriptPos = s.meshPos;
     float scriptSize = s.meshRadius;
-    glm::vec2 funcRelativePos = f.getRelativeSpiralPos();
-    glm::vec2 pos = scriptPos + (funcRelativePos * scriptSize);
+    // glm::vec2 funcRelativePos = f.getRelativeSpiralPos();
+    // glm::vec2 pos = scriptPos + (funcRelativePos * scriptSize);
 
-    // add as an attraction point
-    points.push_back(AttractionPoint(
-      pos,
-      offset,
-      radius
-    ));
+    // TRIANGLE pos:
+    glm::vec2 pos = (f.functionCircle.p + pointOffset) * size*scale;
 
-    // add as a hole point
-    // holePoints.push_back(HolePoint(
-    //   pos, 
-    //   8,
-    //   6
-    // ));
+    
+    if(functionsAsHoles) {
+      // add as a hole point
+      holePoints.push_back(HolePoint(
+        pos, 
+        radius*0.35,
+        radius*0.32
+      ));
+    } else {
+      // add as an attraction point
+      points.push_back(AttractionPoint(
+        pos,
+        offset,
+        radius
+      ));
+    }
+    
   }
   
   float getGravityAtPoint(glm::vec2 p) {

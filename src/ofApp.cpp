@@ -9,7 +9,10 @@ void ofApp::setup() {
   
   // graphX = WIDTH * 0.67;
   // graphY = HEIGHT * .5;
+  graphY = HEIGHT * -0.1;
   graphX = WIDTH * 0.15;
+
+  graphScaling = HEIGHT * 0.5;
   
   // must set makeContours to true in order to generate paths
   font.load("SourceCodePro-Regular.otf", 16, false, false, true);
@@ -80,6 +83,7 @@ void ofApp::setup() {
       ofIcoSpherePrimitive sphere;
       sphere.setRadius( s.getSize() * HEIGHT * 0.075 );
       glm::vec2 scriptPos = s.getSpiralCoordinate(maxScriptId, HEIGHT);
+      s.pos = scriptPos;
       sphere.setPosition(scriptPos.x, scriptPos.y, 0);
       sphere.setResolution(1);
       scriptSpheres.push_back(sphere);
@@ -88,7 +92,119 @@ void ofApp::setup() {
 
   // TRIANGLE POSITIONS
   if(doTrianglePositions) {
+    // split scripts into categories: 0: built-in, 1: typing, 2: fetching (pressed enter), 3: displaying results
+    float fetching_starts = 7.044;
+    float displaying_starts = 8.36;
+    // for(auto& s : scripts) {
+    //   if(s.scriptType == "built-in") s.category = 0;
+    //   else if(s.firstCalled < fetching_starts) s.category = 1;
+    //   else if(s.firstCalled < displaying_starts) s.category = 2;
+    //   else s.category = 3;
+    // }
+    for(auto& s : scripts) {
+      if(s.scriptType == "built-in") s.category = 0;
+      else if(s.scriptType == "remote") s.category = 1;
+      else if(s.scriptType == "extension") s.category = 2;
+      else s.category = 3;
+    }
+    // create triangles
+    glm::vec2 p1, p2, p3, p4, p5, p6; // all the points we need
+    float stretch = 0.25;
+    p1 = glm::vec2(-.5, 0.3333);
+    p2 = glm::vec2(.5, 0.3333);
+    p3 = glm::vec2(0, -0.53);
+    p4 = glm::vec2(0, 1.199) + glm::vec2(cos(TWO_PI*0.25)*stretch, sin(TWO_PI*0.25)*stretch);
+    p5 = glm::vec2(1, -0.53) + glm::vec2(cos(TWO_PI*0.9166666)*stretch, sin(TWO_PI*0.9166666)*stretch);
+    p6 = glm::vec2(-1, -0.53) + glm::vec2(cos(TWO_PI*0.5833333)*stretch, sin(TWO_PI*0.5833333)*stretch);
     
+    Triangle built_in_triangle = Triangle(p1, p2, p3);
+    Triangle typing_triangle = Triangle(p4, p2, p1);
+    Triangle fetching_triangle = Triangle(p2, p5, p3);
+    Triangle displaying_triangle = Triangle(p1, p3, p6);
+    triangles.push_back(built_in_triangle);
+    triangles.push_back(typing_triangle);
+    triangles.push_back(fetching_triangle);
+    triangles.push_back(displaying_triangle);
+
+    circles.clear();
+    // sort scripts after number of functions
+    sort(scripts.begin(), scripts.end(), 
+        [](const Script & a, const Script & b) -> bool
+    { 
+        return a.numFunctions > b.numFunctions; 
+    });
+    for(auto& s : scripts) {
+      // scripts should be sorted so that the one with the most functions is first
+      // so that the biggest circles get placed first
+      glm::vec2 triCenter = triangles[s.category].getCenter();
+      float angle = 0, radius = 0; // polar coordinate offset
+      Circle c;
+      c.col = ofColor::fromHsb(s.category*50, 255, 255);
+      c.r = ofClamp(s.getSize(), 0.09, 1.0) * 0.31;
+      ofLogNotice("script size") << s.getSize();
+      bool overlaps_with_circle = false;
+      do {
+        // set new position of circle
+        c.p = triCenter + glm::vec2(cos(angle)*radius, sin(angle)*radius);
+        angle += PI - .1;
+        radius = fmod(radius + PI/10.0, 1.5);
+        overlaps_with_circle = false;
+        for(auto& tc : circles) {
+          if(c.circleOverlaps(tc)) {
+            overlaps_with_circle = true;
+            break;
+          }
+        }
+      } while(!triangles[s.category].isCircleInside(c.p, c.r) || overlaps_with_circle);
+      s.scriptCircle = c;
+      s.pos = c.p * graphScaling;
+      s.radius = c.r * graphScaling;
+      circles.push_back(c);
+      // create sphere
+      ofIcoSpherePrimitive sphere;
+      sphere.setRadius(s.radius);
+      sphere.setPosition(s.pos.x, s.pos.y, 0);
+      sphere.setResolution(1);
+      scriptSpheres.push_back(sphere);
+    }
+    // script positions finished
+    // function positions
+    for(auto& fp : functionMap) {
+      auto& f = fp.second;
+      auto script = std::find(scripts.begin(), scripts.end(), f.scriptId);
+      // get the non-scaled up positions
+      glm::vec2 scriptPos = script->scriptCircle.p;
+      float scriptSize = script->scriptCircle.r;
+
+      float angle = 0, radius = 0; // polar coordinate offset
+      Circle c;
+      c.col = ofColor::fromHsb(100, 255, 255);
+      c.r = float(ofClamp(sqrt(f.calledTimes + f.callingTimes)*6, 18, 100))/100.0 * 0.039;
+      bool overlaps_with_circle = false;
+      do {
+        // set new position of circle
+        c.p = scriptPos + glm::vec2(cos(angle)*radius, sin(angle)*radius);
+        angle += PI - .02;
+        radius = fmod(radius + PI/5.0, scriptSize);
+        overlaps_with_circle = false;
+        for(auto& tc : script->functionCircles) {
+          if(c.circleOverlaps(tc)) {
+            overlaps_with_circle = true;
+            break;
+          }
+        }
+      } while(!script->scriptCircle.isCircleInside(c) || overlaps_with_circle);
+      script->functionCircles.push_back(c);
+      circles.push_back(c);
+
+      f.functionCircle = c;
+      f.pos = c.p * graphScaling;
+      ofIcoSpherePrimitive sphere;
+      sphere.setPosition(f.pos.x, f.pos.y, 0);
+      sphere.setRadius(2);
+      sphere.setResolution(1);
+      funcSpheres.push_back(sphere);
+    }
   }
   
   generateMesh();
@@ -124,6 +240,7 @@ void ofApp::setupGui() {
   doGraphicsToggle.addListener(this, &ofApp::toggleDoDrawGraphics);
   exportMeshButton.addListener(this, &ofApp::exportMesh);
   exportMeshGridButton.addListener(this, &ofApp::exportMeshGrid);
+  exportMeshGridPieceButton.addListener(this, &ofApp::exportMeshGridPiece);
   functionPointOffsetRatio.addListener(this, &ofApp::regenerateMesh);
   
   // create the GUI panel
@@ -132,10 +249,16 @@ void ofApp::setupGui() {
   gui.add(sendActivityEnvelopeToSCButton.setup("Send activity envelope to SC"));
   gui.add(doLoopToggle.setup("loop", false));
   gui.add(doGraphicsToggle.setup("draw graphics", true));
+  gui.add(showTriangle.set("show triangle", true));
+  gui.add(triangleScale.set("triangle scale", WIDTH*0.2, 1, WIDTH));
   gui.add(doDrawScreenshots.set("draw screenshots", true));
+  gui.add(showMesh.set("show mesh", false));
   gui.add(exportMeshButton.setup("export mesh"));
   gui.add(exportMeshGridButton.setup("export mesh grid"));
-  gui.add(functionPointOffsetRatio.set("function offset ratio", 0.005, -0.05, 0.05));
+  gui.add(exportMeshGridPieceButton.setup("export mesh grid piece"));
+  gui.add(meshGridPieceX.set("mesh piece X", 3, 0, 6));
+  gui.add(meshGridPieceY.set("mesh piece Y", 4, 0, 6));
+  gui.add(functionPointOffsetRatio.set("function offset ratio", 0.001, -0.05, 0.05));
   gui.add(numScriptsToDraw.set("num scripts to draw", maxScriptId, 0, maxScriptId));
   gui.add(hueRotation.set("hueRotation", 24, 0, 255));
   gui.add(hueOffset.set("hueOffset", 247, 0, 255));
@@ -178,10 +301,26 @@ void ofApp::exportMeshGrid() {
   vector<ofMesh> meshes = gp.generateMeshGrid(gridSize, 1);
   string timestamp = ofGetTimestampString();
   for(int y = 0; y < gridSize; y++) {
-      for(int x = 0; x < gridSize; x++) {
-        meshes[x + (y*gridSize)].save("mesh_grid" + timestamp + "/mesh_" + to_string(x) + "x" + to_string(y) + ".ply");
-      }
+    for(int x = 0; x < gridSize; x++) {
+      meshes[x + (y*gridSize)].save("mesh_grid" + timestamp + "/mesh_" + to_string(x) + "x" + to_string(y) + ".ply");
     }
+  }
+}
+
+void ofApp::exportMeshGridPiece() {
+  GravityPlane gp;
+  gp.maxScriptId = maxScriptId;
+  for(auto& s : scripts) {
+    gp.addScriptPoint(s);
+  }
+  for(auto& fp : functionMap) {
+    auto script = std::find(scripts.begin(), scripts.end(), fp.second.scriptId);
+    gp.addFunctionPoint(fp.second, *script, functionPointOffsetRatio);
+  }
+  int gridSize = 7; // n by n grid
+  string timestamp = ofGetTimestampString();
+  gp.generateMeshGridPiece(gridSize, meshGridPieceX, meshGridPieceY, 1)
+    .save("mesh_grid_piece" + timestamp + "_" + to_string(meshGridPieceX) + "x" + to_string(meshGridPieceY) + ".ply");
 }
 
 void ofApp::generateMesh() {
@@ -324,17 +463,24 @@ void ofApp::draw(){
     timeline.progressFrame();
   }
   
-  // drawMesh();
+  if(showMesh) drawMesh();
   
   if(showGui){
 		gui.draw();
+	}
+  if(showTriangle) {
+    ofPushMatrix();
+    ofTranslate(ofGetWidth()/2, ofGetHeight()/2);
     ofSetColor(255, 0, 0, 255);
     ofNoFill();
-    triangle.draw();
-    for(auto& c : circles) {
-      c.draw();
+    for(auto& t : triangles) {
+      t.draw(triangleScale);
     }
-	}
+    for(auto& c : circles) {
+      c.draw(triangleScale);
+    }
+    ofPopMatrix();
+  }
 }
 
 void ofApp::drawStaticFunctionCallLines() {

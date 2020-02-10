@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
+#include "Shapes.h"
 
 class Script {
 public:
@@ -23,6 +24,11 @@ public:
   map<uint32_t, uint32_t> fromScriptCounter;
   map<uint32_t, uint32_t> toScriptCounter;
   map<uint32_t, float> scriptInterconnectedness;
+
+  // for drawing
+  int category = 0;
+  vector<Circle> functionCircles; // circles for every function in the script for checking overlap
+  Circle scriptCircle; // the circle of this script for checking if it's inside
   
   // for mesh export
   float meshRadius = 0;
@@ -212,7 +218,9 @@ public:
   }
   
   float getSize() {
-    return float(ofClamp(sqrt(numFunctions)*6, 1, 100))/100.0;
+    // return float(ofClamp(sqrt(numFunctions)*6, 1, 100))/100.0;
+    // base size on script activity
+    return float(ofClamp(pow(numCallsWithinScript + numCallsToOtherScript + numCalledFromOutsideScript, 0.4)*4.0, 1, 100))/100.0;
   }
 };
 

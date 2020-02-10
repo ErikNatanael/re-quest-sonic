@@ -9,6 +9,7 @@
 #include "Script.h"
 #include "UserEvent.h"
 #include "GravityPlane.h"
+#include "Shapes.h"
 
 class Screenshot {
 public:
@@ -18,65 +19,6 @@ public:
 	bool operator<(const Screenshot& s) {
     return this->ts < s.ts;
   }
-};
-
-class Circle {
-public:
-	glm::vec2 p;
-	float r = 1;
-	void draw() {
-		ofDrawCircle(p.x, p.y, r);
-	}
-	bool circleOverlaps(Circle& c) {
-		return glm::distance(p, c.p) < (r + c.r);
-	}
-};
-
-class Triangle {
-public:
-	glm::vec2 p1, p2, p3;
-
-	// https://stackoverflow.com/questions/2049582/how-to-determine-if-a-point-is-in-a-2d-triangle
-	float sign (glm::vec2 p1, glm::vec2 p2, glm::vec2 p3)
-	{
-		// signed area of the triangle formed by 3 points
-		return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
-	}
-	float pointToLineDistance(glm::vec2 p, glm::vec2 l1, glm::vec2 l2) {
-		// https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
-		return abs((l2.y-l1.y)*p.x - (l2.x-l1.x)*p.y + l2.x*l1.y - l2.y*l1.x) / sqrt(pow(l2.y-l1.y, 2) + pow(l2.x - l1.x, 2));
-	}
-	bool isCircleInside (glm::vec2 pt, float r)
-	{
-		// distance between center of circle to each line in the triangle
-		// if the distance if less than the radius of the circle and the 
-		// circle center is inside the triangle we are good
-		if(
-			// test if either of the sides are closer to the point than r
-			pointToLineDistance(pt, p1, p2) < r ||
-			pointToLineDistance(pt, p2, p3) < r ||
-			pointToLineDistance(pt, p1, p3) < r
-		) {
-			return false;
-		}
-
-			float d1, d2, d3;
-			bool has_neg, has_pos;
-
-			// get the signed area of every edge and the point tested
-			d1 = sign(pt, p1, p2);
-			d2 = sign(pt, p2, p3);
-			d3 = sign(pt, p3, p1);
-
-			// if all the areas are either negative or positive the point is in the triangle
-			has_neg = (d1 < 0) || (d2 < 0) || (d3 < 0);
-			has_pos = (d1 > 0) || (d2 > 0) || (d3 > 0);
-
-			return !(has_neg && has_pos);
-	}
-	void draw() {
-		ofDrawTriangle(p1, p2, p3);
-	}
 };
 
 class ofApp : public ofBaseApp{
@@ -121,6 +63,7 @@ class ofApp : public ofBaseApp{
 		void drawMesh();
 		void exportMesh();
 		void exportMeshGrid();
+		void exportMeshGridPiece();
 		void generateMesh();
 		void regenerateMesh(float& f);
 		// data structures containing a copy of the data used in Timeline in order to draw a static representation
@@ -138,14 +81,15 @@ class ofApp : public ofBaseApp{
 		
 		int graphX = 0;
 		int graphY = 0;
+		float graphScaling = 1;
 		vector<ofIcoSpherePrimitive> scriptSpheres;
 		vector<ofIcoSpherePrimitive> funcSpheres;
 		ofCamera cam;
 		ofEasyCam easyCam;
 		ofMesh mesh;
 		ofParameter<float> functionPointOffsetRatio;
-		bool doSpiralPositions = true;
-		bool doTrianglePositions = false;
+		bool doSpiralPositions = false;
+		bool doTrianglePositions = true;
 
 		ofTrueTypeFont font;
 		
@@ -160,6 +104,7 @@ class ofApp : public ofBaseApp{
 		ofShader invertShader;
 
 		Triangle triangle;
+		vector<Triangle> triangles;
 		vector<Circle> circles;
 		
 		/// RENDERING
@@ -179,7 +124,12 @@ class ofApp : public ofBaseApp{
 		ofxToggle doGraphicsToggle;
 		ofxButton exportMeshButton;
 		ofxButton exportMeshGridButton;
+		ofxButton exportMeshGridPieceButton;
 		bool doDrawGraphics = true;
 		ofParameter<bool> doDrawScreenshots;
 		ofParameter<int> numScriptsToDraw;
+		ofParameter<bool> showTriangle;
+		ofParameter<float> triangleScale;
+		ofParameter<bool> showMesh;
+		ofParameter<int> meshGridPieceX, meshGridPieceY;
 };

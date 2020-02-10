@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
+#include "Shapes.h"
 
 class Function {
 public:
@@ -19,7 +20,8 @@ public:
   int numCalledFromOutsideScript = 0;
   
   // members for drawing
-  glm::vec2 pos;
+  glm::vec2 pos; // scaled position
+  Circle functionCircle; // non-scaled position
 
   bool operator<(const Function& f) {
     return this->calledTimes > f.calledTimes;
@@ -32,6 +34,7 @@ public:
   void print() {
     cout << std::left << std::setw(26) << setfill(' ') << name << " ";
     cout << std::left << std::setw(7) << setfill(' ') << id;
+    cout << std::left << std::setw(9) << setfill(' ') << scriptId;
     cout << std::left << std::setw(12) << setfill(' ') << calledTimes;
     cout << std::left << std::setw(13) << setfill(' ') << callingTimes;
     cout << std::left << std::setw(21) << setfill(' ') << numCallsWithinScript;
@@ -43,6 +46,7 @@ public:
   void printHeaders() {
     cout << std::left << std::setw(26) << setfill(' ') << "Name" << " ";
     cout << std::left << std::setw(7) << setfill(' ') << "id";
+    cout << std::left << std::setw(9) << setfill(' ') << "scriptId";
     cout << std::left << std::setw(12) << setfill(' ') << "calledTimes";
     cout << std::left << std::setw(13) << setfill(' ') << "callingTimes";
     cout << std::left << std::setw(21) << setfill(' ') << "numCallsWithinScript";

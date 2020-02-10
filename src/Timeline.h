@@ -394,7 +394,7 @@ public:
     functionVector[0].printHeaders();
     std::sort (functionVector.begin(), functionVector.end());
     for(auto& func : functionVector) {
-      // func.print();
+      func.print();
     }
     
     // sort scripts after number of functions to find a position for the biggest one first
