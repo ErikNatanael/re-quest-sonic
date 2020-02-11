@@ -9,15 +9,15 @@ void ofApp::setup() {
   
   // graphX = WIDTH * 0.67;
   // graphY = HEIGHT * .5;
-  graphY = HEIGHT * -0.1;
+  graphY = HEIGHT * -0.15;
   graphX = WIDTH * 0.15;
 
-  graphScaling = HEIGHT * 0.5;
+  graphScaling = HEIGHT * 0.4;
   
   // must set makeContours to true in order to generate paths
   font.load("SourceCodePro-Regular.otf", 16, false, false, true);
   
-  string profilePath = "profiles/taylor-swift-filming-20200205/";
+  string profilePath = "profiles/filming-baudry-20200210-Profile-20200210T165944/";
   
   timeline.init(WIDTH, HEIGHT);
   timeline.parseScriptingProfile(profilePath + "scores/scripting_events.json");
@@ -109,13 +109,20 @@ void ofApp::setup() {
     }
     // create triangles
     glm::vec2 p1, p2, p3, p4, p5, p6; // all the points we need
-    float stretch = 0.25;
+    float stretch = 0.3;
     p1 = glm::vec2(-.5, 0.3333);
     p2 = glm::vec2(.5, 0.3333);
     p3 = glm::vec2(0, -0.53);
     p4 = glm::vec2(0, 1.199) + glm::vec2(cos(TWO_PI*0.25)*stretch, sin(TWO_PI*0.25)*stretch);
     p5 = glm::vec2(1, -0.53) + glm::vec2(cos(TWO_PI*0.9166666)*stretch, sin(TWO_PI*0.9166666)*stretch);
     p6 = glm::vec2(-1, -0.53) + glm::vec2(cos(TWO_PI*0.5833333)*stretch, sin(TWO_PI*0.5833333)*stretch);
+    float scale = 1.1;
+    p1 *= scale;
+    p2 *= scale;
+    p3 *= scale;
+    p4 *= scale;
+    p5 *= scale;
+    p6 *= scale;
     
     Triangle built_in_triangle = Triangle(p1, p2, p3);
     Triangle typing_triangle = Triangle(p4, p2, p1);

@@ -65,7 +65,7 @@ private:
   ofMutex oscMutex;
   
   double timeCursor = 0.0; // 8.0 is where a lot of stuff happens
-  float timeScale = 0.10;
+  float timeScale = 1.00;
   uint32_t nextEvent = 0;
   bool playing = false;
   bool rendering = false;

@@ -70,7 +70,7 @@ public:
   vector<AttractionPoint> points;
   vector<HolePoint> holePoints;
   int maxScriptId;
-  int size = 6000;
+  int size = 4000;
   float scale = 0.4; // used to scale things down so they don't overshoot the edge
   bool addBasePlate = true;
   bool functionsAsHoles = true;
@@ -87,7 +87,7 @@ public:
   }
 
   ofMesh generateMesh() {
-    int stepSize = 5;
+    int stepSize = 3;
     int width = size/stepSize, height = size/stepSize;
     return generateMesh(-width/2, width/2, -height/2, height/2, stepSize);
   }
@@ -149,7 +149,6 @@ public:
           if(hr == HoleRelation::HOLE) {
             offset = holeYPos;
           }
-          else if(hr == HoleRelation::WALL) offset = holeYPos;
           mesh.addVertex(ofPoint(x*stepSize,offset,y*stepSize)); // make a new vertex
           mesh.addColor(ofFloatColor(1,0.,.5));  // add a color at that vertex
         }
