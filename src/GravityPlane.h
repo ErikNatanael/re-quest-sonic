@@ -49,19 +49,86 @@ public:
 };
 
 enum class HoleRelation {HOLE = 0, WALL = 1, NONE = 2};
+enum class Plane {TOP, BOTTOM, NONE};
+
+class IndexedPoint {
+  // a way to keep track of the index in the mesh of a certain vertex
+public:
+  glm::vec2 pos;
+  float angle = 0; // use polar coordinates to sort the points in circular order
+  size_t index;
+
+  IndexedPoint(glm::vec2 p, size_t i): pos(p), index(i) {
+    if(index < 0) {
+      ofLogError("IndexedPoint()") << "index out of bounds " << index;
+    }
+  }
+  void calculateAngle(glm::vec2 offset) {
+    angle = atan2(pos.y-offset.y, pos.x-offset.x);
+  }
+  bool operator<(const IndexedPoint& s) {
+    return this->angle < s.angle;
+  }
+};
+
 class HolePoint {
 public:
   glm::vec2 pos;
   float wallRadius;
   float holeRadius;
+  vector<IndexedPoint> topPlaneHoleIndices;
+  vector<IndexedPoint> bottomPlaneHoleIndices;
+
   HolePoint(glm::vec2 p, float wr, float hr): pos(p), wallRadius(wr), holeRadius(hr) {}
 
-  // returns -1 if the 
   HoleRelation insideHole(glm::vec2 p) {
     float distance = glm::distance(pos, p);
     if(distance < holeRadius) return HoleRelation::HOLE;
-    else if (distance < wallRadius) return HoleRelation::WALL;
+    // else if (distance < wallRadius) return HoleRelation::WALL;
     return HoleRelation::NONE;
+  }
+
+  void addIndex(glm::vec2 p, Plane plane, size_t index) {
+    float distToCircumference = glm::distance(pos, p) - holeRadius;
+    if(abs(distToCircumference) < 1.5) {
+      if(plane == Plane::TOP) {
+        topPlaneHoleIndices.push_back(IndexedPoint(p, index));
+      } else if (plane ==Plane::BOTTOM) {
+        bottomPlaneHoleIndices.push_back(IndexedPoint(p, index));
+      }
+    }
+  }
+
+  void addCylinderToMesh(ofMesh& mesh) {
+    if(topPlaneHoleIndices.size() != bottomPlaneHoleIndices.size()) {
+      ofLogError("HolePoint::addCylinderToMesh") << "top and bottom hole index vectors have different sizes";
+    }
+    if(topPlaneHoleIndices.size() < 3) {
+      ofLogError("HolePoint::addCylinderToMesh") << "fewer than 3 indices";
+    }
+    // sort the points in circular order
+    // 1. calculate the angles of the points in polar coordinates relative to the center
+    for(auto& i : topPlaneHoleIndices) {
+      i.calculateAngle(pos);
+    }
+    for(auto& i : bottomPlaneHoleIndices) {
+      i.calculateAngle(pos);
+    }
+    // 2. sort the points
+    std::sort(topPlaneHoleIndices.begin(), topPlaneHoleIndices.end());
+    std::sort(bottomPlaneHoleIndices.begin(), bottomPlaneHoleIndices.end());
+
+    // create the cylinder
+    for (int i = 0; i < topPlaneHoleIndices.size(); i++){
+        mesh.addIndex(topPlaneHoleIndices[i].index);               // 0
+        // for the last wall we want to wrap around to the first point
+        mesh.addIndex(topPlaneHoleIndices[(i+1)%(topPlaneHoleIndices.size())].index);           // 1
+        mesh.addIndex(bottomPlaneHoleIndices[i].index);           // 10
+
+        mesh.addIndex(topPlaneHoleIndices[(i+1)%(topPlaneHoleIndices.size())].index);           // 1
+        mesh.addIndex(bottomPlaneHoleIndices[(i+1)%(topPlaneHoleIndices.size())].index);       // 11
+        mesh.addIndex(bottomPlaneHoleIndices[i].index);           // 10
+    }
   }
 };
 
@@ -70,7 +137,7 @@ public:
   vector<AttractionPoint> points;
   vector<HolePoint> holePoints;
   int maxScriptId;
-  int size = 4000;
+  int size = 2500;
   float scale = 0.4; // used to scale things down so they don't overshoot the edge
   bool addBasePlate = true;
   bool functionsAsHoles = true;
@@ -97,21 +164,26 @@ public:
     mesh.setMode(OF_PRIMITIVE_TRIANGLES);
 
     int baseY = -2;
-    
+
+    int width = maxW - minW;
+    int height = maxH - minH;
+
+    ofLogNotice("GravityPlane::generateMesh") << "Mesh generation started";
     // plane vertexes
     for (int y = minH; y < maxH; y++){
       for (int x = minW; x<maxW; x++){
         float offset = getGravityAtPoint(glm::vec2(x*stepSize, y*stepSize));
         // if(offset < 0) offset = 0; // avoid function holes extending under the model
-        HoleRelation hr = getHole(glm::vec2(x*stepSize, y*stepSize));
-        if(hr == HoleRelation::HOLE) {
-          offset = holeYPos;
-        }
-        else if(hr == HoleRelation::WALL) offset = baseY;
+        HoleRelation hr = getHole(glm::vec2(x*stepSize, y*stepSize), Plane::TOP, (x-minW)+(y-minH)*width);
+        // if(hr == HoleRelation::HOLE) {
+        //   offset = holeYPos;
+        // }
+        // else if(hr == HoleRelation::WALL) offset = baseY;
         mesh.addVertex(ofPoint(x*stepSize,offset,y*stepSize)); // make a new vertex
         mesh.addColor(ofFloatColor(1,.5,1));  // add a color at that vertex
       }
     }
+    ofLogNotice("GravityPlane::generateMesh") << "Plane vertices added";
 
     // add wall vertices on the sides to make a box
     // top
@@ -140,27 +212,24 @@ public:
       mesh.addColor(ofFloatColor(1,.5,0));  // add a color at that vertex
     }
 
+    ofLogNotice("GravityPlane::generateMesh") << "Wall vertices added";
+
+    // the offset into the base plate vertices
+    uint32_t basePlateVerticesOffset = width*height + width*2 + height*2;
+
     if(addBasePlate && functionsAsHoles) {
       // base plate vertexes
       for (int y = minH; y < maxH; y++){
         for (int x = minW; x<maxW; x++){
           float offset = baseY;
-          HoleRelation hr = getHole(glm::vec2(x*stepSize, y*stepSize));
-          if(hr == HoleRelation::HOLE) {
-            offset = holeYPos;
-          }
+          HoleRelation hr = getHole(glm::vec2(x*stepSize, y*stepSize), Plane::BOTTOM, (x-minW)+(y-minH)*width + basePlateVerticesOffset);
           mesh.addVertex(ofPoint(x*stepSize,offset,y*stepSize)); // make a new vertex
           mesh.addColor(ofFloatColor(1,0.,.5));  // add a color at that vertex
         }
       }
     }
 
-
-    int width = maxW - minW;
-    int height = maxH - minH;
-
-    // the offset into the base plate vertices
-    uint32_t basePlateVerticesOffset = width*height + width*2 + height*2;
+    ofLogNotice("GravityPlane::generateMesh") << "Bottom vertices added";
 
     // now it's important to make sure that each vertex is correctly connected with the
     // other vertices around it. This is done using indices, which you can set up like so:
@@ -172,12 +241,15 @@ public:
         glm::vec3 p1 = mesh.getVertex((x+1)+y*width);
         glm::vec3 p10 = mesh.getVertex(x+(y+1)*width);
         glm::vec3 p11 = mesh.getVertex((x+1)+(y+1)*width);
-        bool isNotAHole = p0.y != holeYPos && p1.y != holeYPos && p10.y != holeYPos && p11.y != holeYPos;
+        bool isAHole = getHole(glm::vec2(p0.x, p0.z), Plane::NONE, 0) == HoleRelation::HOLE && 
+          getHole(glm::vec2(p1.x, p1.z), Plane::NONE, 0) == HoleRelation::HOLE &&
+          getHole(glm::vec2(p10.x, p10.z), Plane::NONE, 0) == HoleRelation::HOLE &&
+          getHole(glm::vec2(p11.x, p11.z), Plane::NONE, 0) == HoleRelation::HOLE;
         float groundLimit = (1.0 / (glm::distance(p0, glm::vec3(0, 0, 0))/(size*0.04)) * -500) + 40;
         groundLimit = -500;
 
         bool isNotFlatGround = p0.y > groundLimit || p1.y > groundLimit || p10.y > groundLimit || p11.y > groundLimit;
-        if(isNotAHole && isNotFlatGround) {
+        if(!isAHole && isNotFlatGround) {
           mesh.addIndex(x+y*width);               // 0
           mesh.addIndex((x+1)+y*width);           // 1
           mesh.addIndex(x+(y+1)*width);           // 10
@@ -188,6 +260,7 @@ public:
         }
       }
     }
+    ofLogNotice("GravityPlane::generateMesh") << "Top indices added";
     int planeVertexLength = width*height; // the offset for the walls, gets incremented after each wall
     // add wall indices
     // top
@@ -198,9 +271,12 @@ public:
       glm::vec3 p1 = mesh.getVertex(i+1);
       glm::vec3 p10 = mesh.getVertex(planeVertexLength + i);
       glm::vec3 p11 = mesh.getVertex(planeVertexLength + i + 1);
-      bool isNotAHole = p0.y != holeYPos && p1.y != holeYPos && p10.y != holeYPos && p11.y != holeYPos;
+      bool isAHole = getHole(glm::vec2(p0.x, p0.z), Plane::NONE, 0) == HoleRelation::HOLE && 
+      getHole(glm::vec2(p1.x, p1.z), Plane::NONE, 0) == HoleRelation::HOLE &&
+      getHole(glm::vec2(p10.x, p10.z), Plane::NONE, 0) == HoleRelation::HOLE &&
+      getHole(glm::vec2(p11.x, p11.z), Plane::NONE, 0) == HoleRelation::HOLE;
       bool isNotFlatGround = p0.y > 0 || p1.y > 0 || p10.y > 0 || p11.y > 0;
-      if(isNotAHole) {
+      if(!isAHole) {
         // also don't add 
         mesh.addIndex(i);               // 0
         mesh.addIndex(i+1);           // 1
@@ -220,9 +296,12 @@ public:
       glm::vec3 p1 = mesh.getVertex(x + (i+1)*width);
       glm::vec3 p10 = mesh.getVertex(planeVertexLength + i);
       glm::vec3 p11 = mesh.getVertex(planeVertexLength + i + 1);
-      bool isNotAHole = p0.y != holeYPos && p1.y != holeYPos && p10.y != holeYPos && p11.y != holeYPos;
+      bool isAHole = getHole(glm::vec2(p0.x, p0.z), Plane::NONE, 0) == HoleRelation::HOLE && 
+      getHole(glm::vec2(p1.x, p1.z), Plane::NONE, 0) == HoleRelation::HOLE &&
+      getHole(glm::vec2(p10.x, p10.z), Plane::NONE, 0) == HoleRelation::HOLE &&
+      getHole(glm::vec2(p11.x, p11.z), Plane::NONE, 0) == HoleRelation::HOLE;
       bool isNotFlatGround = p0.y > 0 || p1.y > 0 || p10.y > 0 || p11.y > 0;
-      if(isNotAHole) {
+      if(!isAHole) {
         mesh.addIndex(x+i*width);               // 0
         mesh.addIndex(x + (i+1)*width);           // 1
         mesh.addIndex(planeVertexLength + i);           // 10
@@ -241,9 +320,12 @@ public:
       glm::vec3 p1 = mesh.getVertex((i+1) + y*width);
       glm::vec3 p10 = mesh.getVertex(planeVertexLength + i);
       glm::vec3 p11 = mesh.getVertex(planeVertexLength + i + 1);
-      bool isNotAHole = p0.y != holeYPos && p1.y != holeYPos && p10.y != holeYPos && p11.y != holeYPos;
+      bool isAHole = getHole(glm::vec2(p0.x, p0.z), Plane::NONE, 0) == HoleRelation::HOLE && 
+      getHole(glm::vec2(p1.x, p1.z), Plane::NONE, 0) == HoleRelation::HOLE &&
+      getHole(glm::vec2(p10.x, p10.z), Plane::NONE, 0) == HoleRelation::HOLE &&
+      getHole(glm::vec2(p11.x, p11.z), Plane::NONE, 0) == HoleRelation::HOLE;
       bool isNotFlatGround = p0.y > 0 || p1.y > 0 || p10.y > 0 || p11.y > 0;
-      if(isNotAHole) {
+      if(!isAHole) {
         mesh.addIndex(i+y*width);               // 0
         mesh.addIndex((i+1) + y*width);           // 1
         mesh.addIndex(planeVertexLength + i);           // 10
@@ -262,9 +344,12 @@ public:
       glm::vec3 p1 = mesh.getVertex(x + (i+1)*width);
       glm::vec3 p10 = mesh.getVertex(planeVertexLength + i);
       glm::vec3 p11 = mesh.getVertex(planeVertexLength + i + 1);
-      bool isNotAHole = p0.y != holeYPos && p1.y != holeYPos && p10.y != holeYPos && p11.y != holeYPos;
+      bool isAHole = getHole(glm::vec2(p0.x, p0.z), Plane::NONE, 0) == HoleRelation::HOLE && 
+      getHole(glm::vec2(p1.x, p1.z), Plane::NONE, 0) == HoleRelation::HOLE &&
+      getHole(glm::vec2(p10.x, p10.z), Plane::NONE, 0) == HoleRelation::HOLE &&
+      getHole(glm::vec2(p11.x, p11.z), Plane::NONE, 0) == HoleRelation::HOLE;
       bool isNotFlatGround = p0.y > 0 || p1.y > 0 || p10.y > 0 || p11.y > 0;
-      if(isNotAHole) {
+      if(!isAHole) {
         mesh.addIndex(x+i*width);               // 0
         mesh.addIndex(x + (i+1)*width);           // 1
         mesh.addIndex(planeVertexLength + i);           // 10
@@ -274,6 +359,8 @@ public:
         mesh.addIndex(planeVertexLength + i);           // 10
       }
     }
+
+    ofLogNotice("GravityPlane::generateMesh") << "Wall indices added";
 
     // add bottom plate
     if(addBasePlate) {
@@ -300,8 +387,11 @@ public:
             glm::vec3 p1 = mesh.getVertex((x+1)+y*width + basePlateVerticesOffset);
             glm::vec3 p10 = mesh.getVertex(x+(y+1)*width + basePlateVerticesOffset);
             glm::vec3 p11 = mesh.getVertex((x+1)+(y+1)*width + basePlateVerticesOffset);
-            bool isNotAHole = p0.y != holeYPos && p1.y != holeYPos && p10.y != holeYPos && p11.y != holeYPos;
-            if(isNotAHole) {
+            bool isAHole = getHole(glm::vec2(p0.x, p0.z), Plane::NONE, 0) == HoleRelation::HOLE && 
+            getHole(glm::vec2(p1.x, p1.z), Plane::NONE, 0) == HoleRelation::HOLE &&
+            getHole(glm::vec2(p10.x, p10.z), Plane::NONE, 0) == HoleRelation::HOLE &&
+            getHole(glm::vec2(p11.x, p11.z), Plane::NONE, 0) == HoleRelation::HOLE;
+            if(!isAHole) {
               mesh.addIndex(x+(y+1)*width + basePlateVerticesOffset);           // 10
               mesh.addIndex((x+1)+y*width + basePlateVerticesOffset);           // 1
               mesh.addIndex(x+y*width + basePlateVerticesOffset);               // 0
@@ -314,6 +404,14 @@ public:
         }
       }
     }
+    ofLogNotice("GravityPlane::generateMesh") << "Bottom indices added";
+
+    // add cylinders for all the holes
+    for(auto& h : holePoints) {
+      h.addCylinderToMesh(mesh);
+    }
+
+    ofLogNotice("GravityPlane::generateMesh") << "Hole indices added";
 
     return mesh;
   }
@@ -430,10 +528,14 @@ public:
     return gravity;
   }
 
-  HoleRelation getHole(glm::vec2 p) {
+  HoleRelation getHole(glm::vec2 p, Plane plane, size_t index) {
     HoleRelation hr = HoleRelation::NONE;
     for(auto& h : holePoints) {
       HoleRelation temphr = h.insideHole(p);
+      if(temphr == HoleRelation::HOLE) {
+        // add the index of this vertex to the hole to create a cylinder later
+        h.addIndex(p, plane, index);
+      }
       if(static_cast<int>(temphr) < static_cast<int>(hr)) hr = temphr;
     }
     return hr;

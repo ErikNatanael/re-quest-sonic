@@ -65,7 +65,7 @@ class ofApp : public ofBaseApp{
 		void exportMeshGrid();
 		void exportMeshGridPiece();
 		void generateMesh();
-		void regenerateMesh(float& f);
+		void regenerateMesh();
 		// data structures containing a copy of the data used in Timeline in order to draw a static representation
 		vector<FunctionCall> functionCalls;
 	  map<string, Function> functionMap;
@@ -122,6 +122,7 @@ class ofApp : public ofBaseApp{
 		ofxButton sendActivityEnvelopeToSCButton;
 		ofxToggle doLoopToggle;
 		ofxToggle doGraphicsToggle;
+		ofxButton regenerateMeshButton;
 		ofxButton exportMeshButton;
 		ofxButton exportMeshGridButton;
 		ofxButton exportMeshGridPieceButton;

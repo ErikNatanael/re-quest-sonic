@@ -174,6 +174,7 @@ void ofApp::setup() {
       sphere.setResolution(1);
       scriptSpheres.push_back(sphere);
     }
+    ofLogNotice("setup") << "Script positions calculated";
     // script positions finished
     // function positions
     for(auto& fp : functionMap) {
@@ -213,9 +214,11 @@ void ofApp::setup() {
       funcSpheres.push_back(sphere);
     }
   }
+
+  ofLogNotice("setup") << "Script and function positions calculated";
   
-  generateMesh();
-  easyCam.enableMouseInput();
+  // generateMesh();
+  // easyCam.enableMouseInput();
 
   triangle.p1 = glm::vec2(WIDTH/2, HEIGHT/4);
   triangle.p2 = glm::vec2(WIDTH/4, HEIGHT*0.75);
@@ -223,13 +226,13 @@ void ofApp::setup() {
   
   // ***************************** INIT openFrameworks STUFF
   setupGui();
+  ofLogNotice("setup") << "GUI setup finished";
   ofBackground(0);
   ofEnableAlphaBlending();
   cam.setVFlip(false);
   cam.enableOrtho();
   cam.setNearClip(0);
   cam.setFarClip(-5000);
-  
   
   renderFbo.allocate(WIDTH, HEIGHT, GL_RGB);
   
@@ -248,7 +251,7 @@ void ofApp::setupGui() {
   exportMeshButton.addListener(this, &ofApp::exportMesh);
   exportMeshGridButton.addListener(this, &ofApp::exportMeshGrid);
   exportMeshGridPieceButton.addListener(this, &ofApp::exportMeshGridPiece);
-  functionPointOffsetRatio.addListener(this, &ofApp::regenerateMesh);
+  regenerateMeshButton.addListener(this, &ofApp::regenerateMesh);
   
   // create the GUI panel
   gui.setup();
@@ -260,6 +263,7 @@ void ofApp::setupGui() {
   gui.add(triangleScale.set("triangle scale", WIDTH*0.2, 1, WIDTH));
   gui.add(doDrawScreenshots.set("draw screenshots", true));
   gui.add(showMesh.set("show mesh", false));
+  gui.add(regenerateMeshButton.setup("regenerate mesh"));
   gui.add(exportMeshButton.setup("export mesh"));
   gui.add(exportMeshGridButton.setup("export mesh grid"));
   gui.add(exportMeshGridPieceButton.setup("export mesh grid piece"));
@@ -331,6 +335,7 @@ void ofApp::exportMeshGridPiece() {
 }
 
 void ofApp::generateMesh() {
+  ofLogNotice("generateMesh") << "Mesh generation started";
   GravityPlane gp;
   gp.maxScriptId = maxScriptId;
   for(auto& s : scripts) {
@@ -343,7 +348,7 @@ void ofApp::generateMesh() {
   mesh = gp.generateMesh();
 }
 
-void ofApp::regenerateMesh(float& f)  {
+void ofApp::regenerateMesh()  {
   generateMesh();
 }
 
