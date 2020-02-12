@@ -338,12 +338,20 @@ void ofApp::generateMesh() {
   ofLogNotice("generateMesh") << "Mesh generation started";
   GravityPlane gp;
   gp.maxScriptId = maxScriptId;
+  // numScripts and numFuncs only for debug
+  int numScripts = 0;
   for(auto& s : scripts) {
-    gp.addScriptPoint(s);
+    if(numScripts < 1000)
+      gp.addScriptPoint(s);
+    numScripts++;
   }
+  int numFuncs = 0;
   for(auto& fp : functionMap) {
-    auto script = std::find(scripts.begin(), scripts.end(), fp.second.scriptId);
-    gp.addFunctionPoint(fp.second, *script, functionPointOffsetRatio);
+    if(numFuncs < 1000) {
+      auto script = std::find(scripts.begin(), scripts.end(), fp.second.scriptId);
+      gp.addFunctionPoint(fp.second, *script, functionPointOffsetRatio);
+    }
+    numFuncs++;
   }
   mesh = gp.generateMesh();
 }

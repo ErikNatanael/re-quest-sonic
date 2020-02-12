@@ -1,4 +1,6 @@
 ofxJSON
 ofxOsc
 ofxPostProcessing
+ofxCv
+ofxOpenCv
 ofxGui
