@@ -105,7 +105,8 @@ public:
   float holeRadius;
   vector<IndexedPoint> topPlaneHoleIndices;
   vector<IndexedPoint> bottomPlaneHoleIndices;
-  vector<glm::vec2> cirPoints;
+  vector<glm::vec2> cirPoints; // contains cylinder points and wall points if there are any
+  vector<glm::vec2> wallPoints; // only contains the wall points
 
   HolePoint(glm::vec2 p, float cr, float hr): pos(p), clearRadius(cr), holeRadius(hr) {}
 
@@ -116,7 +117,7 @@ public:
     return HoleRelation::NONE;
   }
 
-  vector<glm::vec2> getHoleCircumferencePoints() {
+  void generateCircumferencePoints() {
     cirPoints.clear();
     int numPoints = 6;
     for(int i = 0; i < numPoints; i++) {
@@ -126,7 +127,69 @@ public:
       tp = glm::round(tp);
       cirPoints.push_back(tp);
     }
+  }
+
+  vector<glm::vec2> getHoleCircumferencePoints() {
     return cirPoints;
+  }
+
+  vector<glm::vec2> getHoleWallIntersectionPoints(int minW, int maxW, int minH, int maxH) {
+    vector<glm::vec2> holeWallPoints;
+    // corner holes intersect with multiple walls so don't do `else if`
+    if(abs(pos.x - minW) < holeRadius && pos.y + holeRadius > minH && pos.y - holeRadius < maxH) {
+      // the hole intersects with the right wall
+      // calculate points on the wall
+      float xdiff = minW - pos.x;
+      // use Pythagorean theorem to find the other point on the hole radius
+      float ydiff = sqrt(pow(holeRadius, 2) - pow(xdiff, 2));
+      // add points +- ydiff
+      holeWallPoints.push_back(glm::round(pos + glm::vec2(xdiff, ydiff)));
+      holeWallPoints.push_back(glm::round(pos + glm::vec2(xdiff, -ydiff)));
+    } 
+    if(abs(pos.x - maxW) < holeRadius && pos.y + holeRadius > minH && pos.y - holeRadius < maxH) {
+      // the hole intersects with the left wall
+      // calculate points on the wall
+      float xdiff = maxW-1 - pos.x;
+      // use Pythagorean theorem to find the other point on the hole radius
+      float ydiff = sqrt(pow(holeRadius, 2) - pow(xdiff, 2));
+      // add points +- ydiff
+      holeWallPoints.push_back(glm::round(pos + glm::vec2(xdiff, ydiff)));
+      holeWallPoints.push_back(glm::round(pos + glm::vec2(xdiff, -ydiff)));
+    } 
+    if(abs(pos.y - minH) < holeRadius && pos.x + holeRadius > minW && pos.x - holeRadius < maxW) {
+      // the hole intersects with the top wall
+      // calculate points on the wall
+      float ydiff = minH - pos.y;
+      // use Pythagorean theorem to find the other point on the hole radius
+      float xdiff = sqrt(pow(holeRadius, 2) - pow(ydiff, 2));
+      // add points +- ydiff
+      holeWallPoints.push_back(glm::round(pos + glm::vec2(xdiff, ydiff)));
+      holeWallPoints.push_back(glm::round(pos + glm::vec2(-xdiff, ydiff)));
+    } 
+    if(abs(pos.y - maxH) < holeRadius && pos.x + holeRadius > minW && pos.x - holeRadius < maxW) {
+      // the hole intersects with the top wall
+      // calculate points on the wall
+      float ydiff = maxH-1 - pos.y;
+      // use Pythagorean theorem to find the other point on the hole radius
+      float xdiff = sqrt(pow(holeRadius, 2) - pow(ydiff, 2));
+      // add points +- ydiff
+      holeWallPoints.push_back(glm::round(pos + glm::vec2(xdiff, ydiff)));
+      holeWallPoints.push_back(glm::round(pos + glm::vec2(-xdiff, ydiff)));
+    }
+    for(int i = 0; i < holeWallPoints.size(); i++) {
+      auto& p = holeWallPoints[i];
+      ofLogError("HolePoint::addCylinderToMesh") << "point added: " << p.x << ", " << p.y;
+      if(p.x >= minW && p.x < maxW && p.y >= minH && p.y < maxH) {
+        wallPoints.push_back(p);
+        cirPoints.push_back(p);
+      } else {
+        ofLogError("HolePoint::addCylinderToMesh") << "point out of bounds: " << p.x << ", " << p.y;
+        holeWallPoints.erase(holeWallPoints.begin()+i);
+        i--;
+      }
+    }
+    
+    return holeWallPoints;
   }
 
   bool isPointInList(glm::vec2 p) {
@@ -177,15 +240,34 @@ public:
 
     // create the cylinder
     for (int i = 0; i < topPlaneHoleIndices.size(); i++){
+      // for the last wall we want to wrap around to the first point
+      int nextIndex = (i+1)%(topPlaneHoleIndices.size());
+      // filter out pieces belonging to a wall
+      bool isWallPiece = false;
+      // if both positions exist in the wallPoints vector the segment is a wall segment that should not be
+      if(find(wallPoints.begin(), wallPoints.end(), topPlaneHoleIndices[i].pos) != wallPoints.end()
+        && find(wallPoints.begin(), wallPoints.end(), topPlaneHoleIndices[nextIndex].pos) != wallPoints.end()) 
+      {
+        isWallPiece = true;
+      }
+      if(!isWallPiece) {
+        mesh.addIndex(bottomPlaneHoleIndices[i].index);           // 10
+        mesh.addIndex(topPlaneHoleIndices[nextIndex].index);           // 1
         mesh.addIndex(topPlaneHoleIndices[i].index);               // 0
-        // for the last wall we want to wrap around to the first point
-        mesh.addIndex(topPlaneHoleIndices[(i+1)%(topPlaneHoleIndices.size())].index);           // 1
-        mesh.addIndex(bottomPlaneHoleIndices[i].index);           // 10
+        
 
-        mesh.addIndex(topPlaneHoleIndices[(i+1)%(topPlaneHoleIndices.size())].index);           // 1
-        mesh.addIndex(bottomPlaneHoleIndices[(i+1)%(topPlaneHoleIndices.size())].index);       // 11
         mesh.addIndex(bottomPlaneHoleIndices[i].index);           // 10
+        mesh.addIndex(bottomPlaneHoleIndices[nextIndex].index);       // 11
+        mesh.addIndex(topPlaneHoleIndices[nextIndex].index);           // 1
+      }
     }
+  }
+
+  void resetForMeshGeneration() {
+    // if many meshes are generated from the same GravityPlane we need to reset a few things in between
+    topPlaneHoleIndices.clear();
+    bottomPlaneHoleIndices.clear();
+    wallPoints.clear();
   }
 };
 
@@ -238,6 +320,12 @@ public:
     int width = maxW - minW;
     int height = maxH - minH;
 
+    // reset from last time generateMesh was run
+    for(auto& h : holePoints) {
+      h.resetForMeshGeneration();
+      h.generateCircumferencePoints();
+    }
+
     // triangulation/OpenCV stuff
     vector<Point> pt(3); 
     vector<Vec6f> triangleList;
@@ -260,8 +348,26 @@ public:
       wallPoints.push_back(glm::vec2(minW + ((width/(pointsPerWall+1))*i+1), maxH-1));
       wallPoints.push_back(glm::vec2(minW, minH + ((height/(pointsPerWall+1))*i+1)));
     }
+    // remove points that fall within a hole
+    for(int i = 0; i < wallPoints.size(); i++) {
+      for(auto& h : holePoints) {
+        if(h.insideHole(wallPoints[i]) == HoleRelation::HOLE) {
+          wallPoints.erase(wallPoints.begin()+i);
+          i--;
+          break;
+        }
+      }
+    }
+    // add points from holes intersecting the wall
+    for(auto& h : holePoints) {
+      vector<glm::vec2> holeWallPoints = h.getHoleWallIntersectionPoints(minW, maxW, minH, maxH);
+      for(auto& p : holeWallPoints) {
+        wallPoints.push_back(p);
+      }
+    }
+
     int numWallPoints = wallPoints.size();
-    
+
     for(int i = 0; i < numWallPoints; i++) {
       topPoints.push_back(wallPoints[i]);
     }
@@ -349,9 +455,9 @@ public:
         }
         // don't add the triangle if all points are hole points
         if(numPointsInHole < 3 || differentHoles) {
-          mesh.addIndex(pointIndices[0]);
-          mesh.addIndex(pointIndices[1]);
           mesh.addIndex(pointIndices[2]);
+          mesh.addIndex(pointIndices[1]);
+          mesh.addIndex(pointIndices[0]);
         }
       }
     }
@@ -428,9 +534,9 @@ public:
         }
         // don't add the triangle if all points are hole points
         if(numPointsInHole < 3 || differentHoles) {
-          mesh.addIndex(pointIndices[2]);
-          mesh.addIndex(pointIndices[1]);
           mesh.addIndex(pointIndices[0]);
+          mesh.addIndex(pointIndices[1]);
+          mesh.addIndex(pointIndices[2]);
         }
       }
     }
@@ -440,12 +546,15 @@ public:
     // walls
     // sort the corner indexed points in circular order
     // 1. calculate the angles of the points in polar coordinates relative to the center
+    glm::vec2 pieceCenterOffset = glm::vec2(minW + (width/2), minH + (height/2));
     for(auto& i : topCornerIndices) {
-      i.calculateAngle(centerOffset);
+      i.calculateAngle(pieceCenterOffset);
     }
     for(auto& i : bottomCornerIndices) {
-      i.calculateAngle(centerOffset);
+      i.calculateAngle(pieceCenterOffset);
     }
+    ofLogNotice("GravityPlane::generateMesh") << "Constructing walls from " << topCornerIndices.size() 
+      << " indices, pieceCenterOffset: " << pieceCenterOffset.x << ", " << pieceCenterOffset.y;
     // 2. sort the points
     std::sort(topCornerIndices.begin(), topCornerIndices.end());
     std::sort(bottomCornerIndices.begin(), bottomCornerIndices.end());
@@ -456,13 +565,24 @@ public:
 
     for(int wall = 0; wall < numWallPoints; wall++) {
       int nextIndex = (wall+1)%numWallPoints;
-      mesh.addIndex(bottomCornerIndices[wall].index);           // 10
-      mesh.addIndex(topCornerIndices[nextIndex].index);           // 1
-      mesh.addIndex(topCornerIndices[wall].index);               // 0
+      // filter out wall segments where the middle of the segment falls within a hole
+      bool isInsideHole = false;
+      glm::vec2 segmentCenter = (topCornerIndices[wall].pos + topCornerIndices[nextIndex].pos)/2;
+      for(auto& h : holePoints) {
+        if(h.insideHole(segmentCenter) == HoleRelation::HOLE) {
+          isInsideHole = true;
+          break;
+        }
+      }
+      if(!isInsideHole) {
+        mesh.addIndex(topCornerIndices[wall].index);               // 0
+        mesh.addIndex(topCornerIndices[nextIndex].index);           // 1
+        mesh.addIndex(bottomCornerIndices[wall].index);           // 10
 
-      mesh.addIndex(bottomCornerIndices[wall].index);         // 10
-      mesh.addIndex(bottomCornerIndices[nextIndex].index);       // 11
-      mesh.addIndex(topCornerIndices[nextIndex].index);           // 1
+        mesh.addIndex(topCornerIndices[nextIndex].index);           // 1
+        mesh.addIndex(bottomCornerIndices[nextIndex].index);       // 11
+        mesh.addIndex(bottomCornerIndices[wall].index);         // 10
+      }
     }
 
     ofLogNotice("GravityPlane::generateMesh") << "Walls constructed";
@@ -488,12 +608,12 @@ public:
     for(int y = 0; y < gridSize; y++) {
       for(int x = 0; x < gridSize; x++) {
         ofLogNotice("GravityPlane::generateMeshGrid") << "Generating piece " << x << ", " << y << " with dimensions "
-          << minWidth + partWidth*x << ", " << minWidth + partWidth*(x+1) << ", " << minHeight + partHeight*y << ", " << minHeight + partHeight*(y+1);
+          << minWidth + partWidth*x << ", " << minWidth + partWidth*(x+1)-1 << ", " << minHeight + partHeight*y << ", " << minHeight + partHeight*(y+1)-1;
         meshes.push_back(generateMesh(
           minWidth + partWidth*x,
-          minWidth + partWidth*(x+1),
+          minWidth + partWidth*(x+1) - 1,
           minHeight + partHeight*y,
-          minHeight + partHeight*(y+1),
+          minHeight + partHeight*(y+1) - 1,
           stepSize
         ));
       }
