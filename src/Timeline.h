@@ -126,7 +126,7 @@ private:
     // start
     while(isThreadRunning()) {
       
-      static float lastTime = 0;
+      static float lastTime = 0; // the timestamp last time this function was run
       static float nonScaledLastTime = 0;
       
       if(!rendering && playing) {
@@ -143,9 +143,15 @@ private:
         lastTime = currentTime;
         
         progressQueue(timeCursor);
-        if(timeCursor > timeWidth_d && doLoop) {
+        if(timeCursor > filterEnd && doLoop) {
+          // send a timelineReset message
+          TM timelineReset = TM(0, "timelineReset");
+          sendViaOsc(timelineReset);
+          lock();
+          messageFIFO.push_back(timelineReset);
+          unlock();
           // reset and go back to the beginning
-          timeCursor = 0;
+          timeCursor = filterStart;
           nextEvent = 0;
         }
       }
@@ -174,12 +180,6 @@ private:
         // if(score.size() == 0) break; // otherwise it segfaults
         nextEvent++;
         if(nextEvent >= score.size()) {
-          if(doLoop) {
-            // send a timelineReset message
-            TM timelineReset = TM(0, "timelineReset");
-            sendViaOsc(timelineReset);
-            messageFIFO.push_back(timelineReset);
-          }
           break; // break out of the loop to avoid index out of bound segfault
         }
       }
@@ -226,6 +226,8 @@ public:
     
     oscSender.setup("127.0.0.1", 57120); // send to SuperCollider on the local machine
     sendTimeScale(); // send the timeScale start value
+
+    timeCursor = filterStart;
   }
   
   void parseScriptingProfile(string filepath) {
