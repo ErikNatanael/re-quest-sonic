@@ -64,8 +64,8 @@ class Timeline : public ofThread  {
 private:
   ofMutex oscMutex;
   
-  double timeCursor = 0.0; // 8.0 is where a lot of stuff happens
-  float timeScale = 1.00;
+  double timeCursor = 0.0;
+  float timeScale = 0.10;
   uint32_t nextEvent = 0;
   bool playing = false;
   bool rendering = false;
@@ -80,6 +80,10 @@ private:
   ofMutex renderCurrentTimeMutex;
   double renderCurrentTime = 0;
   double numTimeStepsToProgress = 0;
+
+  // Filtering out events before and after a certain timestamp
+  double filterStart = 4.18;
+  double filterEnd = 24.07;
   
   uint64_t firstts = 1000000000000;
   double firstts_d = 0; // in seconds as a decimal number
@@ -465,28 +469,34 @@ public:
     score.clear();
 
     for(auto& f : functionCalls) {
-      TM tempMessage = TM(
-        double(f.ts-firstts)/timeStepsPerSecond,
-        "functionCall",
-        {
-          {"id", f.id},
-          {"parent", f.parent},
-          {"scriptId", f.scriptId},
-          {"parentScriptId", f.parentScriptId},
-          {"withinScript", int(f.withinScript)},
-        }
-      );
-    tempMessage.stringParameters.insert({"function_id", f.function_id});
-    score.push_back(tempMessage);
+      double timestamp = double(f.ts-firstts)/timeStepsPerSecond;
+      if(timestamp > filterStart && timestamp < filterEnd) {
+          TM tempMessage = TM(
+          timestamp,
+          "functionCall",
+          {
+            {"id", f.id},
+            {"parent", f.parent},
+            {"scriptId", f.scriptId},
+            {"parentScriptId", f.parentScriptId},
+            {"withinScript", int(f.withinScript)},
+          }
+        );
+        tempMessage.stringParameters.insert({"function_id", f.function_id});
+        score.push_back(tempMessage);
+      }
     }
     for(auto& u : userEvents) {
-      score.push_back(TM(
-        double(u.ts-firstts)/timeStepsPerSecond,
-        "userEvent",
-        {
-          {"type", u.type},
-        }
-      ));
+      double timestamp = double(u.ts-firstts)/timeStepsPerSecond;
+      if(timestamp > filterStart && timestamp < filterEnd) {
+        score.push_back(TM(
+          timestamp,
+          "userEvent",
+          {
+            {"type", u.type},
+          }
+        ));
+      }
     }
     std::sort (score.begin(), score.end());
 

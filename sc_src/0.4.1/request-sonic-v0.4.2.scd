@@ -526,6 +526,10 @@ s.waitForBoot({
 				x = { PlayBuf.ar(1, ~clickSample, BufRateScale.kr(~clickSample) * LFNoise1.kr(5).range(0.2, 0.3), loop: 0)!2 * 0.8 }.play;
 			};
 
+			if(type == "click") { var buf = ~clickSample;
+				x = { PlayBuf.ar(1, ~clickSample, BufRateScale.kr(~clickSample) * LFNoise1.kr(5).range(1.5, 2.0), loop: 0)!2 * 0.8 }.play;
+			};
+
 			/*if(type == "keyup") {
 				var buf = ~clickSample, winenv;
 				winenv = Env([0, 1, 0], [0.5, 0.5], [12, -12]);

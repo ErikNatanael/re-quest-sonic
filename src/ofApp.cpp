@@ -17,7 +17,7 @@ void ofApp::setup() {
   // must set makeContours to true in order to generate paths
   font.load("SourceCodePro-Regular.otf", 16, false, false, true);
   
-  string profilePath = "profiles/filming-baudry-20200210-Profile-20200210T165944/";
+  string profilePath = "profiles/filming-baudry-Profile-20200210T170430/";
   
   timeline.init(WIDTH, HEIGHT);
   timeline.parseScriptingProfile(profilePath + "scores/scripting_events.json");
@@ -147,7 +147,7 @@ void ofApp::setup() {
       float angle = 0, radius = 0; // polar coordinate offset
       Circle c;
       c.col = ofColor::fromHsb(s.category*50, 255, 255);
-      c.r = ofClamp(s.getSize(), 0.09, 1.0) * 0.31;
+      c.r = ofClamp(s.getSize(), 0.09, 1.0) * 0.32;
       ofLogNotice("script size") << s.getSize();
       bool overlaps_with_circle = false;
       do {

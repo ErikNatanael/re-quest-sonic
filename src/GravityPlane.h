@@ -278,6 +278,7 @@ public:
   int maxScriptId;
   int size = 8000;
   float scale = 0.35; // used to scale things down so they don't overshoot the edge
+  float thicknessScale = 0.5;
   bool addBasePlate = true;
   bool functionsAsHoles = true;
   int holeYPos = -4000;
@@ -289,7 +290,7 @@ public:
     pointOffset = glm::vec2(0, -0.3); // compensate for an off center mid point
     points.push_back(AttractionPoint(
       glm::vec2(0, 0) + centerOffset + (glm::vec2(0, -0.1)*size),
-      size*0.1,
+      size*0.1 * thicknessScale,
       size*0.6
     ));
   }
@@ -315,7 +316,7 @@ public:
     vector<IndexedPoint> bottomCornerIndices;
     int currentIndex = 0;
 
-    int baseY = -200;
+    int baseY = size * -0.002 * thicknessScale;
 
     int width = maxW - minW;
     int height = maxH - minH;
@@ -639,7 +640,7 @@ public:
   
   void addScriptPoint(Script& s) {
     // TRIANGLE:
-    float offset = (1.-pow(1.-s.scriptCircle.r, .5)) * size * scale * 3.0;
+    float offset = (1.-pow(1.-s.scriptCircle.r, .5)) * size * scale * 3.0 * thicknessScale;
     // offset *= 0.2; // shallower mountains for shorter print time
     if(s.scriptType == "built-in") {
       offset *= -1.;
@@ -658,7 +659,7 @@ public:
   
   void addFunctionPoint(Function& f, Script& s, float offsetRatio = -0.005) {
     // float offset = size * -0.04; // negative bump
-    float offset = size * offsetRatio; // bump
+    float offset = size * offsetRatio * thicknessScale; // bump
     // float radius = size * .003;
     // float radius = size * .005;
     float radius = f.functionCircle.r * size;
