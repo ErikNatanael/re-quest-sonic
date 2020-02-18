@@ -245,6 +245,7 @@ void ofApp::setupGui() {
   // all of the setup code for the ofxGui GUI
   // add listener function for buttons
   saveSVGButton.addListener(this, &ofApp::saveSVGButtonPressed);
+  exportTrianglesSVGButton.addListener(this, &ofApp::saveTrianglesSVG);
   sendActivityEnvelopeToSCButton.addListener(this, &ofApp::sendActivityDataOSC);
   doLoopToggle.addListener(this, &ofApp::doLoopToggleFunc);
   doGraphicsToggle.addListener(this, &ofApp::toggleDoDrawGraphics);
@@ -256,6 +257,7 @@ void ofApp::setupGui() {
   // create the GUI panel
   gui.setup();
   gui.add(saveSVGButton.setup("Save SVG"));
+  gui.add(exportTrianglesSVGButton.setup("Save triangles as SVG"));
   gui.add(sendActivityEnvelopeToSCButton.setup("Send activity envelope to SC"));
   gui.add(doLoopToggle.setup("loop", false));
   gui.add(doGraphicsToggle.setup("draw graphics", true));
@@ -287,6 +289,23 @@ void ofApp::saveSVGButtonPressed() {
   // drawStaticPointsOfFunctions();
   // drawStaticFunctionCallLines();
   // drawStaticRepresentation();
+  ofEndSaveScreenAsSVG();
+}
+
+void ofApp::saveTrianglesSVG() {
+  ofBeginSaveScreenAsSVG("svg_triangles_" + ofGetTimestampString() + ".svg", false, false, ofRectangle(0, 0, WIDTH, HEIGHT));
+  ofClear(255, 255);
+  ofPushMatrix();
+  ofTranslate(ofGetWidth()/2, ofGetHeight()/2);
+  ofSetColor(255, 0, 0, 255);
+  ofNoFill();
+  for(auto& t : triangles) {
+    t.draw(triangleScale);
+  }
+  for(auto& c : circles) {
+    c.draw(triangleScale);
+  }
+  ofPopMatrix();
   ofEndSaveScreenAsSVG();
 }
 

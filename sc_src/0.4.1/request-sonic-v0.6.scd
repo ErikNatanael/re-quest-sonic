@@ -239,9 +239,58 @@ s.waitForBoot({
 		Out.ar(\out.kr(0), sig);
 	}).add;
 	SynthDef(\master_effect, {
-		var sig, env;
+		var sig, env, amp = \amp.kr(1.0), peak = 1.0 - PeakFollower.kr((1.0 - amp).lag(1.0));
+
+		var resonator_sig;
+		var a, k, delfreq, minfreqs, freqs, dry;
+		// get the signal of everything
 		sig = In.ar(\in.kr(16), 2);
-		sig = sig * \amp.kr(1.0);
+		sig = sig * PeakFollower.kr(amp, 0.99);
+
+		// resonator start
+		resonator_sig = LocalIn.ar(2);
+		resonator_sig = resonator_sig + WhiteNoise.ar(0.001!2);
+
+		// delay due to distance from amp - I chose 0.05s, or 20Hz
+		delfreq = 10;
+		resonator_sig = DelayN.ar(resonator_sig,1/10-ControlDur.ir,1/delfreq-ControlDur.ir);
+
+		// guitar string frequencies - for some reason I had to pitch them down
+		// a few octaves to get a good sound.
+		// open strings
+		freqs = (64+[0,12, 24, 19]).midicps*2;
+		// e minor
+		// freqs = (64+[0,7,12,15,19,24]).midicps/4;
+
+		// whammy bar modulates freqs:
+		minfreqs = freqs*0.5;
+		freqs = freqs*MouseButton.kr(1,0.75,4);
+
+		// 6 comb filters emulate the strings' resonances
+		resonator_sig = CombN.ar(resonator_sig!6,1/minfreqs,1/freqs,8).mean;
+
+		// a little filtering... amp controls amp
+		resonator_sig = LPF.ar(resonator_sig,8000);
+		resonator_sig = HPF.ar(resonator_sig*amp.linexp(0, 1, 0.0001, 5.0),80);
+
+		// and some not too harsh distortion - peak controls damping
+		resonator_sig = RLPFD.ar(resonator_sig, peak.linexp(0.0001, 1.0, 200, 10000)*[1,1.1],0.1,0.5);
+		resonator_sig = resonator_sig + resonator_sig.mean;
+
+		resonator_sig = (resonator_sig * Demand.kr(Dust.kr(35), 1, Dseq([1, 0], inf)));
+		// and finally a spot of reverb
+		dry = resonator_sig;
+		5.do {
+			d = 0.05.rand;
+			resonator_sig = AllpassN.ar(resonator_sig,d,d,5);
+		};
+		resonator_sig = (dry + resonator_sig)*0.125;
+		LocalOut.ar(resonator_sig, 2);
+		resonator_sig = resonator_sig * 0.2 + (PitchShift.ar(resonator_sig, 0.2, 2.0, LFNoise1.kr(3).range(0.01, 0.2), 0.05) * 0.8);
+		resonator_sig = resonator_sig * amp;
+		// resonator end
+		sig = sig + Limiter.ar(resonator_sig * 0.05, 0.05);
+		sig = PitchShift.ar(sig, 0.2, 0.5 + PeakFollower.kr(amp.linlin(0.0, 0.2, 0.0, 0.5), 0.99999).lag(0.5), 1.0 - amp.lag(0.3));
 		Out.ar(\out.kr(0), sig);
 	}).add;
 
@@ -311,9 +360,9 @@ s.waitForBoot({
 
 
 	~rbus = Bus.audio(s,2);
-	~masterBus = 0;
+	~masterBus = Bus.audio(s, 2);
 	s.sync();
-	~master = Synth(\master_effect, [\in, ~masterBus, \out, 0]);
+	~master = Synth(\master_effect, [\in, ~masterBus, \out, 0, \amp, 0.0]);
 	~verbSynth = Synth(\verb, [\wetness, 0.3]);
 
 
@@ -665,6 +714,7 @@ s.waitForBoot({
 
 
 ( var port;
+~maxCap = 0;
 {
 	SerialPort.closeAll;
 	1.0.wait;
@@ -678,17 +728,22 @@ s.waitForBoot({
 	~readLoop = fork {
 		var byte, str, peakFollower = 0;
 		loop{|i|
-			if(p.read==10, { var amp, knob;
+			if(p.read==10, { var amp, knob, capValue;
 				str = "";
 				while({byte = p.read; byte !=13 }, {
 					str= str++byte.asAscii;
 				});
+				capValue = str.asInt;
+				if(capValue >  ~maxCap) {
+					~maxCap = capValue;
+				};
+				~maxCap = ~maxCap * 0.999;
 
 				str.postln;
-				amp = str.asInt.linlin(400, 1000, 0.0, 1.0);
+				amp = capValue.linlin(400, ~maxCap * 0.8, 0.0, 1.0);
 				("amp: " + amp.asString).postln;
-				peakFollower = (str.asInt*0.001) + (peakFollower*0.999);
-				knob = peakFollower.linlin(200, 1000, 1.0, 0.0);
+				peakFollower = (capValue*0.001) + (peakFollower*0.999);
+				knob = peakFollower.linlin(200, ~maxCap * 0.8, 1.0, 0.0);
 				("knob: " + knob.asString).postln;
 				~master.set(\amp, amp);
 				~master.set(\knob, knob);

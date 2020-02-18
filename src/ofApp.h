@@ -44,6 +44,7 @@ class ofApp : public ofBaseApp{
 		// GUI related functions
 		void setupGui();
 		void saveSVGButtonPressed();
+		void saveTrianglesSVG();
 		void sendActivityDataOSC();
 		void doLoopToggleFunc(bool &b);
 		void toggleDoDrawGraphics(bool &b);
@@ -126,6 +127,7 @@ class ofApp : public ofBaseApp{
 		ofxButton exportMeshButton;
 		ofxButton exportMeshGridButton;
 		ofxButton exportMeshGridPieceButton;
+		ofxButton exportTrianglesSVGButton;
 		bool doDrawGraphics = true;
 		ofParameter<bool> doDrawScreenshots;
 		ofParameter<int> numScriptsToDraw;
