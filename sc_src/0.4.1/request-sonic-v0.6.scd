@@ -110,7 +110,7 @@ s.waitForBoot({
 
 		Out.ar(out, Pan2.ar(sig, pan)*env*amp);
 	}).add;
-	SynthDef(\windy, { |outBus = 0, knob = 0.5, decay = 10, gate = 1, amp = 1|
+	SynthDef(\windy, { |out = 0, knob = 0.5, decay = 10, gate = 1, amp = 1|
 		var osc = BrownNoise.ar(0.5), env, focus, outs, freqs;
 		env = EnvGen.kr(Env(
 			levels: [0, 1, 0],
@@ -128,7 +128,7 @@ s.waitForBoot({
 		outs = HPF.ar(outs, \cutoff.kr(500));
 		outs = outs * env*amp;
 
-		Out.ar(outBus, [outs, DelayN.ar(outs, 0.01, 0.01)]);
+		Out.ar(out, [outs, DelayN.ar(outs, 0.01, 0.01)]);
 	}).add;
 	SynthDef(\swoosh, {
 		var sig, env, freq, clap, popEnv, centerFreq = Rand(100, 200), length = Rand(0.2, 0.7), release = Rand(0.4, 0.7);
@@ -178,11 +178,11 @@ s.waitForBoot({
 		);
 		freq = freq * LFNoise1.kr(10).range(0.998, 1.002); // TODO: Less vibrato for high notes, more for low
 		freqEnv = EnvGen.ar(Env([TRand.ar(4000, 6000, inTrig), freq], [0.006]), gate: inTrig);
-		sawEnv = EnvGen.ar(Env([1, 1, 0.5, 0], [0.001, 0.01, 2]), gate: inTrig);
-		fmEnv = EnvGen.ar(Env([freq*6, freq*6, freq, 0], [0.00001, 1, 1]), gate: inTrig);
+		sawEnv = EnvGen.ar(Env([1, 1, 0.5, 0], [0.001, 0.01, 0.5]), gate: inTrig);
+		fmEnv = EnvGen.ar(Env([freq*6, freq*6, freq], [0.00001, 0.1]), gate: inTrig);
 		sig = SinOsc.ar(freqEnv + SinOsc.ar(freq*2, 0, fmEnv));
 		sig = sig + (SinOsc.ar(freq*0.5, 0, 0.4));
-		sig = sig + (Saw.ar(freq*2.01) * sawEnv);
+		sig = sig + (Saw.ar(freq*2.01) * sawEnv * 0.2);
 		sig = sig * 0.8 * \amp.kr(1);
 		sig = sig * AmpCompA.kr(freq, 20, 0.32, 2.0);
 		sig = sig * env;
@@ -214,14 +214,20 @@ s.waitForBoot({
 		Out.ar(\out.kr(0), sig);
 	}).add;
 	SynthDef(\verb, {
-		var snd, wet;
+		var snd, wet, feedback, local;
 		snd = In.ar(\out.kr(0), 2);
 		wet = snd.sum + PitchShift.ar(snd, 0.2, 2);
 		wet = DelayN.ar(wet, 0.02, 0.02);
 		wet = JPverb.ar(wet, 4.0, 0.0, 1.8);
+		feedback = LocalIn.ar(2);
 		wet = HPF.ar(wet, 100) * -3.dbamp;
 		wet = LPF.ar(wet, 7000);
 		snd = snd + (wet * \wetness.kr(0.1));
+		// some extra (potentially infinite) reverb
+		local = snd;
+		15.do{local = AllpassN.ar(snd + feedback, 0.06, Rand(0.001, 0.06), 1);};
+		LocalOut.ar(local * \feedback.kr(1.0));
+		snd = snd + ((feedback*10).tanh * 0.5);
 		// Add a little bit of tape flutter
 		snd = DelayC.ar(snd, 0.2, LFNoise2.kr(1).range(0, 0.005));
 
@@ -240,15 +246,23 @@ s.waitForBoot({
 	}).add;
 	SynthDef(\master_effect, {
 		var sig, env, amp = \amp.kr(1.0), peak = 1.0 - PeakFollower.kr((1.0 - amp).lag(1.0));
+		var electric_sig, electric_trigs, electric_freqs;
 
 		var resonator_sig;
 		var a, k, delfreq, minfreqs, freqs, dry;
 		// get the signal of everything
 		sig = In.ar(\in.kr(16), 2);
-		sig = sig * PeakFollower.kr(amp, 0.99);
+
+		// electrical dust start
+		electric_freqs = LFNoise1.kr(1/2).range(500, 10000) * [0.7, 0.6, 0.8, 0.9, 0.95, 1.0];
+		electric_trigs = {Dust.ar(Rand(10, 40))}!6;
+		electric_trigs = Decay.ar(electric_trigs, LFNoise1.kr(1.2).range(0, 1).linexp(0, 1, 0.00001, 0.01));
+		electric_sig = SinOsc.ar(electric_freqs) * electric_trigs * 0.1;
+		electric_sig = Splay.ar(electric_sig);
+		// electrical dust end
 
 		// resonator start
-		resonator_sig = LocalIn.ar(2);
+		/*resonator_sig = LocalIn.ar(2) + sig;
 		resonator_sig = resonator_sig + WhiteNoise.ar(0.001!2);
 
 		// delay due to distance from amp - I chose 0.05s, or 20Hz
@@ -258,7 +272,8 @@ s.waitForBoot({
 		// guitar string frequencies - for some reason I had to pitch them down
 		// a few octaves to get a good sound.
 		// open strings
-		freqs = (64+[0,12, 24, 19]).midicps*2;
+		freqs = (64+[0,12, 24, 19, 28]).midicps/8;
+		freqs = freqs * LFNoise0.kr((peak * 3.0) + 0.1).range(0.9, 1.1);
 		// e minor
 		// freqs = (64+[0,7,12,15,19,24]).midicps/4;
 
@@ -271,25 +286,28 @@ s.waitForBoot({
 
 		// a little filtering... amp controls amp
 		resonator_sig = LPF.ar(resonator_sig,8000);
-		resonator_sig = HPF.ar(resonator_sig*amp.linexp(0, 1, 0.0001, 5.0),80);
+		resonator_sig = HPF.ar(resonator_sig*amp.lag(1).linexp(0, 1, 2.0, 5.0),80);
 
 		// and some not too harsh distortion - peak controls damping
 		resonator_sig = RLPFD.ar(resonator_sig, peak.linexp(0.0001, 1.0, 200, 10000)*[1,1.1],0.1,0.5);
 		resonator_sig = resonator_sig + resonator_sig.mean;
 
-		resonator_sig = (resonator_sig * Demand.kr(Dust.kr(35), 1, Dseq([1, 0], inf)));
+		// resonator_sig = (resonator_sig * Demand.kr(Dust.kr(35), 1, Dseq([1, 0], inf)));
+		resonator_sig = resonator_sig + SinOsc.ar([LFNoise0.kr(10).range(500, 2000), LFNoise0.kr(15).range(500, 2000)]) * 0.5;*/
 		// and finally a spot of reverb
-		dry = resonator_sig;
+		/*dry = resonator_sig;
 		5.do {
 			d = 0.05.rand;
 			resonator_sig = AllpassN.ar(resonator_sig,d,d,5);
 		};
-		resonator_sig = (dry + resonator_sig)*0.125;
-		LocalOut.ar(resonator_sig, 2);
-		resonator_sig = resonator_sig * 0.2 + (PitchShift.ar(resonator_sig, 0.2, 2.0, LFNoise1.kr(3).range(0.01, 0.2), 0.05) * 0.8);
-		resonator_sig = resonator_sig * amp;
+		resonator_sig = (dry + resonator_sig)*0.125;*/
+		/*LocalOut.ar(resonator_sig, 2);
+		resonator_sig = resonator_sig * 0.2 + (PitchShift.ar(resonator_sig, 0.2, 2.0, LFNoise1.kr(6).range(0.01, 0.05), 0.05) * 0.8);
+		resonator_sig = resonator_sig * amp;*/
 		// resonator end
-		sig = sig + Limiter.ar(resonator_sig * 0.05, 0.05);
+		sig = sig + electric_sig;
+		sig = sig * PeakFollower.kr(amp, 0.99);
+		/*sig = sig + Limiter.ar(resonator_sig * 0.01, 0.01);*/
 		sig = PitchShift.ar(sig, 0.2, 0.5 + PeakFollower.kr(amp.linlin(0.0, 0.2, 0.0, 0.5), 0.99999).lag(0.5), 1.0 - amp.lag(0.3));
 		Out.ar(\out.kr(0), sig);
 	}).add;
@@ -362,9 +380,8 @@ s.waitForBoot({
 	~rbus = Bus.audio(s,2);
 	~masterBus = Bus.audio(s, 2);
 	s.sync();
-	~master = Synth(\master_effect, [\in, ~masterBus, \out, 0, \amp, 0.0]);
 	~verbSynth = Synth(\verb, [\wetness, 0.3]);
-
+	~master = Synth(\master_effect, [\in, ~masterBus, \out, 0, \amp, 0.0]);
 
 	~functionCallDensity = 0;
 	~loadEventDensity = 0;
@@ -483,38 +500,8 @@ s.waitForBoot({
 		// };
 
 			if(withinScript == 0) { var newChord, newScript = ~scriptInfo[scriptId];
-
-				// Synth(\tick2,[\freq, rrand(5000, 10000), \rq, 0.1, \amp, 1.0, \pan, [-1, 1].choose]);
-				// switch to new root note
 				distance = ~scriptInfo[parentScriptId].interconnectedness[scriptId];
-				/*~drone.set(\knob, distance);*/
-				/*if(distance > 0.9, {
-				~currentRoot = ~currentRoot + 31; // subdominantisk riktning
-				~currentDegrees = [0, 17, 31];
-				("subdominantisk riktning dur").postln;
-				}, {
-				if(distance > 0.5, {
-				~currentRoot = ~currentRoot - 31; // dominantisk riktning
-				~currentDegrees = [0, 17, 31, 44];
-				("dominantisk riktning").postln;
-				}, {
-				if(distance > 0.1, {
-				~currentRoot = ~currentRoot + 31; // subdominantisk riktning
-				~currentDegrees = [0, 14, 31];
-				("subdominantisk riktning moll").postln;
-				}, {
-				if(distance > 0.2, {
-				~currentDegrees = ~currentDegrees.add(9);
-				});
-				if(distance > 0.3, {
-				~currentDegrees = ~currentDegrees.add(49);
-				});
-				});
-				});
 
-				});*/
-				// change root according to script type
-				// ("scriptType: " + newScript.scriptType).postln;
 				if(newScript.scriptType == "built-in", {
 					~currentRoot = ~currentRoot + 31; // subdominantisk riktning
 					~currentDegrees = [0, 17, 31];
@@ -538,19 +525,9 @@ s.waitForBoot({
 							});
 						});
 					});
-
 				});
-
 				~currentRoot = ~currentRoot%53;
 				newChord = ~findClosestVoicing.(~currentChord, ~currentDegrees + ~currentRoot);
-				// ("newChord: " + newChord).postln;
-				// change background chord
-				// ~speedSynths.do{|syn| syn.set(\amp, 0.0); };
-				/*newChord.do{|note, i|
-					var syn = ~speedSynths[i];
-					syn.set(\freq, ~degree53_to_freq.(note + (53*(4+(i%3)))));
-					syn.set(\amp, 1.0);
-				};*/
 				~currentChord = newChord;
 			}; // end within script if statement
 
@@ -560,12 +537,13 @@ s.waitForBoot({
 				tempid = (tempid.asInt/10).asInt;
 			});
 
-			~functionCallDensity = ~functionCallDensity + 0.5;
+			if(~timeScale < 2.0) {
+				~functionCallDensity = ~functionCallDensity + 0.5;
+			};
 
-			// trigger a fragment change
-			~speedSynths.do{|syn| syn.set(\fragmentTrigger, rrand(0.0, 10.0)); };
-
-			Synth(\tick2,[\freq, rrand(9000, 10000), \rq, 0.001, \amp, 0.1, \pan, [-1, 1].choose, \out, ~masterBus]);
+			if(~timeScale < 0.7) {
+				Synth(\tick2,[\freq, rrand(9000, 10000), \rq, 0.001, \amp, 0.1, \pan, [-1, 1].choose, \out, ~masterBus]);
+			};
 
 			// kind of just gives you an impression of density
 			// Synth(\tick,[\freq, rrand(5000, 6000)*~speed.linlin(0.0, 2.0, 0.1, 2.0), \rq, ~functionCallDensity.linexp(0, 1, 0.001, 1.0), \amp, min(~speed.pow(2), 1.0), \pan, [-1, 1].choose]);
@@ -577,23 +555,25 @@ s.waitForBoot({
 			var type = msg[2].asString;
 			msg.postln;
 
-			if(type == "mousemove") {
-				Synth(\swoosh, [\amp, 0.5, \out, ~masterBus]);
-			};
+			if(~timeScale < 1.0) {
+				if(type == "mousemove") {
+					Synth(\swoosh, [\amp, 0.5, \out, ~masterBus]);
+				};
 
-			if(type == "keydown") { var buf = ~clickSample;
-				x = {
-					var sig = PlayBuf.ar(1, ~clickSample, BufRateScale.kr(~clickSample) * LFNoise1.kr(5).range(0.2, 0.3), loop: 0)!2 * 0.8;
-					Out.ar(~masterBus, sig);
-				}.play;
-			};
+				if(type == "keydown") { var buf = ~clickSample;
+					x = {
+						var sig = PlayBuf.ar(1, ~clickSample, BufRateScale.kr(~clickSample) * LFNoise1.kr(5).range(0.2, 0.3), loop: 0, doneAction: 2)!2 * 0.8;
+						Out.ar(~masterBus, sig);
+					}.play;
+				};
 
-			if(type == "click") { var buf = ~clickSample;
-				x = {
-					var sig = PlayBuf.ar(1, ~clickSample, BufRateScale.kr(~clickSample) * LFNoise1.kr(5).range(1.5, 2.0), loop: 0)!2 * 0.8;
-					Out.ar(~masterBus, sig);
-				}.play;
+				if(type == "click") { var buf = ~clickSample;
+					x = {
+						var sig = PlayBuf.ar(1, ~clickSample, BufRateScale.kr(~clickSample) * LFNoise1.kr(5).range(1.5, 2.0), loop: 0, doneAction: 2)!2 * 0.8;
+						Out.ar(~masterBus, sig);
+					}.play;
 
+				};
 			};
 
 			/*if(type == "keyup") {
@@ -659,6 +639,8 @@ s.waitForBoot({
 		};
 		if(msg[1] == \changeSpeed) {
 			~timeScale = msg[2];
+			~verbSynth.set(\wetness, 0.1 + ~timeScale.linlin(1.0, 20.0, 0.0, 0.9));
+			~verbSynth.set(\feedback, 0.0 + ~timeScale.linlin(1.0, 60.0, 0.0, 1.0));
 			msg.postln;
 		};
 

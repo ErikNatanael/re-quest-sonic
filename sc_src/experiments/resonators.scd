@@ -46,12 +46,11 @@ Ndef(\z, {
 ~feedbus = Bus.audio(s, 1);
 (
 {
-
 	// get fed back signal and add a little noise to get things going
 	var sig;
 	var a, k, delfreq, minfreqs, freqs, dry;
 
-	sig = LocalIn.ar(1)
+	sig = LocalIn.ar(2);
 	sig = sig + WhiteNoise.ar(0.001!2);
 
 	// delay due to distance from amp - I chose 0.05s, or 20Hz
@@ -89,7 +88,7 @@ Ndef(\z, {
 		sig = AllpassN.ar(sig,d,d,5);
 	};
 	sig = (dry + sig)*0.125;
-	LocalOut.ar(sig);
+	LocalOut.ar(sig, 2);
 	Out.ar(0, Pan2.ar(sig));
 }.play;
 )
@@ -108,3 +107,19 @@ Ndef(\z, {
     in
 }.play;
 )
+
+(
+{
+    var source, local;
+
+    source = Decay.ar(Impulse.ar(0.3), 0.1) * WhiteNoise.ar(0.2);
+    local = LocalIn.ar(2) + [source, 0]; // read feedback, add to source
+    local = DelayN.ar(local, 0.2, 0.2); // delay sound
+
+    // reverse channels to give ping pong effect, apply decay factor
+    LocalOut.ar(local.reverse * 0.8);
+
+    local
+}.play;
+)
+
