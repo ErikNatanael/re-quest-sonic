@@ -52,7 +52,7 @@ class ofApp : public ofBaseApp{
 		void drawStaticPointsOfFunctions(); // draws a circle for each function
 		void drawStaticPointsOfScripts(bool drawCenters = false); // draws a circle for each script
 		void drawStaticFunctionCallLines();
-		void drawSingleStaticFunctionCallLine(string function_id, int parent, int scriptId);
+		void drawSingleStaticFunctionCallLine(string function_id, int parent, int scriptId, int alpha);
 		void drawStaticRepresentation(); // draws a static representation of the call graph data
 		void drawThickPolyline(ofPolyline line, float width);
 		ofColor getColorFromScriptId(int scriptId, int alpha);
@@ -101,8 +101,14 @@ class ofApp : public ofBaseApp{
 		
 		ofFbo functionCallFbo;
 		vector<FunctionCall> functionCallsToDraw;
+		vector<FunctionCall> functionCallsToDrawOnce;
 		
 		ofShader invertShader;
+		ofShader speckShader;
+		ofFbo speckFbo;
+		ofParameter<float> speckAlphaFade;
+		ofParameter<float> speckBrightnessFade;
+		ofFbo visualisationFbo;
 
 		Triangle triangle;
 		vector<Triangle> triangles;

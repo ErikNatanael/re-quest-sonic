@@ -29,6 +29,9 @@ public:
   int category = 0;
   vector<Circle> functionCircles; // circles for every function in the script for checking overlap
   Circle scriptCircle; // the circle of this script for checking if it's inside
+  float rotationVel = 0;
+  float alpha = 0;
+  bool calledThisLoop = false;
   
   // for mesh export
   float meshRadius = 0;
@@ -221,6 +224,18 @@ public:
     // return float(ofClamp(sqrt(numFunctions)*6, 1, 100))/100.0;
     // base size on script activity
     return float(ofClamp(pow(numCallsWithinScript + numCallsToOtherScript + numCalledFromOutsideScript, 0.4)*4.0, 1, 100))/100.0;
+  }
+
+  void resetDrawing() {
+    calledThisLoop = false;
+    alpha = 0;
+  }
+
+  void updateDrawing(float dt) {
+    if(calledThisLoop) {
+      alpha += dt*2;
+      if(alpha > 1.0) alpha = 1.0;
+    }
   }
 };
 

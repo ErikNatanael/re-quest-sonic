@@ -65,11 +65,13 @@ private:
   ofMutex oscMutex;
   
   double timeCursor = 0.0;
-  float timeScale = 0.10;
+  float timeScale = 0.50;
   uint32_t nextEvent = 0;
   bool playing = false;
   bool rendering = false;
   bool doLoop = true;
+  int loopCounter = 0;
+  bool fadeOut = false;
   float frameRate = 25;
   double currentTime = 0;
   bool resetLastTime = true;
@@ -153,6 +155,7 @@ private:
           // reset and go back to the beginning
           timeCursor = filterStart;
           nextEvent = 0;
+          nextLoop();
         }
       }
     }
@@ -183,6 +186,18 @@ private:
           break; // break out of the loop to avoid index out of bound segfault
         }
       }
+    }
+  }
+
+  void nextLoop() {
+    loopCounter += 1;
+    if(loopCounter > 0 && loopCounter <= 7) {
+      timeScale *= 2.0;
+      sendTimeScale();
+    }
+    if(loopCounter > 7) {
+      playing = false;
+      fadeOut = true;
     }
   }
     
@@ -630,6 +645,11 @@ public:
     timeScale *= 1.11;
     sendTimeScale();
   }
+
+  void setTimeScale(float s) {
+    timeScale = s;
+    sendTimeScale();
+  }
   
   void sendTimeScale() {
     TimelineMessage mess;
@@ -714,6 +734,10 @@ public:
   
   uint64_t getFirstts() {
     return firstts;
+  }
+
+  bool doFadeOut() {
+    return fadeOut;
   }
   
 };

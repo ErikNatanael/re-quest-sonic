@@ -138,6 +138,7 @@ void main()
 	vec2 nc = (gl_FragCoord.xy/resolution.xy);
 	vec2 st = gl_FragCoord.xy;
 	st *= resMult;
+  st.y = resolution.y - st.y; // flip y
 	// st.y =  imgRes.y - st.y; // inverts the coordinates, not necessary if drawing to an FBO
 	// st.x = imgRes.x - st.x; // invert x coordinates for mirror effect
 	// st.x = imgRes.x * smoothstep(0, 1, nc.x*1.8);
@@ -163,12 +164,12 @@ void main()
   r.x = fbm( uv + q + vec2(1.7,9.2), 0.55 * t);
   r.y = fbm( uv + q + vec2(8.3,2.8), 0.426 * t);
 	// st += r*resolution*0.003;
-	st += r*resolution*0.01;
+	st += r*imgRes*0.01;
 	vec3 warpedPixel1 =  texture(tex0, st).rgb;// * vec4(1., 0., 0. ,1.);
-	st += r*resolution*0.1;
+	st += r*imgRes*0.1;
 	vec3 warpedPixel2 =  texture(tex0, st).rgb;// * vec4(1., 0., 0. ,1.);
-	// vec3 color = normalPixel*.5 + warpedPixel1*.25 + warpedPixel2*.15;
-  vec3 color = normalPixel;
+	vec3 color = normalPixel*.5 + warpedPixel1*.25 + warpedPixel2*.15;
+  // vec3 color = normalPixel;
 
   // fade to white at the left side
   // color += smoothstep(0.9, 1.0, nc.x*1.8);
