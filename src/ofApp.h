@@ -59,7 +59,7 @@ class ofApp : public ofBaseApp{
 		ofParameter<uint16_t> hueOffset;
 		ofParameter<uint16_t> hueRotation;
 		ofParameter<uint8_t> saturation;
-		ofParameter<uint8_t> brightness;
+		ofParameter<float> brightness;
 		
 		void drawMesh();
 		void exportMesh();

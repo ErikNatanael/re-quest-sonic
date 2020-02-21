@@ -9,7 +9,7 @@ void ofApp::setup() {
   
   // graphX = WIDTH * 0.67;
   // graphY = HEIGHT * .5;
-  graphY = HEIGHT * -0.15;
+  graphY = HEIGHT * -0.13;
   graphX = WIDTH * 0.0;
 
   graphScaling = HEIGHT * 0.4;
@@ -109,7 +109,7 @@ void ofApp::setup() {
     }
     // create triangles
     glm::vec2 p1, p2, p3, p4, p5, p6; // all the points we need
-    float stretch = 0.3;
+    float stretch = 0.5;
     p1 = glm::vec2(-.5, 0.3333);
     p2 = glm::vec2(.5, 0.3333);
     p3 = glm::vec2(0, -0.53);
@@ -278,10 +278,10 @@ void ofApp::setupGui() {
   gui.add(numScriptsToDraw.set("num scripts to draw", maxScriptId, 0, maxScriptId));
   gui.add(hueRotation.set("hueRotation", 24, 0, 255));
   gui.add(hueOffset.set("hueOffset", 247, 0, 255));
-  gui.add(saturation.set("saturation", 210));
-  gui.add(brightness.set("brightness", 180));
+  gui.add(saturation.set("saturation", 210, 0, 255));
+  gui.add(brightness.set("brightness", 255, 0, 255));
   gui.add(speckAlphaFade.set("speckAlphaFade", 0.01, 0.0, 1.0));
-  gui.add(speckBrightnessFade.set("speckBrightnessFade", 0.02, -1.0, 1.0));
+  gui.add(speckBrightnessFade.set("speckBrightnessFade", 0.005, -0.1, 0.1));
   showGui = true;
 }
 
@@ -422,12 +422,15 @@ void ofApp::draw(){
   }
 
   if(timeline.doFadeOut()) {
-    ofLogNotice("draw") << "do fade out";
     float timeScale = timeline.getTimeScale();
     if(timeScale > 2) {
-      timeline.setTimeScale(timeScale - (62*dt)/15);
+      if(timeScale > 64) {
+        timeline.setTimeScale(64);
+      } else {
+        timeline.setTimeScale(timeScale - (62*dt)/20);
+      }
     }
-    brightness -= dt * 255 * 0.2;
+    brightness = brightness - (dt * 255 * 0.2);
     if(brightness < 0) brightness = 0;
   }
 
@@ -552,14 +555,13 @@ void ofApp::draw(){
     invertShader.setUniform2f("imgRes", WIDTH, HEIGHT);
     invertShader.setUniform2f("resolution", WIDTH, HEIGHT);
     invertShader.setUniform1f("time", timeline.getTimeCursor());
-    screenshots[currentScreen].img.draw(0, 0, WIDTH, HEIGHT);
     ofDrawRectangle(0, 0, WIDTH, HEIGHT);
   invertShader.end();
   // visualisationFbo.draw(0, 0);
   speckFbo.draw(0, 0);
   // draw the timeline
-  ofSetColor(130, 80);
-  timeline.draw();
+  // ofSetColor(130, 80);
+  // timeline.draw();
 
   renderFbo.end();
   ofSetColor(255, 255);
@@ -705,7 +707,7 @@ void ofApp::drawStaticPointsOfScripts(bool drawCenters) {
   for(int i = 0; i < scripts.size(); i++) {
     if(scripts[i].scriptId <= numScriptsToDraw) {
       // ofSetColor(ofColor::fromHsb((scripts[i].scriptId*300 - 200) % 360, 150, 255, 120)); // bright colours
-      ofSetColor(getColorFromScriptId(scripts[i].scriptId, 50 * scripts[i].alpha)); // dark colours
+      ofSetColor(getColorFromScriptId(scripts[i].scriptId, 80 * scripts[i].alpha)); // dark colours
       scriptSpheres[i].drawWireframe();
     }
   }
@@ -732,21 +734,26 @@ void ofApp::drawStaticPointsOfFunctions() {
 ofColor ofApp::getColorFromScriptId(int scriptId, int alpha) {
   auto script_ptr = find(scripts.begin(), scripts.end(), scriptId);
   float hue = 0;
+  float sat = 180;
   if(script_ptr != scripts.end()) {
     if(script_ptr->scriptType == "built-in") {
-      hue = 0;
+      hue = 145;
+      sat = 150;
     } else if(script_ptr->scriptType == "extension") {
-      hue = 110;
+      hue = 137;
+      sat = 255;
     } else if(script_ptr->scriptType == "remote") {
-      hue = 150;
+      hue = 152;
+      sat = 255;
     } else if(script_ptr->scriptType == "local") {
-      hue = 80;
+      hue = 137; // 171
+      sat = 150;
     }
   } else {
     hue = (scriptId*hueRotation + hueOffset) % 255;
   } 
   // saturation and brightness are set in the GUI as ofParameters
-  return ofColor::fromHsb(hue, saturation, brightness, alpha);
+  return ofColor::fromHsb(hue, sat, brightness, alpha);
 }
 
 void ofApp::drawSpiral() {

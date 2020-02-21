@@ -66,13 +66,14 @@ private:
   
   double timeCursor = 0.0;
   float timeScale = 0.50;
+  float timeScaleTarget = 0.50;
   uint32_t nextEvent = 0;
   bool playing = false;
   bool rendering = false;
   bool doLoop = true;
   int loopCounter = 0;
   bool fadeOut = false;
-  float frameRate = 25;
+  float frameRate = 60;
   double currentTime = 0;
   bool resetLastTime = true;
   ofMutex nonScaledCurrentTimeMutex;
@@ -130,44 +131,48 @@ private:
       
       static float lastTime = 0; // the timestamp last time this function was run
       static float nonScaledLastTime = 0;
+      currentTime = ofGetElapsedTimef();
+      if(lastTime == 0 || resetLastTime) {
+        lastTime = currentTime;
+        resetLastTime = false;
+      }
+    
+      double nonScaleddt = (currentTime-lastTime);
+      double dt = nonScaleddt * timeScale;
+      
+      nonScaledCurrentTime += (currentTime-lastTime);
+      lastTime = currentTime;
       
       if(!rendering && playing) {
-        currentTime = ofGetElapsedTimef();
-        if(lastTime == 0 || resetLastTime) {
-          lastTime = currentTime;
-          resetLastTime = false;
-        }
-      
-        double dt = (currentTime-lastTime) * timeScale;
         timeCursor += dt;
         
-        nonScaledCurrentTime += (currentTime-lastTime);
-        lastTime = currentTime;
-        
-        progressQueue(timeCursor);
-        if(timeCursor > filterEnd && doLoop) {
-          // send a timelineReset message
-          TM timelineReset = TM(0, "timelineReset");
-          sendViaOsc(timelineReset);
-          lock();
-          messageFIFO.push_back(timelineReset);
-          unlock();
-          // reset and go back to the beginning
-          timeCursor = filterStart;
-          nextEvent = 0;
-          nextLoop();
-        }
+        progressQueue(timeCursor, nonScaleddt);
+        nextLoop();
       }
     }
       // done
   }
   
-  void progressQueue(double timeCursor) {    
+  void progressQueue(double timeCursor, float dt) {
+    // change the timeScale towards the target here (since this is called both in real time and while rendering)
+    if(timeScale != timeScaleTarget) {
+      float mix = dt*2;
+      timeScale = timeScale * (1.-mix) + timeScaleTarget*mix;
+      if(abs(timeScale-timeScaleTarget)/timeScaleTarget < 0.01) {
+        timeScale = timeScaleTarget;
+      }
+      if(timeScale > 300.0) {
+        playing = false;
+        fadeOut = true;
+      }
+      sendTimeScale();
+    } 
     if(nextEvent < score.size()) {
       while(score[nextEvent].ts - timeCursor < 0) {
-        // handle timeline events
+        // handle timeline event
         if(score[nextEvent].type == "time_scale") {
           timeScale = score[nextEvent].parameters["scale"];
+          ofLogNotice("Timeline::progressQueue") << "timeScale set to " << timeScale << "by a timeline event";
         }
         // send it as OSC
         sendViaOsc(score[nextEvent]);
@@ -190,14 +195,21 @@ private:
   }
 
   void nextLoop() {
-    loopCounter += 1;
-    if(loopCounter > 0 && loopCounter <= 7) {
-      timeScale *= 2.0;
-      sendTimeScale();
-    }
-    if(loopCounter > 7) {
-      playing = false;
-      fadeOut = true;
+    if(timeCursor > filterEnd && doLoop) {
+      // send a timelineReset message
+      TM timelineReset = TM(0, "timelineReset");
+      sendViaOsc(timelineReset);
+      lock();
+      messageFIFO.push_back(timelineReset);
+      unlock();
+      // reset and go back to the beginning
+      timeCursor = filterStart;
+      nextEvent = 0;
+      
+      loopCounter += 1;
+      if(loopCounter > 0) {
+        timeScaleTarget = timeScale * 1.8;
+      }
     }
   }
     
@@ -218,6 +230,8 @@ private:
     } else if(mess.type == "userEvent") {
       oscMess.addStringArg(mess.type);
       oscMess.addStringArg(mess.stringParameters["type"]);
+    } else {
+      oscMess.addStringArg(mess.type);
     }
     
     oscSender.sendMessage(oscMess);
@@ -619,6 +633,7 @@ public:
       // This allows you to restart the SC code without having to restart the OF program
       sendTimeScale();
       sendBackgroundInfoOSC();
+      sendStartPlay();
       resetLastTime = true;
     }
     playing = !playing;
@@ -648,6 +663,7 @@ public:
 
   void setTimeScale(float s) {
     timeScale = s;
+    ofLogNotice("setTimeScale") << "timeScale: " << timeScale;
     sendTimeScale();
   }
   
@@ -655,6 +671,12 @@ public:
     TimelineMessage mess;
     mess.type = "changeSpeed";
     mess.parameters.insert({"speed", timeScale});
+    sendViaOsc(mess);
+  }
+
+  void sendStartPlay() {
+    TimelineMessage mess;
+    mess.type = "startPlaying";
     sendViaOsc(mess);
   }
   
@@ -720,8 +742,9 @@ public:
     nonScaledCurrentTimeMutex.lock();
     nonScaledCurrentTime += (1./frameRate);
     nonScaledCurrentTimeMutex.unlock();
-    timeCursor += (1./frameRate) * timeScale;
-    progressQueue(timeCursor);
+    if(playing) timeCursor += (1./frameRate) * timeScale;
+    progressQueue(timeCursor, (1./frameRate));
+    nextLoop();
   }
   
   void startRendering() {

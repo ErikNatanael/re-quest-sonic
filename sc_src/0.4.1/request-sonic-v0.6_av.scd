@@ -259,7 +259,7 @@ s.waitForBoot({
 		electric_trigs = {Dust.ar(Rand(10, 40))}!6;
 		electric_trigs = Decay.ar(electric_trigs, LFNoise1.kr(1.2).range(0, 1).linexp(0, 1, 0.00001, 0.01));
 		electric_sig = SinOsc.ar(electric_freqs) * electric_trigs * 0.1;
-		electric_sig = Splay.ar(electric_sig);
+		electric_sig = Splay.ar(electric_sig) * \dustAmp.kr(0.0);
 		// electrical dust end
 
 		// resonator start
@@ -587,14 +587,14 @@ s.waitForBoot({
 			var type = msg[2].asString;
 			msg.postln;
 
-			if(~timeScale < 1.0) {
+			if(~timeScale < 4.0) {
 				if(type == "mousemove") {
 					Synth(\swoosh, [\amp, 0.5, \out, ~masterBus]);
 				};
 
 				if(type == "keydown") { var buf = ~clickSample;
 					x = {
-						var sig = PlayBuf.ar(1, ~clickSample, BufRateScale.kr(~clickSample) * LFNoise1.kr(5).range(0.2, 0.3), loop: 0, doneAction: 2)!2 * 0.8;
+						var sig = PlayBuf.ar(1, ~clickSample, BufRateScale.kr(~clickSample) * LFNoise1.kr(5).range(0.2, 0.3) * ~timeScale * 2.0, loop: 0, doneAction: 2)!2 * 0.8;
 						sig = sig + PitchShift.ar(sig, 0.2, 0.25, 0.01, 0.00);
 						sig = sig + (SinOsc.ar(60, 0, 0.1) * Env.perc(0.6, 0.6).kr(0));
 						Out.ar(~masterBus, sig);
@@ -603,10 +603,10 @@ s.waitForBoot({
 
 				if(type == "click") { var buf = ~clickSample;
 					x = {
-						var sig = PlayBuf.ar(1, ~clickSample, BufRateScale.kr(~clickSample) * LFNoise1.kr(5).range(1.5, 2.0), loop: 0, doneAction: 2)!2 * 0.8;
+						var sig = PlayBuf.ar(1, ~clickSample, BufRateScale.kr(~clickSample) * LFNoise1.kr(5).range(1.5, 3.0), loop: 0, doneAction: 2)!2 * 0.8;
 						Out.ar(~masterBus, sig);
 					}.play;
-
+					Synth(\tick2,[\freq, 5000, \rq, 0.01, \amp, 0.03, \pan, 0, \out, ~masterBus]);
 				};
 			};
 
@@ -675,6 +675,10 @@ s.waitForBoot({
 			~timeScale = msg[2];
 			~verbSynth.set(\wetness, 0.1 + ~timeScale.linlin(1.0, 20.0, 0.0, 0.9));
 			~verbSynth.set(\feedback, 0.0 + ~timeScale.linlin(1.0, 60.0, 0.0, 0.85));
+			msg.postln;
+		};
+		if(msg[1] == \startPlaying) {
+			~master.set(\dustAmp, 1.0);
 			msg.postln;
 		};
 
