@@ -422,6 +422,7 @@ void ofApp::draw(){
   }
 
   if(timeline.doFadeOut()) {
+    speckBrightnessFade = 0.015;
     float timeScale = timeline.getTimeScale();
     if(timeScale > 2) {
       if(timeScale > 64) {
@@ -469,10 +470,10 @@ void ofApp::draw(){
         for(int i = 0; i < scripts.size(); i++) {
           scripts[i].resetDrawing();
         }
-        if(rendering) {
-          rendering = false;
-          timeline.stopRendering();
-        }
+        // if(rendering) {
+        //   rendering = false;
+        //   timeline.stopRendering();
+        // }
       }
     }
     messageFIFOLocal.clear(); // clear the local queue in preparation for the next swap
@@ -786,6 +787,7 @@ void ofApp::keyPressed(int key){
     ofFileDialogResult result = ofSystemLoadDialog("Render folder", true, renderDirectory);
     if(result.bSuccess) {
       renderDirectory = result.getPath() + "/";
+      ofLogNotice("keyPressed") << "Starting rendering to path " << renderDirectory;
       rendering = true;
       timeline.startRendering();
     }
@@ -840,11 +842,11 @@ void ofApp::mouseExited(int x, int y){
 }
 
 void ofApp::mouseScrolled(int x, int y, float scrollX, float scrollY){
-  if(scrollY < 0) {
-    timeline.reduceSpeed();
-  } else if(scrollY > 0) {
-    timeline.increaseSpeed();
-  }
+  // if(scrollY < 0) {
+  //   timeline.reduceSpeed();
+  // } else if(scrollY > 0) {
+  //   timeline.increaseSpeed();
+  // }
 }
 
 //--------------------------------------------------------------
