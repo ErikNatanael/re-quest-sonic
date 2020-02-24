@@ -318,7 +318,7 @@ void ofApp::exportMesh() {
 }
 
 void ofApp::exportMeshGrid() {
-  GravityPlane gp;
+  ModelExport gp;
   gp.maxScriptId = maxScriptId;
   for(auto& s : scripts) {
     gp.addScriptPoint(s);
@@ -338,7 +338,7 @@ void ofApp::exportMeshGrid() {
 }
 
 void ofApp::exportMeshGridPiece() {
-  GravityPlane gp;
+  ModelExport gp;
   gp.maxScriptId = maxScriptId;
   for(auto& s : scripts) {
     gp.addScriptPoint(s);
@@ -355,7 +355,7 @@ void ofApp::exportMeshGridPiece() {
 
 void ofApp::generateMesh() {
   ofLogNotice("generateMesh") << "Mesh generation started";
-  GravityPlane gp;
+  ModelExport gp;
   gp.maxScriptId = maxScriptId;
   // numScripts and numFuncs only for debug
   int numScripts = 0;

@@ -264,14 +264,14 @@ public:
   }
 
   void resetForMeshGeneration() {
-    // if many meshes are generated from the same GravityPlane we need to reset a few things in between
+    // if many meshes are generated from the same MeshExport we need to reset a few things in between
     topPlaneHoleIndices.clear();
     bottomPlaneHoleIndices.clear();
     wallPoints.clear();
   }
 };
 
-class GravityPlane {
+class ModelExport {
 public:
   vector<AttractionPoint> points;
   vector<HolePoint> holePoints;
@@ -285,7 +285,7 @@ public:
   glm::vec2 pointOffset;
   glm::vec2 centerOffset;
 
-  GravityPlane() {
+  ModelExport() {
     centerOffset = glm::vec2(size/2, size/2); // don't use negative coordinates in the mesh (for OpenCV triangulation algo)
     pointOffset = glm::vec2(0, -0.3); // compensate for an off center mid point
     points.push_back(AttractionPoint(
@@ -332,7 +332,7 @@ public:
     vector<Vec6f> triangleList;
     Rect rect(minW, minH, width, height);
 
-    ofLogNotice("GravityPlane::generateMesh") << "Mesh generation started";
+    ofLogNotice("MeshExport::generateMesh") << "Mesh generation started";
     // plane vertexes
     // add surrounding plane points
     
@@ -463,7 +463,7 @@ public:
       }
     }
 
-    ofLogNotice("GravityPlane::generateMesh") << "Plane constructed";
+    ofLogNotice("MeshExport::generateMesh") << "Plane constructed";
 
     // bottom vertices
     // add surrounding plane points
@@ -542,7 +542,7 @@ public:
       }
     }
 
-    ofLogNotice("GravityPlane::generateMesh") << "Bottom constructed";
+    ofLogNotice("MeshExport::generateMesh") << "Bottom constructed";
 
     // walls
     // sort the corner indexed points in circular order
@@ -554,14 +554,14 @@ public:
     for(auto& i : bottomCornerIndices) {
       i.calculateAngle(pieceCenterOffset);
     }
-    ofLogNotice("GravityPlane::generateMesh") << "Constructing walls from " << topCornerIndices.size() 
+    ofLogNotice("MeshExport::generateMesh") << "Constructing walls from " << topCornerIndices.size() 
       << " indices, pieceCenterOffset: " << pieceCenterOffset.x << ", " << pieceCenterOffset.y;
     // 2. sort the points
     std::sort(topCornerIndices.begin(), topCornerIndices.end());
     std::sort(bottomCornerIndices.begin(), bottomCornerIndices.end());
 
     if(topCornerIndices.size() != wallPoints.size() && bottomCornerIndices.size() != wallPoints.size()) {
-      ofLogError("GravityPlane::generateMesh") << "Not all corner indices have been set";
+      ofLogError("MeshExport::generateMesh") << "Not all corner indices have been set";
     }
 
     for(int wall = 0; wall < numWallPoints; wall++) {
@@ -586,14 +586,14 @@ public:
       }
     }
 
-    ofLogNotice("GravityPlane::generateMesh") << "Walls constructed";
+    ofLogNotice("MeshExport::generateMesh") << "Walls constructed";
 
     // add cylinders for all the holes
     for(auto& h : holePoints) {
       h.addCylinderToMesh(mesh);
     }
 
-    ofLogNotice("GravityPlane::generateMesh") << "Hole indices added";
+    ofLogNotice("MeshExport::generateMesh") << "Hole indices added";
 
     return mesh;
   }
@@ -608,7 +608,7 @@ public:
 
     for(int y = 0; y < gridSize; y++) {
       for(int x = 0; x < gridSize; x++) {
-        ofLogNotice("GravityPlane::generateMeshGrid") << "Generating piece " << x << ", " << y << " with dimensions "
+        ofLogNotice("MeshExport::generateMeshGrid") << "Generating piece " << x << ", " << y << " with dimensions "
           << minWidth + partWidth*x << ", " << minWidth + partWidth*(x+1)-1 << ", " << minHeight + partHeight*y << ", " << minHeight + partHeight*(y+1)-1;
         meshes.push_back(generateMesh(
           minWidth + partWidth*x,
@@ -716,7 +716,7 @@ public:
       }
     }
     if(holesMatched > 1) {
-      ofLogError("GravityPlane::isPointInHoleThenAddIndex") << "Point matched with more than 1 hole. Maybe the holes are too close together?";
+      ofLogError("MeshExport::isPointInHoleThenAddIndex") << "Point matched with more than 1 hole. Maybe the holes are too close together?";
     }
     return holeIndex;
   }
