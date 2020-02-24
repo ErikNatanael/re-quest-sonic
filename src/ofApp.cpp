@@ -60,35 +60,6 @@ void ofApp::setup() {
   for(auto& s : scripts) {
     if(s.scriptId > maxScriptId) maxScriptId = s.scriptId;
   }
-  
-  // SPIRAL POSITIONS
-  // calculate function position
-  if(doSpiralPositions) {
-    for(auto& fp : functionMap) {
-      auto& f = fp.second;
-      auto script = std::find(scripts.begin(), scripts.end(), f.scriptId);
-      glm::vec2 scriptPos = script->getSpiralCoordinate(maxScriptId, HEIGHT);
-      float scriptSize = script->getSize() * HEIGHT * 0.075;
-      glm::vec2 funcPos = f.getRelativeSpiralPos();
-      f.pos = scriptPos + (funcPos * scriptSize);
-      ofIcoSpherePrimitive sphere;
-      sphere.setPosition(f.pos.x, f.pos.y, 0);
-      sphere.setRadius(2);
-      sphere.setResolution(1);
-      funcSpheres.push_back(sphere);
-    }
-    
-    // create script spheres
-    for(auto& s : scripts) {
-      ofIcoSpherePrimitive sphere;
-      sphere.setRadius( s.getSize() * HEIGHT * 0.075 );
-      glm::vec2 scriptPos = s.getSpiralCoordinate(maxScriptId, HEIGHT);
-      s.pos = scriptPos;
-      sphere.setPosition(scriptPos.x, scriptPos.y, 0);
-      sphere.setResolution(1);
-      scriptSpheres.push_back(sphere);
-    }
-  }
 
   // TRIANGLE POSITIONS
   if(doTrianglePositions) {
@@ -225,6 +196,7 @@ void ofApp::setup() {
   triangle.p3 = glm::vec2(WIDTH*0.75, HEIGHT*0.5);
   
   // ***************************** INIT openFrameworks STUFF
+  traceVideo.init("video_files/taylorswift_2.m4v", WIDTH, HEIGHT);
   setupGui();
   ofLogNotice("setup") << "GUI setup finished";
   ofBackground(0);
@@ -237,6 +209,7 @@ void ofApp::setup() {
   renderFbo.allocate(WIDTH, HEIGHT, GL_RGB);
   
   invertShader.load("shaders/invertColours/shader");
+  flipShader.load("shaders/flipShader/shader");
 
   timeline.startThread(true);
 }
@@ -259,9 +232,9 @@ void ofApp::setupGui() {
   gui.add(saveSVGButton.setup("Save SVG"));
   gui.add(exportTrianglesSVGButton.setup("Save triangles as SVG"));
   gui.add(sendActivityEnvelopeToSCButton.setup("Send activity envelope to SC"));
-  gui.add(doLoopToggle.setup("loop", false));
+  gui.add(doLoopToggle.setup("loop", true));
   gui.add(doGraphicsToggle.setup("draw graphics", true));
-  gui.add(showTriangle.set("show triangle", true));
+  gui.add(showTriangle.set("show triangle", false));
   gui.add(triangleScale.set("triangle scale", WIDTH*0.2, 1, WIDTH));
   gui.add(doDrawScreenshots.set("draw screenshots", true));
   gui.add(showMesh.set("show mesh", false));
@@ -277,6 +250,7 @@ void ofApp::setupGui() {
   gui.add(hueOffset.set("hueOffset", 247, 0, 255));
   gui.add(saturation.set("saturation", 210));
   gui.add(brightness.set("brightness", 180));
+  gui.add(videoOffset.set("videoOffset", -3.975, -4.18-0.5, -4.18+0.5));
   showGui = true;
 }
 
@@ -430,7 +404,11 @@ void ofApp::draw(){
         if(rendering) {
           rendering = false;
           timeline.stopRendering();
+          traceVideo.setPosition(timeline.getTimeCursor(), videoOffset);
         }
+      } else if (m.type == "startPlaying") {
+        traceVideo.play();
+        traceVideo.setSpeed(timeline.getTimeScale());
       }
     }
     messageFIFOLocal.clear(); // clear the local queue in preparation for the next swap
@@ -468,6 +446,10 @@ void ofApp::draw(){
       // clear screen if we don't do screenshots
       ofBackground(0, 255);
     }
+
+    traceVideo.setSpeed(timeline.getTimeScale());
+    traceVideo.update();
+    traceVideo.draw(WIDTH, HEIGHT);
     
     cam.begin();
     drawStaticPointsOfScripts();
@@ -483,13 +465,22 @@ void ofApp::draw(){
     // if not drawing stuff, clear the screen
     ofClear(0, 255);
   }
+  
   // draw the timeline
   ofSetColor(130, 80);
   timeline.draw();
 
   renderFbo.end();
   ofSetColor(255, 255);
+  // flip y in renderFbo
+  flipShader.begin();
+  flipShader.setUniformTexture("tex0", renderFbo.getTextureReference(), 1);
+  flipShader.setUniform2f("resolution", WIDTH, HEIGHT);
+  ofSetColor(255, 255, 255);
+  //ofDrawRect(0, 0, ofGetWidth(), ofGetHeight()); // doesn't give a texcoord
   renderFbo.draw(0, 0);
+  flipShader.end();
+  
   if(rendering) {
     // write frame to disk
     // glReadBuffer(GL_FRONT);
@@ -711,23 +702,11 @@ void ofApp::mouseDragged(int x, int y, int button){
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
   // only move timeline if GUI is not shown as otherwise interacting with the GUI would move the timeline every time
-  if(!showGui) timeline.click(x, y);
-
-  // add circle to triangle
-  Circle tc;
-  tc.p = glm::vec2(x, y);
-  tc.r = 20;
-  if(triangle.isCircleInside(tc.p, tc.r)) {
-    bool overlaps = false;
-    for(auto& c : circles) {
-      if(c.circleOverlaps(tc)) {
-        overlaps = true;
-        break;
-      }
-    }
-    if(!overlaps) circles.push_back(tc);
+  if(!showGui) {
+    timeline.click(x, y);
+    float videoPosition = timeline.getTimeCursor();
+    traceVideo.setPosition(videoPosition, videoOffset);
   }
-
 }
 
 //--------------------------------------------------------------

@@ -10,6 +10,7 @@
 #include "UserEvent.h"
 #include "ModelExport.h"
 #include "Shapes.h"
+#include "SmoothVideoPlayer.h"
 
 class Screenshot {
 public:
@@ -91,6 +92,10 @@ class ofApp : public ofBaseApp{
 		ofParameter<float> functionPointOffsetRatio;
 		bool doSpiralPositions = false;
 		bool doTrianglePositions = true;
+
+		SmoothVideoPlayer traceVideo;
+		ofShader flipShader;
+		ofParameter<float> videoOffset;
 
 		ofTrueTypeFont font;
 		

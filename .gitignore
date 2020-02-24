@@ -53,6 +53,7 @@ Temporary Items
 !/bin/data/
 /bin/data/screenshots/*
 /bin/data/mesh*
+/bin/data/video_files/*
 
 # general
 

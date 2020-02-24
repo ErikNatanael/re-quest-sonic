@@ -203,6 +203,8 @@ private:
     } else if(mess.type == "userEvent") {
       oscMess.addStringArg(mess.type);
       oscMess.addStringArg(mess.stringParameters["type"]);
+    } else {
+      oscMess.addStringArg(mess.type);
     }
     
     oscSender.sendMessage(oscMess);
@@ -602,11 +604,21 @@ public:
     if(!playing) {
       // send all background info to SuperCollider again
       // This allows you to restart the SC code without having to restart the OF program
-      sendTimeScale();
-      sendBackgroundInfoOSC();
-      resetLastTime = true;
+      startPlaying();
     }
     playing = !playing;
+  }
+
+  void startPlaying() {
+      sendTimeScale();
+      sendBackgroundInfoOSC();
+      TimelineMessage mess;
+      mess.type = "startPlaying";
+      lock();
+      messageFIFO.push_back(mess);
+      unlock();
+      sendViaOsc(mess);
+      resetLastTime = true;
   }
   
   void setLoop(bool b) {
@@ -661,6 +673,10 @@ public:
 
   double getTimeCursor() {
     return timeCursor;
+  }
+
+  double getTimeWidth() {
+    return timeWidth_d;
   }
   
   float getFramedt() {
