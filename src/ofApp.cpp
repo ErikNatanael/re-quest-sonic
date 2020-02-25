@@ -196,7 +196,7 @@ void ofApp::setup() {
   triangle.p3 = glm::vec2(WIDTH*0.75, HEIGHT*0.5);
   
   // ***************************** INIT openFrameworks STUFF
-  traceVideo.init("video_files/taylorswift_2.m4v", WIDTH, HEIGHT);
+  traceVideo.init("video_files/taylorswift_2.mov", WIDTH, HEIGHT);
   setupGui();
   ofLogNotice("setup") << "GUI setup finished";
   ofBackground(0);
@@ -409,11 +409,14 @@ void ofApp::draw(){
       } else if (m.type == "startPlaying") {
         traceVideo.play();
         traceVideo.setSpeed(timeline.getTimeScale());
+        traceVideo.setPosition(timeline.getTimeCursor(), videoOffset);
       }
     }
     messageFIFOLocal.clear(); // clear the local queue in preparation for the next swap
-    
-  }
+  } else {
+      // timeline isn't playing
+      traceVideo.stop();
+    }
   
   if(doDrawGraphics) {
     // set the current screenshot to use
@@ -447,8 +450,7 @@ void ofApp::draw(){
       ofBackground(0, 255);
     }
 
-    traceVideo.setSpeed(timeline.getTimeScale());
-    traceVideo.update();
+    // traceVideo.update();
     traceVideo.draw(WIDTH, HEIGHT);
     
     cam.begin();
@@ -730,6 +732,7 @@ void ofApp::mouseScrolled(int x, int y, float scrollX, float scrollY){
   } else if(scrollY > 0) {
     timeline.increaseSpeed();
   }
+  traceVideo.setSpeed(timeline.getTimeScale());
 }
 
 //--------------------------------------------------------------

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
+#include "ofxHapPlayer.h"
 
 /* ofVideoPlayer has the following useful functions:
    - setFrame(int)
@@ -11,9 +12,10 @@
    */ 
 
 class SmoothVideoPlayer {
-  ofVideoPlayer video;
+  ofxHapPlayer video;
 	ofTexture texture;
   ofFbo videoFbo;
+  float speed = 0.1;
 
   ofParameter<float> frameAlpha;
 
@@ -28,8 +30,12 @@ public:
     ofBackground(0, 255);
     videoFbo.end();
     frameAlpha = 30;
+    video.setLoopState(OF_LOOP_NONE);
+    video.play();
+    video.setPaused(true);
   }
   void update() {
+    // unnecessary for ofxHapPlayer?
     video.update();
   }
 
@@ -41,25 +47,30 @@ public:
     videoFbo.draw(0, 0);
   }
 
-  void setSpeed(float speed) {
+  void setSpeed(float s) {
+    speed = s;
     video.setSpeed(speed);
-    frameAlpha = 255/speed;
+    frameAlpha = 255*speed;
   }
 
   void setPosition(float pos, float timeOffset) {
     // convert seconds to frames
     // use a position offset to 
-    int frame = (pos + timeOffset) * 29.97;
-    if(frame > video.getTotalNumFrames() - 1) frame = video.getTotalNumFrames() - 1;
-    video.setFrame(frame);
-    ofLogNotice("setPosition") << "video frame: " << frame;
+    // int frame = (pos + timeOffset) * 29.97;
+    // if(frame > video.getTotalNumFrames() - 1) frame = video.getTotalNumFrames() - 1;
+    // video.setFrame(frame);
+    // ofLogNotice("setPosition") << "video frame: " << frame;
+
+    float videoPosition = (pos + timeOffset)/video.getDuration();
+    videoPosition = ofClamp(videoPosition, 0.0, 1.0);
+    video.setPosition(videoPosition);
   }
 
   void play() {
-    video.play();
+    video.setPaused(false);
   }
 
   void stop() {
-    video.stop();
+    video.setPaused(true);
   }
 };

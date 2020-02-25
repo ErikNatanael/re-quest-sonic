@@ -605,6 +605,8 @@ public:
       // send all background info to SuperCollider again
       // This allows you to restart the SC code without having to restart the OF program
       startPlaying();
+    } else {
+      stopPlaying();
     }
     playing = !playing;
   }
@@ -614,6 +616,16 @@ public:
       sendBackgroundInfoOSC();
       TimelineMessage mess;
       mess.type = "startPlaying";
+      lock();
+      messageFIFO.push_back(mess);
+      unlock();
+      sendViaOsc(mess);
+      resetLastTime = true;
+  }
+  
+  void stopPlaying() {
+      TimelineMessage mess;
+      mess.type = "stopPlaying";
       lock();
       messageFIFO.push_back(mess);
       unlock();

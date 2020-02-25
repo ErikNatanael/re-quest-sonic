@@ -4,3 +4,4 @@ ofxPostProcessing
 ofxCv
 ofxOpenCv
 ofxGui
+ofxHapPlayer
