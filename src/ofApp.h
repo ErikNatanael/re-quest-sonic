@@ -52,6 +52,7 @@ class ofApp : public ofBaseApp{
 		void sendActivityDataOSC();
 		void doLoopToggleFunc(bool &b);
 		void toggleDoDrawGraphics(bool &b);
+		void updateScaling(float& scaling);
 		
 		void drawStaticPointsOfFunctions(); // draws a circle for each function
 		void drawStaticPointsOfScripts(bool drawCenters = false); // draws a circle for each script
@@ -84,9 +85,9 @@ class ofApp : public ofBaseApp{
 		int WIDTH = 1920;
 		int HEIGHT = 1080;
 		
-		int graphX = 0;
-		int graphY = 0;
-		float graphScaling = 1;
+		ofParameter<int> graphX = 0;
+		ofParameter<int> graphY = 0;
+		ofParameter<float> graphScaling = 1;
 		vector<ofIcoSpherePrimitive> scriptSpheres;
 		vector<ofIcoSpherePrimitive> funcSpheres;
 		ofCamera cam;
@@ -115,6 +116,9 @@ class ofApp : public ofBaseApp{
 		Triangle triangle;
 		vector<Triangle> triangles;
 		vector<Circle> circles;
+
+		ofParameter<bool> drawFunctionCallsOneAtATime = false;
+		ofParameter<size_t> currentFunctionCall = 0; // for drawing function calls one at a time
 		
 		/// RENDERING
 		bool rendering = false;

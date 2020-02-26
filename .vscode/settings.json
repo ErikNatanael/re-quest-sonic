@@ -57,6 +57,8 @@
         "typeinfo": "cpp",
         "unordered_set": "cpp",
         "codecvt": "cpp",
-        "filesystem": "cpp"
+        "filesystem": "cpp",
+        "bitset": "cpp",
+        "*.inc": "cpp"
     }
 }

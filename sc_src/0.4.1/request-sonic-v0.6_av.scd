@@ -781,7 +781,7 @@ s.waitForBoot({
 				if(amp == 0, {
 					timeScale = 0;
 				}, {
-					timeScale = amp.linexp(1.0, 0.0, 0.05, 2.0);
+					timeScale = amp.linexp(0.0, 1.0, 2.0, 0.05);
 				});
 				~sendTimeScaleToOF.(timeScale);
 				knob = capLPF.linlin(200, ~maxCap * 0.8, 1.0, 0.0);

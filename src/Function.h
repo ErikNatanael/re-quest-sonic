@@ -22,6 +22,7 @@ public:
   // members for drawing
   glm::vec2 pos; // scaled position
   Circle functionCircle; // non-scaled position
+  size_t sphereIndex = 0;
 
   bool operator<(const Function& f) {
     return this->calledTimes > f.calledTimes;

@@ -135,8 +135,8 @@ void ofApp::setup() {
         }
       } while(!triangles[s.category].isCircleInside(c.p, c.r) || overlaps_with_circle);
       s.scriptCircle = c;
-      s.pos = c.p * graphScaling;
-      s.radius = c.r * graphScaling;
+      s.pos = c.p * (float)graphScaling;
+      s.radius = c.r * (float)graphScaling;
       circles.push_back(c);
       // create sphere
       ofIcoSpherePrimitive sphere;
@@ -177,11 +177,12 @@ void ofApp::setup() {
       circles.push_back(c);
 
       f.functionCircle = c;
-      f.pos = c.p * graphScaling;
+      f.pos = c.p * (float)graphScaling;
       ofIcoSpherePrimitive sphere;
       sphere.setPosition(f.pos.x, f.pos.y, 0);
       sphere.setRadius(2);
       sphere.setResolution(1);
+      f.sphereIndex = funcSpheres.size();
       funcSpheres.push_back(sphere);
     }
   }
@@ -229,6 +230,7 @@ void ofApp::setupGui() {
   exportMeshGridButton.addListener(this, &ofApp::exportMeshGrid);
   exportMeshGridPieceButton.addListener(this, &ofApp::exportMeshGridPiece);
   regenerateMeshButton.addListener(this, &ofApp::regenerateMesh);
+  graphScaling.addListener(this, &ofApp::updateScaling);
   
   // create the GUI panel
   gui.setup();
@@ -254,7 +256,35 @@ void ofApp::setupGui() {
   gui.add(saturation.set("saturation", 210));
   gui.add(brightness.set("brightness", 180));
   gui.add(videoOffset.set("videoOffset", -3.975, -4.18-0.5, -4.18+0.5));
+  gui.add(graphX.set("graphX", WIDTH * 0.15, -WIDTH, WIDTH));
+  gui.add(graphY.set("graphY", HEIGHT * -0.15, -HEIGHT, HEIGHT));
+  gui.add(graphScaling.set("graphScaling", HEIGHT * 0.4, HEIGHT * 0.3, HEIGHT * 2.0));
+  gui.add(drawFunctionCallsOneAtATime.set("fc one aat", false));
+  gui.add(currentFunctionCall.set("currentFunctionCall", 0, 0, functionCalls.size()-1));
   showGui = true;
+}
+
+void ofApp::updateScaling(float& scaling) {
+  // update scripts to new scaling
+  for(int i = 0; i < scripts.size(); i++) {
+    auto& s = scripts[i];
+    Circle c = s.scriptCircle;
+    s.pos = c.p * (float)graphScaling;
+    s.radius = c.r * (float)graphScaling;
+    circles.push_back(c);
+    auto& sphere = scriptSpheres[i];
+    sphere.setRadius(s.radius);
+    sphere.setPosition(s.pos.x, s.pos.y, 0);
+  }
+  // update functions
+  for(auto& fp : functionMap) {
+      auto& f = fp.second;
+      Circle c = f.functionCircle;
+      f.pos = c.p * (float)graphScaling;
+      auto& sphere = funcSpheres[f.sphereIndex];
+      sphere.setPosition(f.pos.x, f.pos.y, 0);
+      sphere.setRadius(2);
+    }
 }
 
 void ofApp::saveSVGButtonPressed() {
@@ -418,6 +448,12 @@ void ofApp::draw(){
   } else {
     // timeline isn't playing
   }
+
+  // update graphX and graphY
+  if(drawFunctionCallsOneAtATime) {
+    graphX = float(ofGetMouseX() - WIDTH/2)/float(WIDTH) * graphScaling * 2.0;
+    graphY = float(ofGetMouseY() - HEIGHT* 0.35)/float(HEIGHT) * -graphScaling * 2.0;
+  }
   
   if(doDrawGraphics) {
     // set the current screenshot to use
@@ -461,12 +497,17 @@ void ofApp::draw(){
     cam.begin();
     drawStaticPointsOfScripts();
     drawStaticPointsOfFunctions();
-    // drawSpiral();
     ofSetColor(255, 255);
     // functionCallFbo.draw(0, 0);
-    for(auto& fc : functionCallsToDraw) {
+    if(drawFunctionCallsOneAtATime) {
+      auto& fc = functionCalls[currentFunctionCall];
       drawSingleStaticFunctionCallLine(fc.function_id, fc.parent, fc.scriptId);
+    } else {
+      for(auto& fc : functionCallsToDraw) {
+        drawSingleStaticFunctionCallLine(fc.function_id, fc.parent, fc.scriptId);
+      } 
     }
+    
     cam.end();
   } else {
     // if not drawing stuff, clear the screen
@@ -546,7 +587,7 @@ void ofApp::drawSingleStaticFunctionCallLine(string function_id, int parent, int
           glm::vec2 p2 = parentFunction->second.pos;
           
           float distance = glm::distance(p1, p2);
-          if(distance > HEIGHT*0.02) {
+          if(distance > HEIGHT*0.02 && !drawFunctionCallsOneAtATime) {
             ofPolyline line;
             line.addVertex(p1.x, p1.y, 0);
             glm::vec2 c1 = p1 + 0.25*(p2-p1);
@@ -565,7 +606,18 @@ void ofApp::drawSingleStaticFunctionCallLine(string function_id, int parent, int
             if(thickness > 1.2) drawThickPolyline(line, thickness);
             line.draw();
             
-          } else {
+          } else if (drawFunctionCallsOneAtATime) {
+            ofPolyline line;
+            line.addVertex(p1.x, p1.y, 0);
+            
+            line.lineTo(p2.x, p2.y);
+            float thickness = ofMap(graphScaling, 1.0, 2000, 2.0, 10);
+            ofSetColor(0, 0, 150, 255);
+            
+            drawThickPolyline(line, thickness);
+          }
+           else {
+            ofSetColor(getColorFromScriptId(scriptId, 60)); // dark colours
             ofDrawLine(p1, p2);
           }
         }
@@ -629,7 +681,18 @@ void ofApp::drawStaticPointsOfScripts(bool drawCenters) {
   for(int i = 0; i < scripts.size(); i++) {
     if(scripts[i].scriptId <= numScriptsToDraw) {
       // ofSetColor(ofColor::fromHsb((scripts[i].scriptId*300 - 200) % 360, 150, 255, 120)); // bright colours
-      ofSetColor(getColorFromScriptId(scripts[i].scriptId, 120)); // dark colours
+      if(drawFunctionCallsOneAtATime) {
+        auto& fc = functionCalls[currentFunctionCall];
+        if(scripts[i].scriptId == fc.scriptId) {
+          ofSetColor(255, 0, 0, 255);
+        } else if (scripts[i].scriptId == fc.parentScriptId) {
+          ofSetColor(0, 255, 0, 255);
+        } else {
+          ofSetColor(100, 100, 100, 100);
+        }
+      } else {
+        ofSetColor(getColorFromScriptId(scripts[i].scriptId, 120)); // dark colours
+      }
 
       scriptSpheres[i].drawWireframe();
     }
@@ -660,26 +723,6 @@ ofColor ofApp::getColorFromScriptId(int scriptId, int alpha) {
   return ofColor::fromHsb(hue, saturation, brightness, alpha);
 }
 
-void ofApp::drawSpiral() {
-  static int numScriptsToDraw = 1;
-  const int max = 270;
-  const float sqrt_two = sqrt(2.0);
-  ofPushMatrix();
-  ofTranslate(WIDTH/2, HEIGHT/2);
-  for(int i = 0; i < numScriptsToDraw; i++) {
-    float distance = float(i)/float(max * 2); // the distance along the spiral based on the scriptId
-    float angle = (pow((1-distance), 2) + pow((1-distance)*1, 6.) * PI) * TWO_PI * 2;
-    float radius = 0;
-    if(i!=0) radius = ( (1-pow((1-distance), 2.0) + 0.05 ) + sin((1-pow((1-distance), 2.0))*max*2) * distance * 0.1 ) * HEIGHT * 0.4;
-    float x = cos(angle) * radius;
-    float y = sin(angle) * radius;
-    float size = 3;
-    ofDrawCircle(x, y, size);
-  }
-  ofPopMatrix();
-  numScriptsToDraw = (numScriptsToDraw+1) % 270;
-}
-
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
   if(key == ' ') {
@@ -693,6 +736,12 @@ void ofApp::keyPressed(int key){
       rendering = true;
       timeline.startRendering();
     }
+  } else if(key == OF_KEY_LEFT) {
+    currentFunctionCall -= 1;
+    if(currentFunctionCall < 0) currentFunctionCall = 0;
+  } else if(key == OF_KEY_RIGHT) {
+    currentFunctionCall += 1;
+    if(currentFunctionCall >= functionCalls.size()) currentFunctionCall = functionCalls.size()-1;
   }
 }
 
