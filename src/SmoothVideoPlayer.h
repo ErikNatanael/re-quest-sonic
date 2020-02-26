@@ -16,6 +16,7 @@ class SmoothVideoPlayer {
 	ofTexture texture;
   ofFbo videoFbo;
   float speed = 0.1;
+  bool paused = true;
 
   ofParameter<float> frameAlpha;
 
@@ -32,11 +33,7 @@ public:
     frameAlpha = 30;
     video.setLoopState(OF_LOOP_NONE);
     video.play();
-    video.setPaused(true);
-  }
-  void update() {
-    // unnecessary for ofxHapPlayer?
-    video.update();
+    video.setPaused(paused);
   }
 
   void draw(int WIDTH, int HEIGHT) {
@@ -47,30 +44,28 @@ public:
     videoFbo.draw(0, 0);
   }
 
+  // frequently changing speed seems to lead to crashes so
+  // it is safer to just use the Timeline clock and set the position
+  // of the video every frame.
+  // Only use this to set the frame alpha
   void setSpeed(float s) {
     speed = s;
-    video.setSpeed(speed);
-    frameAlpha = ofClamp(150*speed, 10, 255);
+    frameAlpha = ofClamp(150*s, 10, 255);
   }
 
   void setPosition(float pos, float timeOffset) {
-    // convert seconds to frames
-    // use a position offset to 
-    // int frame = (pos + timeOffset) * 29.97;
-    // if(frame > video.getTotalNumFrames() - 1) frame = video.getTotalNumFrames() - 1;
-    // video.setFrame(frame);
-    // ofLogNotice("setPosition") << "video frame: " << frame;
-
     float videoPosition = (pos + timeOffset)/video.getDuration();
-    videoPosition = ofClamp(videoPosition, 0.0, 1.0);
+    videoPosition = ofClamp(videoPosition, 0.0, 1.0 - (1./30.));
     video.setPosition(videoPosition);
   }
 
-  void play() {
-    video.setPaused(false);
-  }
+  // void play() {
+  //   video.setPaused(false);
+  //   paused = false;
+  // }
 
-  void stop() {
-    video.setPaused(true);
-  }
+  // void stop() {
+  //   video.setPaused(true);
+  //   paused = true;
+  // }
 };

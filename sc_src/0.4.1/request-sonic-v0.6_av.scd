@@ -736,6 +736,16 @@ s.waitForBoot({
 
 ( var port;
 ~maxCap = 0;
+~ofAddr = NetAddr("127.0.0.1", 12000);
+~sendCapToOF = { | capValue |
+
+};
+
+~sendTimeScaleToOF = { | timeScale |
+	~timeScale = timeScale;
+	~ofAddr.sendMsg(\timeScale, timeScale);
+};
+
 {
 	SerialPort.closeAll;
 	1.0.wait;
@@ -747,7 +757,7 @@ s.waitForBoot({
 		crtscts: true);
 
 	~readLoop = fork {
-		var byte, str, peakFollower = 0;
+		var byte, str, capLPF = 0;
 		loop{|i|
 			if(p.read==10, { var amp, knob, capValue;
 				str = "";
@@ -763,8 +773,10 @@ s.waitForBoot({
 				str.postln;
 				amp = capValue.linlin(400, ~maxCap * 0.8, 0.0, 1.0);
 				("amp: " + amp.asString).postln;
-				peakFollower = (capValue*0.001) + (peakFollower*0.999);
-				knob = peakFollower.linlin(200, ~maxCap * 0.8, 1.0, 0.0);
+
+				capLPF = (capValue*0.001) + (capLPF*0.999);
+				~sendTimeScaleToOF.(amp);
+				knob = capLPF.linlin(200, ~maxCap * 0.8, 1.0, 0.0);
 				("knob: " + knob.asString).postln;
 				~master.set(\amp, amp);
 				~master.set(\knob, knob);

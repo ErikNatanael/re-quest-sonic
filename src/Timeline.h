@@ -11,6 +11,7 @@
 #include "UserEvent.h"
 
 const double timeStepsPerSecond = 1000000;
+#define OSC_IN_PORT 12000
 
 /* 
 This timeline is using the ofThread wrapper around a Poco::Thread.
@@ -110,6 +111,7 @@ private:
   
   ofxOscSender oscSender;
   ofxOscMessage oscMess;
+  ofxOscReceiver receiver;
   
   // all data
   
@@ -128,6 +130,8 @@ private:
       
       static float lastTime = 0; // the timestamp last time this function was run
       static float nonScaledLastTime = 0;
+
+      receiveOSC(); // receive OSC messages from SuperCollider
       
       if(!rendering && playing) {
         currentTime = ofGetElapsedTimef();
@@ -228,6 +232,8 @@ public:
     
     oscSender.setup("127.0.0.1", 57120); // send to SuperCollider on the local machine
     sendTimeScale(); // send the timeScale start value
+    // init OSC receiver
+    receiver.setup(OSC_IN_PORT);
 
     timeCursor = filterStart;
   }
@@ -654,12 +660,22 @@ public:
     timeScale *= 1.11;
     sendTimeScale();
   }
+
+  void setTimeScale(float t, bool propagate = true) {
+    timeScale = t;
+    // if the timeScale value was received from SC there is no point in sending it back
+    sendTimeScale(propagate);
+  }
   
-  void sendTimeScale() {
+  void sendTimeScale(bool viaOsc = true) {
     TimelineMessage mess;
     mess.type = "changeSpeed";
     mess.parameters.insert({"speed", timeScale});
-    sendViaOsc(mess);
+    lock();
+      messageFIFO.push_back(mess);
+    unlock();
+    
+    if(viaOsc) sendViaOsc(mess);
   }
   
   void click(int x, int y) {
@@ -742,6 +758,22 @@ public:
   
   uint64_t getFirstts() {
     return firstts;
+  }
+
+  void receiveOSC() {
+    // check for waiting messages
+    while(receiver.hasWaitingMessages()){
+
+      // get the next message
+      ofxOscMessage m;
+      receiver.getNextMessage(m);
+
+      // check for mouse moved message
+      if(m.getAddress() == "/timeScale"){
+        float t = m.getArgAsFloat(0);
+        setTimeScale(t, false);
+      }
+    }
   }
   
 };

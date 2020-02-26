@@ -41,6 +41,9 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
 		void exit();
+
+		void receiveOSC();
+		ofxOscReceiver receiver;
 		
 		// GUI related functions
 		void setupGui();

@@ -196,7 +196,9 @@ void ofApp::setup() {
   triangle.p3 = glm::vec2(WIDTH*0.75, HEIGHT*0.5);
   
   // ***************************** INIT openFrameworks STUFF
+  // load the video
   traceVideo.init("video_files/taylorswift_2.mov", WIDTH, HEIGHT);
+
   setupGui();
   ofLogNotice("setup") << "GUI setup finished";
   ofBackground(0);
@@ -211,6 +213,7 @@ void ofApp::setup() {
   invertShader.load("shaders/invertColours/shader");
   flipShader.load("shaders/flipShader/shader");
 
+  // start the timeline thread that communicates with SC at higher than framerate
   timeline.startThread(true);
 }
 
@@ -405,18 +408,16 @@ void ofApp::draw(){
           rendering = false;
           timeline.stopRendering();
         }
-        traceVideo.setPosition(timeline.getTimeCursor(), videoOffset);
       } else if (m.type == "startPlaying") {
-        traceVideo.play();
+
+      } else if (m.type == "changeSpeed") {
         traceVideo.setSpeed(timeline.getTimeScale());
-        traceVideo.setPosition(timeline.getTimeCursor(), videoOffset);
       }
     }
     messageFIFOLocal.clear(); // clear the local queue in preparation for the next swap
   } else {
-      // timeline isn't playing
-      traceVideo.stop();
-    }
+    // timeline isn't playing
+  }
   
   if(doDrawGraphics) {
     // set the current screenshot to use
@@ -450,7 +451,11 @@ void ofApp::draw(){
       ofBackground(0, 255);
     }
 
-    // traceVideo.update();
+    // frequently changing speed seems to lead to crashes so
+    // it is safer to just use the Timeline clock and set the position
+    // of the video every frame.
+    // This will not work with ofVideoPlayer, requires HAP video
+    traceVideo.setPosition(timeline.getTimeCursor(), videoOffset);
     traceVideo.draw(WIDTH, HEIGHT);
     
     cam.begin();
@@ -706,8 +711,6 @@ void ofApp::mousePressed(int x, int y, int button){
   // only move timeline if GUI is not shown as otherwise interacting with the GUI would move the timeline every time
   if(!showGui) {
     timeline.click(x, y);
-    float videoPosition = timeline.getTimeCursor();
-    traceVideo.setPosition(videoPosition, videoOffset);
   }
 }
 
@@ -732,7 +735,6 @@ void ofApp::mouseScrolled(int x, int y, float scrollX, float scrollY){
   } else if(scrollY > 0) {
     timeline.increaseSpeed();
   }
-  traceVideo.setSpeed(timeline.getTimeScale());
 }
 
 //--------------------------------------------------------------
@@ -753,3 +755,4 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
 void ofApp::exit() {
   timeline.stopThread();
 }
+
