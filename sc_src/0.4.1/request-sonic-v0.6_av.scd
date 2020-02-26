@@ -307,9 +307,11 @@ s.waitForBoot({
 		resonator_sig = resonator_sig * amp;*/
 		// resonator end
 		sig = sig + electric_sig;
-		sig = sig * PeakFollower.kr(amp, 0.99);
+		sig = sig * PeakFollower.kr(amp.linlin(0.0, 0.2, 0.0, 1.0), 0.99);
+		// sig = (sig * amp) + (HPF.ar(sig, amp.lag(0.1).linexp(0.0, 1.0, 5000, 200)) * (1.0-amp));
+		sig = HPF.ar(sig, amp.lag(0.1).linexp(0.0, 1.0, 5000, 20));
 		/*sig = sig + Limiter.ar(resonator_sig * 0.01, 0.01);*/
-		sig = PitchShift.ar(sig, 0.2, 0.5 + PeakFollower.kr(amp.linlin(0.0, 0.2, 0.0, 0.5), 0.99999).lag(0.5), 1.0 - amp.lag(0.3));
+		sig = PitchShift.ar(sig, 0.2, 0.5 + PeakFollower.kr(amp.linlin(0.0, 0.05, 0.0, 0.5), 0.99999).lag(0.5), max(0.1 - amp.lag(0.3), 0));
 		Out.ar(\out.kr(0), sig);
 	}).add;
 
@@ -757,7 +759,7 @@ s.waitForBoot({
 		crtscts: true);
 
 	~readLoop = fork {
-		var byte, str, capLPF = 0;
+		var byte, str, capLPF = 0, timeScale;
 		loop{|i|
 			if(p.read==10, { var amp, knob, capValue;
 				str = "";
@@ -768,14 +770,20 @@ s.waitForBoot({
 				if(capValue >  ~maxCap) {
 					~maxCap = capValue;
 				};
-				~maxCap = ~maxCap * 0.999;
+				~maxCap = ~maxCap * 0.99999;
 
 				str.postln;
 				amp = capValue.linlin(400, ~maxCap * 0.8, 0.0, 1.0);
 				("amp: " + amp.asString).postln;
 
 				capLPF = (capValue*0.001) + (capLPF*0.999);
-				~sendTimeScaleToOF.(amp);
+
+				if(amp == 0, {
+					timeScale = 0;
+				}, {
+					timeScale = amp.linexp(1.0, 0.0, 0.05, 2.0);
+				});
+				~sendTimeScaleToOF.(timeScale);
 				knob = capLPF.linlin(200, ~maxCap * 0.8, 1.0, 0.0);
 				("knob: " + knob.asString).postln;
 				~master.set(\amp, amp);
