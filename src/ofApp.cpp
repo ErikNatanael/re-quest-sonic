@@ -404,8 +404,8 @@ void ofApp::draw(){
         if(rendering) {
           rendering = false;
           timeline.stopRendering();
-          traceVideo.setPosition(timeline.getTimeCursor(), videoOffset);
         }
+        traceVideo.setPosition(timeline.getTimeCursor(), videoOffset);
       } else if (m.type == "startPlaying") {
         traceVideo.play();
         traceVideo.setSpeed(timeline.getTimeScale());
