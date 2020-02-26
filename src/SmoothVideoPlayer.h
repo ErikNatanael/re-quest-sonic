@@ -50,7 +50,7 @@ public:
   void setSpeed(float s) {
     speed = s;
     video.setSpeed(speed);
-    frameAlpha = 255*speed;
+    frameAlpha = ofClamp(150*speed, 10, 255);
   }
 
   void setPosition(float pos, float timeOffset) {
