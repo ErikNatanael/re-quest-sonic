@@ -11,23 +11,6 @@ using namespace ofxCv;
 // export function and script positions as a 3d plane where points are 
 // displaced based on their distance to scripts and points
 
-
-
-// float clamp(float x, float lowerlimit, float upperlimit) {
-//   if (x < lowerlimit)
-//     x = lowerlimit;
-//   if (x > upperlimit)
-//     x = upperlimit;
-//   return x;
-// }
-// 
-// float smoothstep(float edge0, float edge1, float x) {
-//   // Scale, bias and saturate x to 0..1 range
-//   x = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0); 
-//   // Evaluate polynomial
-//   return x * x * (3 - 2 * x);
-// }
-
 class AttractionPoint {
 public:
   glm::vec2 pos;
@@ -62,6 +45,7 @@ public:
     return points;
   }
   // these functions assume a value 0-1
+  // adapted from the Wikipedia page on Smoothstep
   float smoothcurve1(float x) {
     return x * x * (3 - 2 * x);
   }
@@ -133,64 +117,6 @@ public:
     return cirPoints;
   }
 
-  vector<glm::vec2> getHoleWallIntersectionPoints(int minW, int maxW, int minH, int maxH) {
-    vector<glm::vec2> holeWallPoints;
-    // corner holes intersect with multiple walls so don't do `else if`
-    if(abs(pos.x - minW) < holeRadius && pos.y + holeRadius > minH && pos.y - holeRadius < maxH) {
-      // the hole intersects with the right wall
-      // calculate points on the wall
-      float xdiff = minW - pos.x;
-      // use Pythagorean theorem to find the other point on the hole radius
-      float ydiff = sqrt(pow(holeRadius, 2) - pow(xdiff, 2));
-      // add points +- ydiff
-      holeWallPoints.push_back(glm::round(pos + glm::vec2(xdiff, ydiff)));
-      holeWallPoints.push_back(glm::round(pos + glm::vec2(xdiff, -ydiff)));
-    } 
-    if(abs(pos.x - maxW) < holeRadius && pos.y + holeRadius > minH && pos.y - holeRadius < maxH) {
-      // the hole intersects with the left wall
-      // calculate points on the wall
-      float xdiff = maxW-1 - pos.x;
-      // use Pythagorean theorem to find the other point on the hole radius
-      float ydiff = sqrt(pow(holeRadius, 2) - pow(xdiff, 2));
-      // add points +- ydiff
-      holeWallPoints.push_back(glm::round(pos + glm::vec2(xdiff, ydiff)));
-      holeWallPoints.push_back(glm::round(pos + glm::vec2(xdiff, -ydiff)));
-    } 
-    if(abs(pos.y - minH) < holeRadius && pos.x + holeRadius > minW && pos.x - holeRadius < maxW) {
-      // the hole intersects with the top wall
-      // calculate points on the wall
-      float ydiff = minH - pos.y;
-      // use Pythagorean theorem to find the other point on the hole radius
-      float xdiff = sqrt(pow(holeRadius, 2) - pow(ydiff, 2));
-      // add points +- ydiff
-      holeWallPoints.push_back(glm::round(pos + glm::vec2(xdiff, ydiff)));
-      holeWallPoints.push_back(glm::round(pos + glm::vec2(-xdiff, ydiff)));
-    } 
-    if(abs(pos.y - maxH) < holeRadius && pos.x + holeRadius > minW && pos.x - holeRadius < maxW) {
-      // the hole intersects with the top wall
-      // calculate points on the wall
-      float ydiff = maxH-1 - pos.y;
-      // use Pythagorean theorem to find the other point on the hole radius
-      float xdiff = sqrt(pow(holeRadius, 2) - pow(ydiff, 2));
-      // add points +- ydiff
-      holeWallPoints.push_back(glm::round(pos + glm::vec2(xdiff, ydiff)));
-      holeWallPoints.push_back(glm::round(pos + glm::vec2(-xdiff, ydiff)));
-    }
-    for(int i = 0; i < holeWallPoints.size(); i++) {
-      auto& p = holeWallPoints[i];
-      ofLogError("HolePoint::addCylinderToMesh") << "point added: " << p.x << ", " << p.y;
-      if(p.x >= minW && p.x < maxW && p.y >= minH && p.y < maxH) {
-        wallPoints.push_back(p);
-        cirPoints.push_back(p);
-      } else {
-        ofLogError("HolePoint::addCylinderToMesh") << "point out of bounds: " << p.x << ", " << p.y;
-        holeWallPoints.erase(holeWallPoints.begin()+i);
-        i--;
-      }
-    }
-    
-    return holeWallPoints;
-  }
 
   bool isPointInList(glm::vec2 p) {
     if(find(cirPoints.begin(), cirPoints.end(), p) != cirPoints.end()) {
@@ -399,28 +325,30 @@ public:
     
     Subdiv2D subdivTop = Subdiv2D(rect);
     for(auto& p : topPoints) {
+      // only add points within bounds, points outside the rect can lead to a crash in OpenCV
       if(p.x >= minW && p.x < minW + width && p.y >= minH && p.y < minH + height) {
         subdivTop.insert(toCv(p));
       }
     }
+    // triangulate using Delaunay triangulation and put the results in triangleList which is a vector<Vec6f>
     subdivTop.getTriangleList(triangleList);
     
-    for( size_t i = 0; i < triangleList.size(); i++ )
-    {
+    for( size_t i = 0; i < triangleList.size(); i++ ) {
+      // process the triangles one at a time
       Vec6f t = triangleList[i];
       pt[0] = Point(t[0], t[1]);
       pt[1] = Point(t[2], t[3]);
       pt[2] = Point(t[4], t[5]);
         
       // add triangles to the mesh
-      if ( rect.contains(pt[0]) && rect.contains(pt[1]) && rect.contains(pt[2]))
-      {
-        int pointIndices[3];
+      if (rect.contains(pt[0]) && rect.contains(pt[1]) && rect.contains(pt[2])) {
+        // used to store the indices of the vertexes used in the mesh (reused old vertexes or newly created)
+        int pointIndices[3]; 
         
-        // check if the point is in a hole's point list. if it is, add it as an index
         int numPointsInHole = 0;
-        size_t lastHoleIndex = -1;
-        bool differentHoles = false; // true if points belong to holes, but different ones
+        size_t lastHoleIndex = -1; // the index of the last point that was a hole point
+        // true if points belong to holes, but different holes. only filter out triangles where all points belong to the same hole
+        bool differentHoles = false; 
         for(int i = 0; i < 3; i++) {
           auto& p = pt[i];
           int holeMeshIndex = currentIndex;
@@ -444,17 +372,20 @@ public:
             topIndexedPoints.push_back(ip);
             currentIndex++;
           }
-
+          // check if the point is in a hole's point list. if it is, add it as an index in that hole
           size_t holeIndex = isPointInHoleThenAddIndex(toOf(p), Plane::TOP, holeMeshIndex);
           if(holeIndex != -1) {
+            // the point belonged to a hole
             numPointsInHole++;
+            // if the holeIndex (which is a unique identifier for a hole, not a point in a hole) is not
+            // the same as the last hole found, the hole points belong to different holes
             if(lastHoleIndex == -1) lastHoleIndex = holeIndex;
             else if(holeIndex != lastHoleIndex) {
               differentHoles = true;
             }
           }
         }
-        // don't add the triangle if all points are hole points
+        // don't add the triangle if all points are hole points from the same hole
         if(numPointsInHole < 3 || differentHoles) {
           mesh.addIndex(pointIndices[2]);
           mesh.addIndex(pointIndices[1]);
@@ -702,6 +633,8 @@ public:
     return gravity;
   }
 
+  /// returns which hole a point belongs to or -1 if none
+  /// adds the index for that point in the mesh to the internal representation of the hole it belongs to
   size_t isPointInHoleThenAddIndex(glm::vec2 p, Plane plane, size_t index) {
     int holesMatched = 0;
     int holeIndex = -1;
