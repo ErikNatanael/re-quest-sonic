@@ -241,7 +241,7 @@ void ofApp::setupGui() {
   gui.add(doGraphicsToggle.setup("draw graphics", true));
   gui.add(showTriangle.set("show triangle", false));
   gui.add(triangleScale.set("triangle scale", WIDTH*0.2, 1, WIDTH));
-  gui.add(doDrawScreenshots.set("draw screenshots", true));
+  gui.add(doDrawScreenshots.set("draw screenshots", false));
   gui.add(showMesh.set("show mesh", false));
   gui.add(regenerateMeshButton.setup("regenerate mesh"));
   gui.add(exportMeshButton.setup("export mesh"));

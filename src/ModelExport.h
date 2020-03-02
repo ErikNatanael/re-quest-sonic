@@ -117,6 +117,65 @@ public:
     return cirPoints;
   }
 
+  vector<glm::vec2> getHoleWallIntersectionPoints(int minW, int maxW, int minH, int maxH) {
+    vector<glm::vec2> holeWallPoints;
+    // corner holes intersect with multiple walls so don't do `else if`
+    if(abs(pos.x - minW) < holeRadius && pos.y + holeRadius > minH && pos.y - holeRadius < maxH) {
+      // the hole intersects with the right wall
+      // calculate points on the wall
+      float xdiff = minW - pos.x;
+      // use Pythagorean theorem to find the other point on the hole radius
+      float ydiff = sqrt(pow(holeRadius, 2) - pow(xdiff, 2));
+      // add points +- ydiff
+      holeWallPoints.push_back(glm::round(pos + glm::vec2(xdiff, ydiff)));
+      holeWallPoints.push_back(glm::round(pos + glm::vec2(xdiff, -ydiff)));
+    } 
+    if(abs(pos.x - maxW) < holeRadius && pos.y + holeRadius > minH && pos.y - holeRadius < maxH) {
+      // the hole intersects with the left wall
+      // calculate points on the wall
+      float xdiff = maxW-1 - pos.x;
+      // use Pythagorean theorem to find the other point on the hole radius
+      float ydiff = sqrt(pow(holeRadius, 2) - pow(xdiff, 2));
+      // add points +- ydiff
+      holeWallPoints.push_back(glm::round(pos + glm::vec2(xdiff, ydiff)));
+      holeWallPoints.push_back(glm::round(pos + glm::vec2(xdiff, -ydiff)));
+    } 
+    if(abs(pos.y - minH) < holeRadius && pos.x + holeRadius > minW && pos.x - holeRadius < maxW) {
+      // the hole intersects with the top wall
+      // calculate points on the wall
+      float ydiff = minH - pos.y;
+      // use Pythagorean theorem to find the other point on the hole radius
+      float xdiff = sqrt(pow(holeRadius, 2) - pow(ydiff, 2));
+      // add points +- ydiff
+      holeWallPoints.push_back(glm::round(pos + glm::vec2(xdiff, ydiff)));
+      holeWallPoints.push_back(glm::round(pos + glm::vec2(-xdiff, ydiff)));
+    } 
+    if(abs(pos.y - maxH) < holeRadius && pos.x + holeRadius > minW && pos.x - holeRadius < maxW) {
+      // the hole intersects with the top wall
+      // calculate points on the wall
+      float ydiff = maxH-1 - pos.y;
+      // use Pythagorean theorem to find the other point on the hole radius
+      float xdiff = sqrt(pow(holeRadius, 2) - pow(ydiff, 2));
+      // add points +- ydiff
+      holeWallPoints.push_back(glm::round(pos + glm::vec2(xdiff, ydiff)));
+      holeWallPoints.push_back(glm::round(pos + glm::vec2(-xdiff, ydiff)));
+    }
+    for(int i = 0; i < holeWallPoints.size(); i++) {
+      auto& p = holeWallPoints[i];
+      ofLogError("HolePoint::addCylinderToMesh") << "point added: " << p.x << ", " << p.y;
+      if(p.x >= minW && p.x < maxW && p.y >= minH && p.y < maxH) {
+        wallPoints.push_back(p);
+        cirPoints.push_back(p);
+      } else {
+        ofLogError("HolePoint::addCylinderToMesh") << "point out of bounds: " << p.x << ", " << p.y;
+        holeWallPoints.erase(holeWallPoints.begin()+i);
+        i--;
+      }
+    }
+    
+    return holeWallPoints;
+  }
+
 
   bool isPointInList(glm::vec2 p) {
     if(find(cirPoints.begin(), cirPoints.end(), p) != cirPoints.end()) {
