@@ -200,7 +200,7 @@ void ofApp::setup() {
   // load the video
   traceVideo.init("video_files/taylorswift_2.mov", WIDTH, HEIGHT);
   pauseVideo.init("video_files/taylorswift_1.mov", WIDTH, HEIGHT);
-  pauseVideo.setAlpha(150);
+  pauseVideo.setAlpha(10);
 
   setupGui();
   ofLogNotice("setup") << "GUI setup finished";
@@ -240,7 +240,7 @@ void ofApp::setupGui() {
   gui.add(exportTrianglesSVGButton.setup("Save triangles as SVG"));
   gui.add(sendActivityEnvelopeToSCButton.setup("Send activity envelope to SC"));
   gui.add(doLoopToggle.setup("loop", true));
-  gui.add(doGraphicsToggle.setup("draw graphics", true));
+  gui.add(doGraphicsToggle.setup("draw graphics", false));
   gui.add(showTriangle.set("show triangle", false));
   gui.add(triangleScale.set("triangle scale", WIDTH*0.2, 1, WIDTH));
   gui.add(doDrawScreenshots.set("draw screenshots", false));
@@ -457,7 +457,8 @@ void ofApp::draw(){
     graphY = float(ofGetMouseY() - HEIGHT* 0.35)/float(HEIGHT) * -graphScaling * 2.0;
   }
   
-  if(doDrawGraphics) {
+  
+  if(doDrawScreenshots) {
     // set the current screenshot to use
     if(screenshots[0].ts > timeline.getTimeCursor()) {
       currentScreen = 0;
@@ -473,40 +474,55 @@ void ofApp::draw(){
         }
       }
     }
-    if(doDrawScreenshots) {
-      ofSetColor(205, 191, 255, 255);
-      invertShader.begin();
-      invertShader.setUniformTexture("tex0", screenshots[currentScreen].img.getTexture(), 1);
-      invertShader.setUniform2f("resMult", float(screenshots[currentScreen].img.getWidth()) / float(WIDTH), float(screenshots[currentScreen].img.getHeight()) / float(HEIGHT));
-      invertShader.setUniform2f("imgRes", screenshots[currentScreen].img.getWidth(), screenshots[currentScreen].img.getHeight());
-      invertShader.setUniform2f("resolution", WIDTH, HEIGHT);
-      invertShader.setUniform1f("time", timeline.getTimeCursor());
-      screenshots[currentScreen].img.draw(0, 0, WIDTH, HEIGHT);
-      ofDrawRectangle(0, 0, WIDTH, HEIGHT);
-      invertShader.end();
-    } else {
-      // clear screen if we don't do screenshots
-      ofBackground(0, 255);
-    }
+    ofSetColor(205, 191, 255, 255);
+    invertShader.begin();
+    invertShader.setUniformTexture("tex0", screenshots[currentScreen].img.getTexture(), 1);
+    invertShader.setUniform2f("resMult", float(screenshots[currentScreen].img.getWidth()) / float(WIDTH), float(screenshots[currentScreen].img.getHeight()) / float(HEIGHT));
+    invertShader.setUniform2f("imgRes", screenshots[currentScreen].img.getWidth(), screenshots[currentScreen].img.getHeight());
+    invertShader.setUniform2f("resolution", WIDTH, HEIGHT);
+    invertShader.setUniform1f("time", timeline.getTimeCursor());
+    screenshots[currentScreen].img.draw(0, 0, WIDTH, HEIGHT);
+    ofDrawRectangle(0, 0, WIDTH, HEIGHT);
+    invertShader.end();
+  } else {
+    // clear screen if we don't do screenshots
+    // ofBackground(0, 255);
+  }
 
-    if(timeline.isPlaying() && timeline.getTimeScale() > 0) {
-      // frequently changing speed seems to lead to crashes so
-      // it is safer to just use the Timeline clock and set the position
-      // of the video every frame.
-      // This will not work with ofVideoPlayer, requires HAP video
-      traceVideo.setPosition(timeline.getTimeCursor(), videoOffset);
-      traceVideo.draw(WIDTH, HEIGHT);
-    } else {
-      pauseVideo.setPosition(pauseVideoPosition, 0.0);
-      pauseVideo.draw(WIDTH, HEIGHT);
-      if(ofRandomuf() > 1 - dt*0.7) {
-        pauseVideoPosition = ofRandomuf() * 0.8 * pauseVideo.getDuration();
-      }
-      pauseVideoPosition += dt*0.5;
-      pauseVideoPosition %= pauseVideo.getDuration();
+  // Update video fading.
+  int currentVideo = -1;
+  if(timeline.isPlaying() && timeline.getTimeScale() > 0) {
+    currentVideo = 0;
+  } else {
+    currentVideo = 1;
+  }
+  if(lastVideo != currentVideo) {
+    videoFade = 0;
+    lastVideo = currentVideo;
+  }
+  if(videoFade < 1.0) {
+    videoFade = ofClamp(videoFade + dt, 0.0, 1.0);
+  }
+  ofSetColor(255, videoFade*255);
+
+  if(timeline.isPlaying() && timeline.getTimeScale() > 0) {
+    // frequently changing speed seems to lead to crashes so
+    // it is safer to just use the Timeline clock and set the position
+    // of the video every frame.
+    // This will not work with ofVideoPlayer, requires HAP video
+    traceVideo.setPosition(timeline.getTimeCursor(), videoOffset);
+    traceVideo.draw(WIDTH, HEIGHT);
+  } else {
+    pauseVideo.setPosition(pauseVideoPosition, 0.0);
+    pauseVideo.draw(WIDTH, HEIGHT);
+    if(ofRandomuf() > 1 - dt*0.4) {
+      pauseVideoPosition = ofRandomuf() * 0.8 * pauseVideo.getDuration();
     }
+    pauseVideoPosition += dt*0.3;
+    pauseVideoPosition = fmod(pauseVideoPosition, pauseVideo.getDuration());
+  }
     
-    
+  if(doDrawGraphics) {
     cam.begin();
     drawStaticPointsOfScripts();
     drawStaticPointsOfFunctions();
@@ -522,9 +538,6 @@ void ofApp::draw(){
     }
     
     cam.end();
-  } else {
-    // if not drawing stuff, clear the screen
-    ofClear(0, 255);
   }
   
   // draw the timeline

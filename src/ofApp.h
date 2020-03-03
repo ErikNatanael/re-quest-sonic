@@ -102,6 +102,8 @@ class ofApp : public ofBaseApp{
 		SmoothVideoPlayer traceVideo;
 		ofShader flipShader;
 		ofParameter<float> videoOffset;
+		float videoFade;
+		int lastVideo = 0;
 
 		ofTrueTypeFont font;
 		
