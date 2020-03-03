@@ -59,13 +59,7 @@ public:
     video.setPosition(videoPosition);
   }
 
-  // void play() {
-  //   video.setPaused(false);
-  //   paused = false;
-  // }
-
-  // void stop() {
-  //   video.setPaused(true);
-  //   paused = true;
-  // }
+  float getDuration() {
+    return video.getDuration();
+  }
 };

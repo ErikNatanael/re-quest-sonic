@@ -97,6 +97,8 @@ class ofApp : public ofBaseApp{
 		bool doSpiralPositions = false;
 		bool doTrianglePositions = true;
 
+		SmoothVideoPlayer pauseVideo;
+		float pauseVideoPosition;
 		SmoothVideoPlayer traceVideo;
 		ofShader flipShader;
 		ofParameter<float> videoOffset;

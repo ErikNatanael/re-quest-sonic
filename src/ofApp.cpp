@@ -199,6 +199,7 @@ void ofApp::setup() {
   // ***************************** INIT openFrameworks STUFF
   // load the video
   traceVideo.init("video_files/taylorswift_2.mov", WIDTH, HEIGHT);
+  pauseVideo.init("video_files/taylorswift_1.mov", WIDTH, HEIGHT);
 
   setupGui();
   ofLogNotice("setup") << "GUI setup finished";
@@ -487,12 +488,21 @@ void ofApp::draw(){
       ofBackground(0, 255);
     }
 
-    // frequently changing speed seems to lead to crashes so
-    // it is safer to just use the Timeline clock and set the position
-    // of the video every frame.
-    // This will not work with ofVideoPlayer, requires HAP video
-    traceVideo.setPosition(timeline.getTimeCursor(), videoOffset);
-    traceVideo.draw(WIDTH, HEIGHT);
+    if(timeline.isPlaying() && timeline.getTimeScale() > 0) {
+      // frequently changing speed seems to lead to crashes so
+      // it is safer to just use the Timeline clock and set the position
+      // of the video every frame.
+      // This will not work with ofVideoPlayer, requires HAP video
+      traceVideo.setPosition(timeline.getTimeCursor(), videoOffset);
+      traceVideo.draw(WIDTH, HEIGHT);
+    } else {
+      pauseVideo.draw(WIDTH, HEIGHT);
+      if(ofRandomuf() > 0.95) {
+        pauseVideoPosition = ofRandomuf() * 0.8 * pauseVideo.getDuration();
+      }
+      pauseVideoPosition += dt;
+    }
+    
     
     cam.begin();
     drawStaticPointsOfScripts();
