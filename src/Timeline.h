@@ -452,6 +452,8 @@ public:
     cout << "first ts: " << firstts_d << endl;
     cout << "last ts: " << lastts_d << endl;
     cout << "time width: " << timeWidth_d << endl;
+
+    timeWidth_d = filterEnd - filterStart;
   }
   void parseUserEventProfile(string filepath) {
     // load and parse the json data in the path provided
@@ -570,7 +572,7 @@ public:
   
   void draw() {
     // draw time cursor
-    int cursorX = ( timeCursor/timeWidth_d ) * WIDTH;
+    int cursorX = ( (timeCursor-filterStart)/timeWidth_d ) * WIDTH;
     // timelineFbo.begin();
     // ofBackground(0, 0);
     // ofSetColor(255, 255);
@@ -681,7 +683,7 @@ public:
   void click(int x, int y) {
     // if(y > HEIGHT - timelineHeight) {
       // move the time cursor to where you clicked on the timeline
-      timeCursor = (double(timeWidth_d)/double(ofGetWidth())) * x;
+      timeCursor = filterStart + ( (double(timeWidth_d)/double(ofGetWidth())) * x );
       progressScoreIndexToCursor();
       // clear the timeline fbo
       // timelineFbo.begin();
