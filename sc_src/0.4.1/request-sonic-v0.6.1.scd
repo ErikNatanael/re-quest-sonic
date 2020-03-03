@@ -257,6 +257,7 @@ s.waitForBoot({
 		var a, k, delfreq, minfreqs, freqs, dry;
 		// get the signal of everything
 		sig = In.ar(\in.kr(16), 2);
+		sig = sig + (In.ar(\functionCallIn.kr(18), 2) * \functionCallAmp.kr(1.0));
 
 		// electrical dust start
 		electric_freqs = LFNoise1.kr(1/2).range(500, 10000) * [0.7, 0.6, 0.8, 0.9, 0.95, 1.0];
@@ -302,8 +303,8 @@ s.waitForBoot({
 		// and finally a spot of reverb
 		/*dry = resonator_sig;
 		5.do {
-			d = 0.05.rand;
-			resonator_sig = AllpassN.ar(resonator_sig,d,d,5);
+		d = 0.05.rand;
+		resonator_sig = AllpassN.ar(resonator_sig,d,d,5);
 		};
 		resonator_sig = (dry + resonator_sig)*0.125;*/
 		/*LocalOut.ar(resonator_sig, 2);
@@ -386,9 +387,10 @@ s.waitForBoot({
 
 	~rbus = Bus.audio(s,2);
 	~masterBus = Bus.audio(s, 2);
+	~functionCallBus = Bus.audio(s, 2);
 	s.sync();
 	~verbSynth = Synth(\verb, [\wetness, 0.3]);
-	~master = Synth(\master_effect, [\in, ~masterBus, \out, 0, \amp, 1.0]);
+	~master = Synth(\master_effect, [\in, ~masterBus, \functionCallIn, ~functionCallBus, \out, 0, \amp, 1.0]);
 
 	~functionCallDensity = 0;
 	~loadEventDensity = 0;
@@ -401,6 +403,7 @@ s.waitForBoot({
 	~filteredNoiseSynths = [];
 	~scriptChords = [];
 	~scriptInfo = ();
+	~doPlayFunctionCalls = true;
 
 	{var lastNote;
 		/*~spectrumChord = 32.collect{|i| var newNote;
@@ -436,13 +439,13 @@ s.waitForBoot({
 	}.value();
 	{var lastNote;
 		~builtinSpectrumChord = /*12.collect{|i| var newNote;
-			if(i == 0, {
-				newNote = 0;
-			}, {
-				newNote = lastNote + switch(i%2,
-					1, {31},
-					0, {22},
-				);
+		if(i == 0, {
+		newNote = 0;
+		}, {
+		newNote = lastNote + switch(i%2,
+		1, {31},
+		0, {22},
+		);
 		});
 		lastNote = newNote;
 		newNote
@@ -464,22 +467,22 @@ s.waitForBoot({
 			newNote + 53
 		};
 		/*32.collect{|i| var newNote;
-			// major scale
-			if(i == 0, {
-				newNote = 0;
-			}, {
-				newNote = lastNote + switch(i%7,
-					1, {9},
-					2, {8},
-					3, {5},
-					4, {9},
-					5, {9},
-					6, {8},
-					0, {5}
-				);
-			});
-			lastNote = newNote;
-			newNote + 53
+		// major scale
+		if(i == 0, {
+		newNote = 0;
+		}, {
+		newNote = lastNote + switch(i%7,
+		1, {9},
+		2, {8},
+		3, {5},
+		4, {9},
+		5, {9},
+		6, {8},
+		0, {5}
+		);
+		});
+		lastNote = newNote;
+		newNote + 53
 		};*/
 
 	}.value();
@@ -496,10 +499,10 @@ s.waitForBoot({
 	};
 	~builtinSpectrumSynths = ~builtinSpectrumChord.collect{|degree, i|
 		var rel = max(5 - (i/2), 2);
-		Synth(\sineperc_retrig, [\freq, ~degree53_to_freq.value(degree + (53*3)), \amp, 0.1, \trigBus, ~builtinSpectrumTriggers[i], \rel, rel, \out, ~masterBus]);
+		Synth(\sineperc_retrig, [\freq, ~degree53_to_freq.value(degree + (53*3)), \amp, 0.1, \trigBus, ~builtinSpectrumTriggers[i], \rel, rel, \out, ~functionCallBus]);
 	};
 
-	~drone = Synth(\windy, [\knob, 0.01, \amp, 0.0, \out, ~masterBus]);
+	~drone = Synth(\windy, [\knob, 0.01, \amp, 0.0, \out, ~functionCallBus]);
 
 
 
@@ -512,39 +515,39 @@ s.waitForBoot({
 			\atk, exprand(0.001, 0.02),
 			\sus, 0,
 			\rel, exprand(0.4, 0.6),
-				\detune, rrand(0.01, 0.05) + (counter%2),
-				\amp, 0.6 - (0.1 * (counter%2)),
-				\pan, 0,
-				\out, 0,
-				\rout, ~rbus,
-				\rsend, -16,
+			\detune, rrand(0.01, 0.05) + (counter%2),
+			\amp, 0.6 - (0.1 * (counter%2)),
+			\pan, 0,
+			\out, 0,
+			\rout, ~rbus,
+			\rsend, -16,
 			).play;*/
 			/*Pbind(\instrument, \osc,
-				\freq, ~degree53_to_freq.value(~currentChord[0] + (53*2))*Pwrand([1, 2, 4], [0.8, 0.4, 0.2].normalizeSum, inf),
-				\dur, Prand([
-					Pseq([0.125], 8),
-					// Pseq([0.25, 0.25, 0.25, 0.25]),
-					// Pseq([0.25, 0.25, 0.25]),
-					/*Pseq([Rest(0.125), 0.25, 0.25]),
-					Pseq([0.125, 0.25, 0.125, 0.125]),
-					Pseq([0.125, 0.125, 0.125, 0.125]*0.5),
-					Pseq([0.5, 0.125, 0.25]),
-					Pseq([Rest(0.5), 0.125, 0.25]),
-					Ps eq([1]),*/
-				]),
-				\timingOffset, Pexprand(0.001, 0.01),
-				\atk, exprand(0.001, 0.02),
-				\sus, 0,
-				\rel, 0.1,
-				\c0, -3, // Pexprand(1, 5).neg,
-				\c1, -4, // Pexprand(3, 10).neg,
-				\detune, Pwhite(0.6, 0.65), // Pwhite(0.01, 0.05),
-				\buf, ~wt_buf[0..3].choose,
-				\amp, 0.2,
-				\pan, 0,
-				\out, 0,
-				\rout, ~rbus,
-				\rsend, -16,
+			\freq, ~degree53_to_freq.value(~currentChord[0] + (53*2))*Pwrand([1, 2, 4], [0.8, 0.4, 0.2].normalizeSum, inf),
+			\dur, Prand([
+			Pseq([0.125], 8),
+			// Pseq([0.25, 0.25, 0.25, 0.25]),
+			// Pseq([0.25, 0.25, 0.25]),
+			/*Pseq([Rest(0.125), 0.25, 0.25]),
+			Pseq([0.125, 0.25, 0.125, 0.125]),
+			Pseq([0.125, 0.125, 0.125, 0.125]*0.5),
+			Pseq([0.5, 0.125, 0.25]),
+			Pseq([Rest(0.5), 0.125, 0.25]),
+			Ps eq([1]),*/
+			]),
+			\timingOffset, Pexprand(0.001, 0.01),
+			\atk, exprand(0.001, 0.02),
+			\sus, 0,
+			\rel, 0.1,
+			\c0, -3, // Pexprand(1, 5).neg,
+			\c1, -4, // Pexprand(3, 10).neg,
+			\detune, Pwhite(0.6, 0.65), // Pwhite(0.01, 0.05),
+			\buf, ~wt_buf[0..3].choose,
+			\amp, 0.2,
+			\pan, 0,
+			\out, 0,
+			\rout, ~rbus,
+			\rsend, -16,
 			).play;*/
 			counter = (counter + 1)%16;
 			1.wait;
@@ -565,78 +568,75 @@ s.waitForBoot({
 			idDigits = Set[], tempid = id;
 
 			// if(~functionCallDensity < 99) {
-			if(~scriptInfo[scriptId].scriptType == "built-in", {
+			if(~doPlayFunctionCalls) {
+				if(~scriptInfo[scriptId].scriptType == "built-in", {
 
-				{ var index = (((scriptId/300.0)*~spectrumChord.size) % ~spectrumChord.size).floor,
-					degree = ~spectrumChord[index];
-					("built-in  index: " + index + "degree: " + degree + "scriptId" + scriptId).postln;
-					~spectrumTriggers[index].set(1.0); // trigger the sineperc_retrig envelope
-					/*{
-					SinOsc.ar(~degree53_to_freq.value(degree + (53*3)), 0, 0.05)!2 * Env.perc(0.001, 2).kr(2);
-					}.play;*/
-				}.value();
-			// };
-			}, {
-				{ var index = (((scriptId/300.0)*~builtinSpectrumChord.size) % ~builtinSpectrumChord.size).floor,
-				degree = ~builtinSpectrumChord[index];
-				("index: " + index + "degree: " + degree + "scriptId" + scriptId).postln;
-				~builtinSpectrumTriggers[index].set(1.0); // trigger the sineperc_retrig envelope
-				/*{
-				SinOsc.ar(~degree53_to_freq.value(degree + (53*3)), 0, 0.05)!2 * Env.perc(0.001, 2).kr(2);
-				}.play;*/
-			}.value();
-			});
-
-			if(withinScript == 0) { var newChord, newScript = ~scriptInfo[scriptId];
-				distance = ~scriptInfo[parentScriptId].interconnectedness[scriptId];
-
-				if(newScript.scriptType == "built-in", {
-					~currentRoot = ~currentRoot + 31; // subdominantisk riktning
-					~currentDegrees = [0, 17, 31];
-					// ("subdominantisk riktning dur").postln;
+					{ var index = (((scriptId/300.0)*~spectrumChord.size) % ~spectrumChord.size).floor,
+						degree = ~spectrumChord[index];
+						("built-in  index: " + index + "degree: " + degree + "scriptId" + scriptId).postln;
+						~spectrumTriggers[index].set(1.0); // trigger the sineperc_retrig envelope
+						/*{
+						SinOsc.ar(~degree53_to_freq.value(degree + (53*3)), 0, 0.05)!2 * Env.perc(0.001, 2).kr(2);
+						}.play;*/
+					}.value();
+					// };
 				}, {
-					if(newScript.scriptType == "remote", {
-						~currentRoot = ~currentRoot - 31; // dominantisk riktning
-						~currentDegrees = [0, 17, 31, 44];
-						// ("dominantisk riktning").postln;
+					{ var index = (((scriptId/300.0)*~builtinSpectrumChord.size) % ~builtinSpectrumChord.size).floor,
+						degree = ~builtinSpectrumChord[index];
+						("index: " + index + "degree: " + degree + "scriptId" + scriptId).postln;
+						~builtinSpectrumTriggers[index].set(1.0); // trigger the sineperc_retrig envelope
+						/*{
+						SinOsc.ar(~degree53_to_freq.value(degree + (53*3)), 0, 0.05)!2 * Env.perc(0.001, 2).kr(2);
+						}.play;*/
+					}.value();
+				});
+
+				if(withinScript == 0) { var newChord, newScript = ~scriptInfo[scriptId];
+					distance = ~scriptInfo[parentScriptId].interconnectedness[scriptId];
+
+					if(newScript.scriptType == "built-in", {
+						~currentRoot = ~currentRoot + 31; // subdominantisk riktning
+						~currentDegrees = [0, 17, 31];
+						// ("subdominantisk riktning dur").postln;
 					}, {
-						if(distance > 0.1, {
-							~currentRoot = ~currentRoot + 31; // subdominantisk riktning
-							~currentDegrees = [0, 14, 31];
-							// ("subdominantisk riktning moll").postln;
+						if(newScript.scriptType == "remote", {
+							~currentRoot = ~currentRoot - 31; // dominantisk riktning
+							~currentDegrees = [0, 17, 31, 44];
+							// ("dominantisk riktning").postln;
 						}, {
-							if(distance > 0.3, {
-								~currentDegrees = ~currentDegrees.add(9);
-							});
-							if(distance > 0.6, {
-								~currentDegrees = ~currentDegrees.add(49);
+							if(distance > 0.1, {
+								~currentRoot = ~currentRoot + 31; // subdominantisk riktning
+								~currentDegrees = [0, 14, 31];
+								// ("subdominantisk riktning moll").postln;
+							}, {
+								if(distance > 0.3, {
+									~currentDegrees = ~currentDegrees.add(9);
+								});
+								if(distance > 0.6, {
+									~currentDegrees = ~currentDegrees.add(49);
+								});
 							});
 						});
 					});
+					~currentRoot = ~currentRoot%53;
+					newChord = ~findClosestVoicing.(~currentChord, ~currentDegrees + ~currentRoot);
+					~currentChord = newChord;
+				}; // end within script if statement
+
+
+				while({ tempid > 0 }, {
+					idDigits = idDigits.add(tempid.asInt%10);
+					tempid = (tempid.asInt/10).asInt;
 				});
-				~currentRoot = ~currentRoot%53;
-				newChord = ~findClosestVoicing.(~currentChord, ~currentDegrees + ~currentRoot);
-				~currentChord = newChord;
-			}; // end within script if statement
 
+				if(~timeScale < 2.0) {
+					~functionCallDensity = ~functionCallDensity + 0.5;
+				};
 
-			while({ tempid > 0 }, {
-				idDigits = idDigits.add(tempid.asInt%10);
-				tempid = (tempid.asInt/10).asInt;
-			});
-
-			if(~timeScale < 2.0) {
-				~functionCallDensity = ~functionCallDensity + 0.5;
+				if(~timeScale < 1.5) {
+					Synth(\tick2,[\freq, rrand(9000, 10000), \rq, 0.001, \amp, 0.03, \pan, [-1, 1].choose, \out, ~masterBus]);
+				};
 			};
-
-			if(~timeScale < 1.5) {
-				Synth(\tick2,[\freq, rrand(9000, 10000), \rq, 0.001, \amp, 0.03, \pan, [-1, 1].choose, \out, ~masterBus]);
-			};
-
-			// kind of just gives you an impression of density
-			// Synth(\tick,[\freq, rrand(5000, 6000)*~speed.linlin(0.0, 2.0, 0.1, 2.0), \rq, ~functionCallDensity.linexp(0, 1, 0.001, 1.0), \amp, min(~speed.pow(2), 1.0), \pan, [-1, 1].choose]);
-			// one note per scriptId as of right now
-			// Synth(\sineperc, [\freq, ~degree53_to_freq.(~currentRoot + [0, 17, 31, 9].choose + (53*6)), \amp, 0.05, \atk, 0.1, \rel, rrand(0.2, 1.5) + (1/~functionCallDensity)*2, \pan, rrand(-1, 1.0)]);
 		};
 
 		if(msg[1] == \userEvent) {
@@ -653,9 +653,9 @@ s.waitForBoot({
 						var env = Env.linen(0.001, 0.5, 0.5).kr(2),
 						sig = PlayBuf.ar(1, ~clickSample,
 							BufRateScale.kr(~clickSample) * LFNoise1.kr(5).range(0.2, 0.3) * ~timeScale.linlin(0.05, 2.0, 0.2, 2.0),
-								loop: 0)!2 * 0.8;
+							loop: 0)!2 * 0.8;
 						sig = sig + PitchShift.ar(sig, 0.2, 0.25, 0.01, 0.00);
-						sig = sig + (SinOsc.ar(60, 0, 0.1) * Env.perc(0.6, 0.3).kr(0));
+						sig = sig + (SinOsc.ar(60, 0, 0.01) * Env.perc(0.01, 0.2).kr(0));
 						sig = sig * env;
 						Out.ar(~masterBus, sig);
 					}.play;
@@ -672,57 +672,57 @@ s.waitForBoot({
 
 			/*if(type == "keyup") {
 			var buf = ~clickSample, winenv;
-				winenv = Env([0, 1, 0], [0.5, 0.5], [12, -12]);
-				z = Buffer.sendCollection(s, winenv.discretize, 1);
-				x = { var rate=Rand(0.05, 0.15), playhead, env, trig, sig;
-					playhead = Line.ar(0.5, 1, (BufDur.ir(buf)/rate)*0.5, doneAction:2);
-					env = EnvGen.kr(
-						Env([0, 1, 1, 0], [0.001, BufDur.ir(buf)/rate, 1]),
-						doneAction: Done.freeSelf);
-					trig = Dust.kr(SinOsc.kr(1/5, 0.2).range(20, 40)) + Impulse.kr(0);
-					sig = DelayN.ar(PlayBuf.ar(1, ~clickSample, BufRateScale.kr(~clickSample) * rate, startPos: BufFrames.ir(buf)*0.5, loop: 0)!2 * 0.5, 0.5, 0.5);
-					sig = sig + GrainBuf.ar(2, trig, 0.8, buf, LFNoise1.kr(5).range(0.7, 1.0) , playhead, 2, 0, z);
-					sig = sig + CombN.ar(sig, 0.2, 0.15, 0.5, 0.2);
-					Out.ar(0, sig*env);
-				}.play;
+			winenv = Env([0, 1, 0], [0.5, 0.5], [12, -12]);
+			z = Buffer.sendCollection(s, winenv.discretize, 1);
+			x = { var rate=Rand(0.05, 0.15), playhead, env, trig, sig;
+			playhead = Line.ar(0.5, 1, (BufDur.ir(buf)/rate)*0.5, doneAction:2);
+			env = EnvGen.kr(
+			Env([0, 1, 1, 0], [0.001, BufDur.ir(buf)/rate, 1]),
+			doneAction: Done.freeSelf);
+			trig = Dust.kr(SinOsc.kr(1/5, 0.2).range(20, 40)) + Impulse.kr(0);
+			sig = DelayN.ar(PlayBuf.ar(1, ~clickSample, BufRateScale.kr(~clickSample) * rate, startPos: BufFrames.ir(buf)*0.5, loop: 0)!2 * 0.5, 0.5, 0.5);
+			sig = sig + GrainBuf.ar(2, trig, 0.8, buf, LFNoise1.kr(5).range(0.7, 1.0) , playhead, 2, 0, z);
+			sig = sig + CombN.ar(sig, 0.2, 0.15, 0.5, 0.2);
+			Out.ar(0, sig*env);
+			}.play;
 			};*/
 
 			/*if(type == "load") { var octave = 0, currentTime, timeBetweenConsecutiveLoads = 1.0/~timeScale, freqs;
-				~loadEventDensity = ~loadEventDensity + 0.1;
-				~loadEventDensity.postln;
-				if(~loadEventLastTime == 0) { ~loadEventLastTime = SystemClock.seconds; };
-				currentTime = SystemClock.seconds;
-				if(currentTime - ~loadEventLastTime < timeBetweenConsecutiveLoads, {
-					~loadEventOctave = ~loadEventOctave + 1;
-				}, {
-					~loadEventOctave = 0;
-				});
-				~loadEventLastTime = currentTime;
-				octave =  8 - (~loadEventOctave%6);
-				freqs = ~currentChord.collect{|degree| ~degree53_to_freq.value(degree) };
-				freqs = freqs.sort.reverse;
-				if(~loadEventDensity < 0.8) {
-					Pbind(\instrument, \osc,
-						\freq, Pseq(freqs) * (2.pow(octave)),
-						\dur, 0.125*0.5,
-						\timingOffset, Pexprand(0.001, 0.01),
-						\atk, exprand(0.05, 0.1),
-						\sus, 0,
-						\rel, exprand(0.8, 3.0),
-						\c0, Pexprand(1, 2).neg,
-						\c1, Pexprand(3, 10).neg,
-						\detune, Pwhite(0.01, 0.05),
-						\buf, ~wt_buf[1..3].choose,
-						\amp, 0.2,
-						\pan, 0,
-						\out, 0,
-						\rout, ~rbus,
-						\rsend, -16,
-					).play;
-				};
+			~loadEventDensity = ~loadEventDensity + 0.1;
+			~loadEventDensity.postln;
+			if(~loadEventLastTime == 0) { ~loadEventLastTime = SystemClock.seconds; };
+			currentTime = SystemClock.seconds;
+			if(currentTime - ~loadEventLastTime < timeBetweenConsecutiveLoads, {
+			~loadEventOctave = ~loadEventOctave + 1;
+			}, {
+			~loadEventOctave = 0;
+			});
+			~loadEventLastTime = currentTime;
+			octave =  8 - (~loadEventOctave%6);
+			freqs = ~currentChord.collect{|degree| ~degree53_to_freq.value(degree) };
+			freqs = freqs.sort.reverse;
+			if(~loadEventDensity < 0.8) {
+			Pbind(\instrument, \osc,
+			\freq, Pseq(freqs) * (2.pow(octave)),
+			\dur, 0.125*0.5,
+			\timingOffset, Pexprand(0.001, 0.01),
+			\atk, exprand(0.05, 0.1),
+			\sus, 0,
+			\rel, exprand(0.8, 3.0),
+			\c0, Pexprand(1, 2).neg,
+			\c1, Pexprand(3, 10).neg,
+			\detune, Pwhite(0.01, 0.05),
+			\buf, ~wt_buf[1..3].choose,
+			\amp, 0.2,
+			\pan, 0,
+			\out, 0,
+			\rout, ~rbus,
+			\rsend, -16,
+			).play;
+			};
 
 			};
-*/
+			*/
 			if(type == "pageshow") {
 
 			};
@@ -772,7 +772,7 @@ s.waitForBoot({
 		loop { var normalized;
 			// ~functionCallDensity = min(~functionCallDensity, 100);
 			// ~functionCallDensity = ~functionCallDensity * 0.996;
-			~functionCallDensity = ~functionCallDensity * (1.0 - (~timeScale * 0.01));
+			~functionCallDensity = ~functionCallDensity * (1.0 - (~timeScale * 0.02));
 			// ~functionCallDensity = max(~functionCallDensity, 0);
 			normalized = min((~functionCallDensity/200.0), 1.0);
 			// ~speedSynths.do{|syn| syn.set(\maxDist, normalized, \maxRoughness, normalized); };
@@ -784,7 +784,7 @@ s.waitForBoot({
 	{
 		loop { var normalized;
 			~loadEventDensity = min(~loadEventDensity, 1.0);
-			~loadEventDensity = ~loadEventDensity * 0.99;
+			~loadEventDensity = ~loadEventDensity * 0.98;
 			~loadEventDensity = max(~loadEventDensity, 0);
 			0.01.wait;
 		}
@@ -821,7 +821,7 @@ s.waitForBoot({
 	~readLoop = fork {
 		var byte, str, capLPF = 0, timeScale = 0;
 		loop{|i|
-			if(p.read==10, { var amp, knob, capValue;
+			if(p.read==10, { var amp, knob, capValue, dustAmp = 0.0, functionCallAmp = 0.0;
 				str = "";
 				while({byte = p.read; byte !=13 }, {
 					str= str++byte.asAscii;
@@ -842,16 +842,20 @@ s.waitForBoot({
 					timeScale = 0;
 				});
 				if(capValue >= ~slowThresh, {
-					timeScale = 0.1;
+					timeScale = capValue.linlin(~slowThresh, ~slowThresh*1.3, 1.0, 0.5);
+					~doPlayFunctionCalls = false;
 				});
 				if(capValue >= ~fastThresh, {
-					timeScale = 1.0;
+					timeScale = capValue.linlin(~fastThresh, ~fastThresh*1.3, 0.5, 0.2);
+					~doPlayFunctionCalls = true;
+					dustAmp = capValue.linexp(~fastThresh, ~fastThresh*1.2, 0.01, 1.0);
+					functionCallAmp = 1.0;
 				});
 				~sendTimeScaleToOF.(timeScale);
 				knob = capLPF.linlin(200, ~maxCap * 0.8, 1.0, 0.0);
-				("knob: " + knob.asString).postln;
 				~master.set(\amp, amp);
-				~master.set(\knob, knob);
+				~master.set(\dustAmp, dustAmp);
+				~master.set(\functionCallAmp, functionCallAmp);
 			});
 		};
 

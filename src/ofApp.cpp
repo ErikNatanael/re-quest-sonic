@@ -515,11 +515,16 @@ void ofApp::draw(){
   } else {
     pauseVideo.setPosition(pauseVideoPosition, 0.0);
     pauseVideo.draw(WIDTH, HEIGHT);
+    // Jump to a random position sometimes.
     if(ofRandomuf() > 1 - dt*0.4) {
       pauseVideoPosition = ofRandomuf() * 0.8 * pauseVideo.getDuration();
     }
-    pauseVideoPosition += dt*0.3;
+    // Forward or backward based on noise. 
+    float direction = (ofNoise(ofGetElapsedTimef()*0.05 + 5000) > 0.5) * 2 - 1;
+    // Vary playback speed over time.
+    pauseVideoPosition += dt*ofNoise(ofGetElapsedTimef()*0.1)*0.5 * direction;
     pauseVideoPosition = fmod(pauseVideoPosition, pauseVideo.getDuration());
+    pauseVideo.setAlpha(10 + pow(ofRandomuf(), 2.0) * 100);
   }
     
   if(doDrawGraphics) {
