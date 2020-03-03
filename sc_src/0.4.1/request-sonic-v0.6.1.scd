@@ -405,7 +405,8 @@ s.waitForBoot({
 	~scriptInfo = ();
 	~doPlayFunctionCalls = true;
 
-	{var lastNote;
+	~generateChords = { | offset = 0 |
+		var lastNote;
 		/*~spectrumChord = 32.collect{|i| var newNote;
 		if(i == 0, {
 		newNote = 0;
@@ -434,10 +435,11 @@ s.waitForBoot({
 				);
 			});
 			lastNote = newNote;
-			newNote
+			newNote + offset
 		};
-	}.value();
-	{var lastNote;
+
+		lastNote = 0;
+
 		~builtinSpectrumChord = /*12.collect{|i| var newNote;
 		if(i == 0, {
 		newNote = 0;
@@ -464,32 +466,10 @@ s.waitForBoot({
 				);
 			});
 			lastNote = newNote;
-			newNote + 53
+			newNote + 53 + offset
 		};
-		/*32.collect{|i| var newNote;
-		// major scale
-		if(i == 0, {
-		newNote = 0;
-		}, {
-		newNote = lastNote + switch(i%7,
-		1, {9},
-		2, {8},
-		3, {5},
-		4, {9},
-		5, {9},
-		6, {8},
-		0, {5}
-		);
-		});
-		lastNote = newNote;
-		newNote + 53
-		};*/
-
-	}.value();
-
-	/*~speedSynths = 4.collect{|i| var offset = [0, 17, 31, 47][i];
-	Synth(\noisepad, [\freq, ~degree53_to_freq.(~currentRoot + offset + (53*5))]);
-	};*/
+	};
+	~generateChords.value();
 
 	~spectrumTriggers = ~spectrumChord.collect{|degree, i| Bus.control(s, 1);};
 	~builtinSpectrumTriggers = ~builtinSpectrumChord.collect{|degree, i| Bus.control(s, 1);};
@@ -573,7 +553,7 @@ s.waitForBoot({
 
 					{ var index = (((scriptId/300.0)*~spectrumChord.size) % ~spectrumChord.size).floor,
 						degree = ~spectrumChord[index];
-						("built-in  index: " + index + "degree: " + degree + "scriptId" + scriptId).postln;
+						// ("built-in  index: " + index + "degree: " + degree + "scriptId" + scriptId).postln;
 						~spectrumTriggers[index].set(1.0); // trigger the sineperc_retrig envelope
 						/*{
 						SinOsc.ar(~degree53_to_freq.value(degree + (53*3)), 0, 0.05)!2 * Env.perc(0.001, 2).kr(2);
@@ -583,7 +563,7 @@ s.waitForBoot({
 				}, {
 					{ var index = (((scriptId/300.0)*~builtinSpectrumChord.size) % ~builtinSpectrumChord.size).floor,
 						degree = ~builtinSpectrumChord[index];
-						("index: " + index + "degree: " + degree + "scriptId" + scriptId).postln;
+						// ("index: " + index + "degree: " + degree + "scriptId" + scriptId).postln;
 						~builtinSpectrumTriggers[index].set(1.0); // trigger the sineperc_retrig envelope
 						/*{
 						SinOsc.ar(~degree53_to_freq.value(degree + (53*3)), 0, 0.05)!2 * Env.perc(0.001, 2).kr(2);
@@ -741,6 +721,12 @@ s.waitForBoot({
 			~master.set(\dustAmp, 1.0);
 			msg.postln;
 		};
+		if(msg[1] == \timelineReset) {
+			~generateChords.value(rrand(0, 53));
+			~spectrumSynths.do{|syn, i| syn.set(\freq, ~degree53_to_freq.value(~spectrumChord[i] + (53*3))); };
+			~builtinSpectrumSynths.do{|syn, i| syn.set(\freq, ~degree53_to_freq.value(~builtinSpectrumChord[i] + (53*3))); };
+			msg.postln;
+		};
 
 	},
 	'/timeline-message', n); // def style
@@ -834,7 +820,7 @@ s.waitForBoot({
 
 				str.postln;
 				amp = capValue.linlin(280, 500, 0.0, 1.0);
-				("amp: " + amp.asString).postln;
+				// ("amp: " + amp.asString).postln;
 
 				capLPF = (capValue*0.001) + (capLPF*0.999);
 

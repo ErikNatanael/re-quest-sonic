@@ -84,7 +84,7 @@ private:
 
   // Filtering out events before and after a certain timestamp
   double filterStart = 4.18;
-  double filterEnd = 24.07;
+  double filterEnd = 22.70;
   
   uint64_t firstts = 1000000000000;
   double firstts_d = 0; // in seconds as a decimal number
