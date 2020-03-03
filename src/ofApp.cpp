@@ -200,6 +200,7 @@ void ofApp::setup() {
   // load the video
   traceVideo.init("video_files/taylorswift_2.mov", WIDTH, HEIGHT);
   pauseVideo.init("video_files/taylorswift_1.mov", WIDTH, HEIGHT);
+  pauseVideo.setAlpha(150);
 
   setupGui();
   ofLogNotice("setup") << "GUI setup finished";
@@ -496,11 +497,13 @@ void ofApp::draw(){
       traceVideo.setPosition(timeline.getTimeCursor(), videoOffset);
       traceVideo.draw(WIDTH, HEIGHT);
     } else {
+      pauseVideo.setPosition(pauseVideoPosition, 0.0);
       pauseVideo.draw(WIDTH, HEIGHT);
-      if(ofRandomuf() > 0.95) {
+      if(ofRandomuf() > 1 - dt*0.7) {
         pauseVideoPosition = ofRandomuf() * 0.8 * pauseVideo.getDuration();
       }
-      pauseVideoPosition += dt;
+      pauseVideoPosition += dt*0.5;
+      pauseVideoPosition %= pauseVideo.getDuration();
     }
     
     

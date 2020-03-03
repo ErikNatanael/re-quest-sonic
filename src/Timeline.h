@@ -132,20 +132,20 @@ private:
       static float nonScaledLastTime = 0;
 
       receiveOSC(); // receive OSC messages from SuperCollider
-      
-      if(!rendering && playing) {
-        currentTime = ofGetElapsedTimef();
+
+      currentTime = ofGetElapsedTimef();
         if(lastTime == 0 || resetLastTime) {
           lastTime = currentTime;
           resetLastTime = false;
         }
       
-        double dt = (currentTime-lastTime) * timeScale;
+      double dt = (currentTime-lastTime) * timeScale;
+      
+      nonScaledCurrentTime += (currentTime-lastTime);
+      lastTime = currentTime;
+      
+      if(!rendering && playing) {
         timeCursor += dt;
-        
-        nonScaledCurrentTime += (currentTime-lastTime);
-        lastTime = currentTime;
-        
         progressQueue(timeCursor);
         if(timeCursor > filterEnd && doLoop) {
           // send a timelineReset message

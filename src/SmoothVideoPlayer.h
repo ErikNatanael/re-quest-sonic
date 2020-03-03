@@ -62,4 +62,8 @@ public:
   float getDuration() {
     return video.getDuration();
   }
+
+  void setAlpha(float alpha) {
+    frameAlpha = alpha;
+  }
 };
