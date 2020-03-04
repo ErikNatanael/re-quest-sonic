@@ -156,6 +156,41 @@ s.waitForBoot({
 		//sig = FreeVerb.ar(sig, 0.05);
 		Out.ar(\out.kr(0), sig);
 	}).add;
+	SynthDef(\friction_swoosh, {
+		var sig, env, freq, clap, popEnv, centerFreq = Rand(200, 500)*3, length = \length.kr(1), release = Rand(0.4, 0.7)*2 * length, frictionMod, friction, mass;
+		env = EnvGen.ar(
+			Env(
+				levels: [0, 1, 0],
+				times: [length, release],
+				curve: [-2, -2]
+			),
+			doneAction:2
+		);
+		popEnv = EnvGen.ar(Env([3261, 410, Rand(30, 80)], [0.002, 0.01], curve: \exp));
+
+		freq = [
+			EnvGen.ar(Env([centerFreq*Rand(0.5, 1.2), centerFreq], [length], [Rand(4, 7)])),
+			EnvGen.ar(Env([centerFreq*Rand(0.4, 0.8), centerFreq], [length], [Rand(2, 4)]))];
+		freq = freq * LFNoise1.kr(Line.kr(1, Rand(3, 20), 2)).range(0.8, 1.1);
+		sig = Resonz.ar(WhiteNoise.ar(), freq, Line.kr(Rand(0.3, 0.8), Rand(0.05, 0.8), length + release))*0.5;
+		sig = HPF.ar(sig, Rand(500, 100));
+		sig = LPF.ar(sig, Rand(5000, 12000));
+		sig = Mix(sig);
+		// add some friction
+		frictionMod = LFNoise1.kr(1).range(0, 1);
+		// nice friction values = 5.37133e-05 - 0.0152347
+		// friction =  MouseX.kr(0.00001, 0.03, 1);
+		friction = frictionMod.linlin(0, 1, 5.37133e-06, 0.0152347);
+		//nice mass values = 0.7 - 0.411227
+		// mass = MouseY.kr(0.2, 10, 1);
+		mass = frictionMod.linlin(0, 1, 0.5, 0.311227);
+		sig = Friction.ar(sig, friction:friction, mass: mass);
+		sig = Pan2.ar(sig, Line.kr(Rand(-1, 1), Rand(-1, 1), length+1));
+		sig = sig * env * 0.5 * \amp.kr(0.3);
+
+		//sig = FreeVerb.ar(sig, 0.05);
+		Out.ar(\out.kr(0), sig);
+	}).add;
 	SynthDef(\tick, {
 		var sig, env;
 		env = Env.perc(0, 0.2).kr(2);
@@ -625,7 +660,7 @@ s.waitForBoot({
 
 			if(~timeScale < 4.0) {
 				if(type == "mousemove") {
-					Synth(\swoosh, [\amp, 0.5, \length, 0.5/~timeScale, \out, ~masterBus]);
+					Synth(\friction_swoosh, [\amp, 0.5, \length, 0.5/~timeScale, \out, ~masterBus]);
 				};
 
 				if(type == "keydown") { var buf = ~clickSample;
@@ -783,7 +818,7 @@ s.waitForBoot({
 ( var port;
 ~maxCap = 0;
 ~slowThresh = 280;
-~fastThresh = 1000;
+~fastThresh = 900;
 ~ofAddr = NetAddr("127.0.0.1", 12000);
 ~sendCapToOF = { | capValue |
 
