@@ -244,6 +244,7 @@ void ofApp::setupGui() {
   gui.add(showTriangle.set("show triangle", false));
   gui.add(triangleScale.set("triangle scale", WIDTH*0.2, 1, WIDTH));
   gui.add(doDrawScreenshots.set("draw screenshots", false));
+  gui.add(showTimeline.set("show timeline", false));
   gui.add(showMesh.set("show mesh", false));
   gui.add(regenerateMeshButton.setup("regenerate mesh"));
   gui.add(exportMeshButton.setup("export mesh"));
@@ -548,9 +549,11 @@ void ofApp::draw(){
   }
   
   // draw the timeline
-  ofSetColor(130, 80);
-  timeline.draw();
-
+  if(showTimeline) {
+    ofSetColor(130, 80);
+    timeline.draw(); 
+  }
+  
   renderFbo.end();
   ofSetColor(255, 255);
   // flip y in renderFbo

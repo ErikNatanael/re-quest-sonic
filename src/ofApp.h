@@ -151,4 +151,5 @@ class ofApp : public ofBaseApp{
 		ofParameter<float> triangleScale;
 		ofParameter<bool> showMesh;
 		ofParameter<int> meshGridPieceX, meshGridPieceY;
+		ofParameter<bool> showTimeline;
 };
