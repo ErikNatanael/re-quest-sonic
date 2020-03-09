@@ -292,7 +292,7 @@ s.waitForBoot({
 		var a, k, delfreq, minfreqs, freqs, dry;
 		// get the signal of everything
 		sig = In.ar(\in.kr(16), 2);
-		sig = sig + (In.ar(\functionCallIn.kr(18), 2) * \functionCallAmp.kr(1.0));
+		sig = sig + (In.ar(\functionCallIn.kr(18), 2) * \functionCallAmp.kr(1.0, 0.4));
 
 		// electrical dust start
 		electric_freqs = LFNoise1.kr(1/2).range(500, 10000) * [0.7, 0.6, 0.8, 0.9, 0.95, 1.0];
@@ -817,8 +817,8 @@ s.waitForBoot({
 
 ( var port;
 ~maxCap = 0;
-~slowThresh = 280;
-~fastThresh = 900;
+~slowThresh = 390;
+~fastThresh = 700;
 ~ofAddr = NetAddr("127.0.0.1", 12000);
 ~sendCapToOF = { | capValue |
 
