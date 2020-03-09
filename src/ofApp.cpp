@@ -644,9 +644,14 @@ void ofApp::drawSingleStaticFunctionCallLine(string function_id, int parent, int
             
           } else if (drawFunctionCallsOneAtATime) {
             ofPolyline line;
-            line.addVertex(p1.x, p1.y, 0);
+            line.addVertex(p2.x, p2.y, 0);
             
-            line.lineTo(p2.x, p2.y);
+            int numPoints = 10;
+            glm::vec2 partway = (p1 - p2)/numPoints;
+            for(int i = 0; i < numPoints; i++) {
+              line.lineTo(p2.x + partway.x*(i+1), p2.y + partway.y*(i+1));
+            }
+            
             float thickness = ofMap(graphScaling, 1.0, 2000, 2.0, 10);
             ofSetColor(0, 0, 150, 255);
             
@@ -685,14 +690,15 @@ void ofApp::drawThickPolyline(ofPolyline line, float width) {
           angleSmooth = ofLerpDegrees(angleSmooth, angle, 1.0);
       }
       float dist = diff.length();
-      float w = ofMap(dist, 0, 20, 10, 2, true);
-      widthSmooth = 0.9f * widthSmooth + 0.1f * w;
+      // float w = ofMap(dist, 0, 10, 10, 2, true);
+      float w = ofClamp(width * 0.1, 1, 100);
+      widthSmooth = 0.8f * widthSmooth + 0.2f * w;
       
       ofPoint offset;
       offset.x = cos(angleSmooth + PI/2) * widthSmooth;
       offset.y = sin(angleSmooth + PI/2) * widthSmooth;
       meshy.addVertex(  line.getVertices()[i] +  offset );
-      meshy.addVertex(  line.getVertices()[i] -  offset );    
+      meshy.addVertex(  line.getVertices()[i] -  offset );
   }
   // ofSetColor(0,0,0);
   meshy.draw();
@@ -740,16 +746,29 @@ void ofApp::drawStaticPointsOfScripts(bool drawCenters) {
 void ofApp::drawStaticPointsOfFunctions() {
   ofPushMatrix();
   ofTranslate(graphX, graphY);
-  ofSetColor(190, 255);
-  // for(auto& fp : functionMap) {
-  //   glm::vec2 pos = fp.second.pos;
-  //   float size = 2;
-  //   // ofSetColor(ofColor::fromHsb(s.scriptId*300 % 360, 210, 200, 60));
-  //   ofDrawCircle(pos.x, pos.y, size);
-  // }
-  for(auto& s : funcSpheres) {
-    s.draw();
+  for(auto& fp : functionMap) {
+    glm::vec2 pos = fp.second.functionCircle.p * (float)graphScaling;
+    float size = fp.second.functionCircle.r * (float)graphScaling;
+    auto functionId = to_string(fp.second.scriptId) + fp.second.name;
+    if(drawFunctionCallsOneAtATime) {
+      auto& fc = functionCalls[currentFunctionCall];
+      auto parentCall = std::find(functionCalls.begin(), functionCalls.end(), fc.parent); 
+      if(functionId == fc.function_id) {
+        ofSetColor(255, 0, 0, 255);
+      } else if (parentCall != functionCalls.end() && functionId == parentCall->function_id) {
+        ofSetColor(0, 255, 0, 255);
+      } else {
+        ofSetColor(100, 100, 100, 100);
+      }
+    } else {
+      ofSetColor(getColorFromScriptId(fp.second.scriptId, 255)); // dark colours
+    }
+    // ofSetColor(ofColor::fromHsb(s.scriptId*300 % 360, 210, 200, 60));
+    ofDrawCircle(pos.x, pos.y, size);
   }
+  // for(auto& s : funcSpheres) {
+  //   s.draw();
+  // }
   ofPopMatrix();
 }
 
