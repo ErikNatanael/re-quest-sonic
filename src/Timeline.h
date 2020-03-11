@@ -148,20 +148,14 @@ private:
         timeCursor += dt;
         progressQueue(timeCursor);
         if(timeCursor > filterEnd && doLoop) {
-          // send a timelineReset message
-          TM timelineReset = TM(0, "timelineReset");
-          sendViaOsc(timelineReset);
-          lock();
-          messageFIFO.push_back(timelineReset);
-          unlock();
-          // reset and go back to the beginning
-          timeCursor = filterStart;
-          nextEvent = 0;
+          reset();
         }
       }
     }
       // done
   }
+
+  
   
   void progressQueue(double timeCursor) {    
     if(nextEvent < score.size()) {
@@ -776,6 +770,18 @@ public:
         setTimeScale(t, false);
       }
     }
+  }
+  
+  void reset() {
+    // send a timelineReset message
+    TM timelineReset = TM(0, "timelineReset");
+    sendViaOsc(timelineReset);
+    lock();
+    messageFIFO.push_back(timelineReset);
+    unlock();
+    // reset and go back to the beginning
+    timeCursor = filterStart;
+    nextEvent = 0;
   }
   
 };

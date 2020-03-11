@@ -10,8 +10,7 @@ void ofApp::setup() {
   // graphX = WIDTH * 0.67;
   // graphY = HEIGHT * .5;
   graphY = HEIGHT * -0.15;
-  graphX = WIDTH * 0.15;
-
+  // graphX = WIDTH * 0.15;
   graphScaling = HEIGHT * 0.4;
   
   // must set makeContours to true in order to generate paths
@@ -96,13 +95,13 @@ void ofApp::setup() {
     p6 *= scale;
     
     Triangle built_in_triangle = Triangle(p1, p2, p3);
-    Triangle typing_triangle = Triangle(p4, p2, p1);
-    Triangle fetching_triangle = Triangle(p2, p5, p3);
-    Triangle displaying_triangle = Triangle(p1, p3, p6);
+    Triangle remote_triangle = Triangle(p4, p2, p1);
+    Triangle extension_triangle = Triangle(p2, p5, p3);
+    Triangle local_triangle = Triangle(p1, p3, p6);
     triangles.push_back(built_in_triangle);
-    triangles.push_back(typing_triangle);
-    triangles.push_back(fetching_triangle);
-    triangles.push_back(displaying_triangle);
+    triangles.push_back(remote_triangle);
+    triangles.push_back(extension_triangle);
+    triangles.push_back(local_triangle);
 
     circles.clear();
     // sort scripts after number of functions
@@ -254,12 +253,12 @@ void ofApp::setupGui() {
   gui.add(meshGridPieceY.set("mesh piece Y", 4, 0, 6));
   gui.add(functionPointOffsetRatio.set("function offset ratio", 0.001, -0.05, 0.05));
   gui.add(numScriptsToDraw.set("num scripts to draw", maxScriptId, 0, maxScriptId));
-  gui.add(hueRotation.set("hueRotation", 24, 0, 255));
-  gui.add(hueOffset.set("hueOffset", 247, 0, 255));
-  gui.add(saturation.set("saturation", 210));
-  gui.add(brightness.set("brightness", 180));
+  gui.add(hueRotation.set("hueRotation", 0, 0, 255));
+  gui.add(hueOffset.set("hueOffset", 142, 0, 255));
+  gui.add(saturation.set("saturation", 42));
+  gui.add(brightness.set("brightness", 90));
   gui.add(videoOffset.set("videoOffset", -3.975, -4.18-0.5, -4.18+0.5));
-  gui.add(graphX.set("graphX", WIDTH * 0.15, -WIDTH, WIDTH));
+  gui.add(graphX.set("graphX", 0, -WIDTH, WIDTH));
   gui.add(graphY.set("graphY", HEIGHT * -0.15, -HEIGHT, HEIGHT));
   gui.add(graphScaling.set("graphScaling", HEIGHT * 0.4, HEIGHT * 0.3, HEIGHT * 2.0));
   gui.add(drawFunctionCallsOneAtATime.set("fc one aat", false));
@@ -494,8 +493,15 @@ void ofApp::draw(){
   int currentVideo = -1;
   if(timeline.isPlaying() && timeline.getTimeScale() > 0) {
     currentVideo = 0;
+    drawIdle = false;
+    lastTouchts = ofGetElapsedTimef();
   } else {
     currentVideo = 1;
+    if(!drawIdle && ofGetElapsedTimef() - lastTouchts  > timeUntilIdle) {
+      drawIdle = true;
+      timeline.reset();
+      videoFade = 0;
+    }
   }
   if(lastVideo != currentVideo) {
     videoFade = 0;
@@ -504,6 +510,7 @@ void ofApp::draw(){
   if(videoFade < 1.0) {
     videoFade = ofClamp(videoFade + dt, 0.0, 1.0);
   }
+  // ofLogNotice("draw") << "videFade: " << videoFade;
   ofSetColor(255, videoFade*255);
 
   if(timeline.isPlaying() && timeline.getTimeScale() > 0) {
@@ -513,21 +520,34 @@ void ofApp::draw(){
     // This will not work with ofVideoPlayer, requires HAP video
     traceVideo.setPosition(timeline.getTimeCursor(), videoOffset);
     traceVideo.draw(WIDTH, HEIGHT);
-  } else {
+  } else if (drawIdle) {
     pauseVideo.setPosition(pauseVideoPosition, 0.0);
     pauseVideo.draw(WIDTH, HEIGHT);
     // Jump to a random position sometimes.
-    if(ofRandomuf() > 1 - dt*0.2) {
-      pauseVideoPosition = ofRandomuf() * 0.8 * pauseVideo.getDuration();
-    }
-    // Forward or backward based on noise. 
-    float direction = (ofNoise(ofGetElapsedTimef()*0.05 + 5000) > 0.5) * 2 - 1;
+    // if(ofRandomuf() > 1 - dt*0.2) {
+    //   pauseVideoPosition = ofRandomuf() * 0.8 * pauseVideo.getDuration();
+    // }
     // Vary playback speed over time.
-    pauseVideoPosition += dt*ofNoise(ofGetElapsedTimef()*0.1)*0.5 * direction;
+    pauseVideoPosition += dt*ofNoise(ofGetElapsedTimef()*0.1)*0.5;
     pauseVideoPosition = fmod(pauseVideoPosition, pauseVideo.getDuration());
     if(pauseVideoPosition > pauseVideo.getDuration()) pauseVideoPosition -= pauseVideo.getDuration();
     if(pauseVideoPosition < 0.0) pauseVideoPosition += pauseVideo.getDuration();
     pauseVideo.setAlpha(10 + pow(ofRandomuf(), 2.0) * 100);
+  } else {
+    ofSetColor(0, videoFade*255);
+    ofDrawRectangle(0, 0, WIDTH, HEIGHT);
+    cam.begin();
+    drawStaticPointsOfScripts();
+    drawStaticPointsOfFunctions();
+    if(drawFunctionCallsOneAtATime) {
+      auto& fc = functionCalls[currentFunctionCall];
+      drawSingleStaticFunctionCallLine(fc.function_id, fc.parent, fc.scriptId);
+    } else {
+      for(auto& fc : functionCallsToDraw) {
+        drawSingleStaticFunctionCallLine(fc.function_id, fc.parent, fc.scriptId);
+      } 
+    }
+    cam.end();
   }
     
   if(doDrawGraphics) {

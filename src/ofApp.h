@@ -104,6 +104,9 @@ class ofApp : public ofBaseApp{
 		ofParameter<float> videoOffset;
 		float videoFade;
 		int lastVideo = 0;
+		float lastTouchts = 0;
+		float timeUntilIdle = 10; // the amount of time with no touch until the installation should go into idle mode
+		bool drawIdle = true;
 
 		ofTrueTypeFont font;
 		

@@ -7,8 +7,8 @@ int main( ){
 	settings.setGLVersion(3,3); // required for OpenGL 3.3 shaders to work
 	settings.setSize(1920, 1080);
 	// settings.setSize(3840, 2160);
-	settings.windowMode = OF_GAME_MODE;
-	// settings.windowMode = OF_WINDOW;
+	// settings.windowMode = OF_GAME_MODE;
+	settings.windowMode = OF_WINDOW;
 	ofCreateWindow(settings);
 	
 	// ofSetupOpenGL(1920,1080,OF_WINDOW);			// <-------- setup the GL context
