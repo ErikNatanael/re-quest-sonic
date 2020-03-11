@@ -107,6 +107,7 @@ class ofApp : public ofBaseApp{
 		float lastTouchts = 0;
 		float timeUntilIdle = 10; // the amount of time with no touch until the installation should go into idle mode
 		bool drawIdle = true;
+		ofParameter<bool> showVideos;
 
 		ofTrueTypeFont font;
 		

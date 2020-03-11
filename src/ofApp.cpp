@@ -186,6 +186,29 @@ void ofApp::setup() {
     }
   }
 
+  // flip the X axis
+  for(int i = 0; i < scripts.size(); i++) {
+    auto& s = scripts[i];
+    s.scriptCircle.p *= glm::vec2(-1, 1);
+    Circle c = s.scriptCircle;
+    s.pos = c.p * (float)graphScaling;
+    s.radius = c.r * (float)graphScaling;
+    circles.push_back(c);
+    auto& sphere = scriptSpheres[i];
+    sphere.setRadius(s.radius);
+    sphere.setPosition(s.pos.x, s.pos.y, 0);
+  }
+  // update functions
+  for(auto& fp : functionMap) {
+    auto& f = fp.second;
+    f.functionCircle.p *= glm::vec2(-1, 1);
+    Circle c = f.functionCircle;
+    f.pos = c.p * (float)graphScaling;
+    auto& sphere = funcSpheres[f.sphereIndex];
+    sphere.setPosition(f.pos.x, f.pos.y, 0);
+    sphere.setRadius(2);
+  }
+
   ofLogNotice("setup") << "Script and function positions calculated";
   
   // generateMesh();
@@ -242,6 +265,7 @@ void ofApp::setupGui() {
   gui.add(doGraphicsToggle.setup("draw graphics", false));
   gui.add(showTriangle.set("show triangle", false));
   gui.add(triangleScale.set("triangle scale", WIDTH*0.2, 1, WIDTH));
+  gui.add(showVideos.set("show videos", true));
   gui.add(doDrawScreenshots.set("draw screenshots", false));
   gui.add(showTimeline.set("show timeline", false));
   gui.add(showMesh.set("show mesh", false));
@@ -270,6 +294,7 @@ void ofApp::updateScaling(float& scaling) {
   // update scripts to new scaling
   for(int i = 0; i < scripts.size(); i++) {
     auto& s = scripts[i];
+
     Circle c = s.scriptCircle;
     s.pos = c.p * (float)graphScaling;
     s.radius = c.r * (float)graphScaling;
@@ -510,45 +535,48 @@ void ofApp::draw(){
   if(videoFade < 1.0) {
     videoFade = ofClamp(videoFade + dt, 0.0, 1.0);
   }
-  // ofLogNotice("draw") << "videFade: " << videoFade;
-  ofSetColor(255, videoFade*255);
+  if(showVideos) {
+    // ofLogNotice("draw") << "videFade: " << videoFade;
+    ofSetColor(255, videoFade*255);
 
-  if(timeline.isPlaying() && timeline.getTimeScale() > 0) {
-    // frequently changing speed seems to lead to crashes so
-    // it is safer to just use the Timeline clock and set the position
-    // of the video every frame.
-    // This will not work with ofVideoPlayer, requires HAP video
-    traceVideo.setPosition(timeline.getTimeCursor(), videoOffset);
-    traceVideo.draw(WIDTH, HEIGHT);
-  } else if (drawIdle) {
-    pauseVideo.setPosition(pauseVideoPosition, 0.0);
-    pauseVideo.draw(WIDTH, HEIGHT);
-    // Jump to a random position sometimes.
-    // if(ofRandomuf() > 1 - dt*0.2) {
-    //   pauseVideoPosition = ofRandomuf() * 0.8 * pauseVideo.getDuration();
-    // }
-    // Vary playback speed over time.
-    pauseVideoPosition += dt*ofNoise(ofGetElapsedTimef()*0.1)*0.5;
-    pauseVideoPosition = fmod(pauseVideoPosition, pauseVideo.getDuration());
-    if(pauseVideoPosition > pauseVideo.getDuration()) pauseVideoPosition -= pauseVideo.getDuration();
-    if(pauseVideoPosition < 0.0) pauseVideoPosition += pauseVideo.getDuration();
-    pauseVideo.setAlpha(10 + pow(ofRandomuf(), 2.0) * 100);
-  } else {
-    ofSetColor(0, videoFade*255);
-    ofDrawRectangle(0, 0, WIDTH, HEIGHT);
-    cam.begin();
-    drawStaticPointsOfScripts();
-    drawStaticPointsOfFunctions();
-    if(drawFunctionCallsOneAtATime) {
-      auto& fc = functionCalls[currentFunctionCall];
-      drawSingleStaticFunctionCallLine(fc.function_id, fc.parent, fc.scriptId);
+    if(timeline.isPlaying() && timeline.getTimeScale() > 0) {
+      // frequently changing speed seems to lead to crashes so
+      // it is safer to just use the Timeline clock and set the position
+      // of the video every frame.
+      // This will not work with ofVideoPlayer, requires HAP video
+      traceVideo.setPosition(timeline.getTimeCursor(), videoOffset);
+      traceVideo.draw(WIDTH, HEIGHT);
+    } else if (drawIdle) {
+      pauseVideo.setPosition(pauseVideoPosition, 0.0);
+      pauseVideo.draw(WIDTH, HEIGHT);
+      // Jump to a random position sometimes.
+      // if(ofRandomuf() > 1 - dt*0.2) {
+      //   pauseVideoPosition = ofRandomuf() * 0.8 * pauseVideo.getDuration();
+      // }
+      // Vary playback speed over time.
+      pauseVideoPosition += dt*ofNoise(ofGetElapsedTimef()*0.1)*0.5;
+      pauseVideoPosition = fmod(pauseVideoPosition, pauseVideo.getDuration());
+      if(pauseVideoPosition > pauseVideo.getDuration()) pauseVideoPosition -= pauseVideo.getDuration();
+      if(pauseVideoPosition < 0.0) pauseVideoPosition += pauseVideo.getDuration();
+      pauseVideo.setAlpha(10 + pow(ofRandomuf(), 2.0) * 100);
     } else {
-      for(auto& fc : functionCallsToDraw) {
+      ofSetColor(0, videoFade*255);
+      ofDrawRectangle(0, 0, WIDTH, HEIGHT);
+      cam.begin();
+      drawStaticPointsOfScripts();
+      drawStaticPointsOfFunctions();
+      if(drawFunctionCallsOneAtATime) {
+        auto& fc = functionCalls[currentFunctionCall];
         drawSingleStaticFunctionCallLine(fc.function_id, fc.parent, fc.scriptId);
-      } 
+      } else {
+        for(auto& fc : functionCallsToDraw) {
+          drawSingleStaticFunctionCallLine(fc.function_id, fc.parent, fc.scriptId);
+        } 
+      }
+      cam.end();
     }
-    cam.end();
   }
+  
     
   if(doDrawGraphics) {
     cam.begin();
