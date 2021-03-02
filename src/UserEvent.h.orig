@@ -2,6 +2,6 @@
 
 class UserEvent {
 public:
-    string type;
-    uint64_t ts;
+  string type;
+  uint64_t ts;
 };
